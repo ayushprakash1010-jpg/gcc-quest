@@ -66,6 +66,12 @@ export class ContentRepository {
         article: {
           select: { title: true, source: { select: { name: true } } },
         },
+        cluster: {
+          select: {
+            theme: true,
+            articles: { select: { source: { select: { name: true } } } },
+          },
+        },
         versions: { orderBy: { versionNumber: 'desc' } },
       },
     });
@@ -77,6 +83,9 @@ export class ContentRepository {
       include: {
         versions: { orderBy: { versionNumber: 'desc' } },
         article: { include: { analysis: true } },
+        cluster: {
+          include: { articles: { include: { analysis: true, source: true } } },
+        },
       },
     });
     if (!draft) throw new NotFoundException(`Draft ${id} not found`);

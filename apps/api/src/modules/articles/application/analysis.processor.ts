@@ -88,7 +88,7 @@ export class AnalysisProcessor {
           runType: 'article-analysis',
           promptKey: 'article-analysis',
           promptVersion: promptVersion.version,
-          model: 'gemini-2.0-flash',
+          model: 'gemini-3.5-flash-lite',
           contextId: article.id,
         },
         () => this.llm.generateStructured(renderedPrompt, analysisSchema),

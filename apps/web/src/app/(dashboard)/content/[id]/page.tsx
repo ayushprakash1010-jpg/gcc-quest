@@ -128,7 +128,7 @@ export default function DraftReviewPage({
       <div className="w-1/2 overflow-y-auto border-r border-border p-6 space-y-6">
         <div>
           <h2 className="text-2xl font-bold mb-2">
-            {draft.article?.title || "Unknown Article"}
+            {draft.article?.title || draft.cluster?.theme || "Unknown Article"}
           </h2>
           <div className="flex items-center gap-2 mb-4">
             <Badge variant="outline">{draft.targetPlatform}</Badge>
@@ -149,19 +149,29 @@ export default function DraftReviewPage({
           </CardHeader>
           <CardContent>
             <p className="text-sm leading-relaxed">
-              {draft.article?.analysis?.summary || "No summary available."}
+              {draft.article?.analysis?.summary ||
+                draft.cluster?.synthesisText ||
+                "No summary available."}
             </p>
           </CardContent>
         </Card>
 
-        {draft.article?.analysis?.entities && (
+        {(draft.article?.analysis?.entities ||
+          draft.cluster?.articles?.some((a: any) => a.analysis?.entities)) && (
           <Card>
             <CardHeader>
               <CardTitle>Extracted Entities</CardTitle>
             </CardHeader>
             <CardContent>
               <pre className="text-xs bg-muted p-4 rounded-md overflow-x-auto">
-                {JSON.stringify(draft.article.analysis.entities, null, 2)}
+                {JSON.stringify(
+                  draft.article?.analysis?.entities ||
+                    draft.cluster?.articles
+                      ?.map((a: any) => a.analysis?.entities)
+                      .filter(Boolean),
+                  null,
+                  2,
+                )}
               </pre>
             </CardContent>
           </Card>
@@ -225,7 +235,12 @@ export default function DraftReviewPage({
 
         <Tabs
           defaultValue="0"
-          onValueChange={(v) => setActiveVariant(Number(v))}
+          onValueChange={(v) => {
+            setActiveVariant(Number(v));
+            if (draft?.versions?.[Number(v)]) {
+              setEditedText(draft.versions[Number(v)].content);
+            }
+          }}
           className="flex-1 flex flex-col"
         >
           <TabsList>
@@ -245,7 +260,7 @@ export default function DraftReviewPage({
               id="editor"
               value={editedText}
               onChange={(e) => setEditedText(e.target.value)}
-              className="flex-1 min-h-[400px] w-full p-4 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none font-sans text-sm leading-relaxed"
+              className="flex-1 min-h-[400px] w-full p-4 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none font-sans text-sm leading-relaxed dark:bg-zinc-950 dark:text-zinc-50 bg-white text-zinc-900"
               placeholder="Edit the post content here..."
             />
             <div

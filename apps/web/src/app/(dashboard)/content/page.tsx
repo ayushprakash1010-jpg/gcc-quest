@@ -69,7 +69,9 @@ export default function ContentQueuePage() {
                 <Card key={draft.id}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      {draft.article?.title || "Unknown Article"}
+                      {draft.article?.title ||
+                        draft.cluster?.theme ||
+                        "Unknown Article"}
                     </CardTitle>
                     <Badge
                       variant={statusFilter === "DRAFT" ? "default" : "outline"}
@@ -79,7 +81,14 @@ export default function ContentQueuePage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-xs text-muted-foreground mb-4">
-                      Source: {draft.article?.source?.name || "Unknown"}
+                      Source:{" "}
+                      {draft.article?.source?.name ||
+                        (draft.cluster?.articles
+                          ? draft.cluster.articles
+                              .map((a: any) => a.source?.name)
+                              .filter(Boolean)
+                              .join(", ")
+                          : "Unknown")}
                     </div>
                     <div className="text-sm line-clamp-3 mb-2">
                       {draft.versions[0]?.content || "No content generated"}

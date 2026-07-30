@@ -66,7 +66,7 @@ export class ClusterFinalizationCron {
         const result = await this.observability.trackRun(
           {
             runType: 'cluster-synthesis',
-            model: 'gemini-2.0-flash',
+            model: 'gemini-3.5-flash-lite',
             contextId: cluster.id,
           },
           () => this.llm.generateStructured(prompt, clusterSynthesisSchema),

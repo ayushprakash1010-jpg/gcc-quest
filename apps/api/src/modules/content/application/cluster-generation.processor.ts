@@ -85,7 +85,7 @@ export class ClusterGenerationProcessor {
           runType: 'cluster-generation',
           promptKey: 'writer-story-cluster',
           promptVersion: promptVersion.version,
-          model: 'gemini-2.0-flash',
+          model: 'gemini-3.5-flash',
           contextId: cluster.id,
         },
         () => this.llm.generateStructured(renderedPrompt, draftsSchema),

@@ -11,11 +11,9 @@ export interface LlmOptions {
 
 // Very basic Zod to Gemini Schema converter for MVP
 export function zodToGeminiSchema(zodSchema: z.ZodTypeAny): Schema {
-  // In a real app we'd use zod-to-json-schema and map it, but for MVP we manually map
-  // assuming objects
-  const def = zodSchema._def;
-  if ((def as any).typeName === 'ZodObject') {
-    const shape = (zodSchema as z.ZodObject<any>).shape;
+  // Use instanceof instead of _def.typeName to robustly support newer Zod versions and .describe() metadata
+  if (zodSchema instanceof z.ZodObject) {
+    const shape = zodSchema.shape;
     const properties: Record<string, Schema> = {};
     const required: string[] = [];
 
@@ -32,22 +30,20 @@ export function zodToGeminiSchema(zodSchema: z.ZodTypeAny): Schema {
       properties,
       required,
     };
-  } else if ((def as any).typeName === 'ZodString') {
+  } else if (zodSchema instanceof z.ZodString) {
     return { type: SchemaType.STRING };
-  } else if ((def as any).typeName === 'ZodNumber') {
+  } else if (zodSchema instanceof z.ZodNumber) {
     return { type: SchemaType.NUMBER };
-  } else if ((def as any).typeName === 'ZodBoolean') {
+  } else if (zodSchema instanceof z.ZodBoolean) {
     return { type: SchemaType.BOOLEAN };
-  } else if ((def as any).typeName === 'ZodArray') {
-    const itemSchema = zodToGeminiSchema(
-      (zodSchema as z.ZodArray<any>).element,
-    );
+  } else if (zodSchema instanceof z.ZodArray) {
+    const itemSchema = zodToGeminiSchema(zodSchema.element as z.ZodTypeAny);
     return {
       type: SchemaType.ARRAY,
       items: itemSchema,
     };
-  } else if ((def as any).typeName === 'ZodOptional') {
-    return zodToGeminiSchema((zodSchema as z.ZodOptional<any>).unwrap());
+  } else if (zodSchema instanceof z.ZodOptional) {
+    return zodToGeminiSchema(zodSchema.unwrap() as z.ZodTypeAny);
   }
 
   // fallback
@@ -74,7 +70,7 @@ export class GeminiProvider {
     zodSchema: z.ZodSchema<T>,
     options?: LlmOptions,
   ): Promise<T> {
-    const modelName = options?.model || 'gemini-2.0-flash';
+    const modelName = options?.model || 'gemini-3.5-flash-lite';
     const schema = zodToGeminiSchema(zodSchema);
 
     const execute = async () => {
@@ -108,7 +104,7 @@ export class GeminiProvider {
   }
 
   async generateText(prompt: string, options?: LlmOptions): Promise<string> {
-    const modelName = options?.model || 'gemini-2.0-flash';
+    const modelName = options?.model || 'gemini-3.5-flash-lite';
 
     const execute = async () => {
       await this.checkRateLimit();

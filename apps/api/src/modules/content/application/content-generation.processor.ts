@@ -98,7 +98,7 @@ export class ContentGenerationProcessor {
           runType: 'content-generation',
           promptKey: 'writer-industry-news',
           promptVersion: promptVersion.version,
-          model: 'gemini-2.0-flash',
+          model: 'gemini-3.5-flash',
           contextId: article.id,
         },
         () => this.llm.generateStructured(renderedPrompt, draftsSchema),
