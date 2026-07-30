@@ -9,13 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
 export default function ArticlesPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-
-  useEffect(() => {
-    fetchArticles();
-  }, []);
 
   const fetchArticles = async (query?: string) => {
     try {
@@ -35,6 +32,11 @@ export default function ArticlesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchArticles();
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

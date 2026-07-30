@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Request, Get, Res, UnauthorizedException, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Request, Get, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -13,8 +13,10 @@ export class AuthController {
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@Request() req: any, @Res({ passthrough: true }) res: Response) {
-    const { accessToken, refreshToken } = await this.authService.login(req.user);
-    
+    const { accessToken, refreshToken } = await this.authService.login(
+      req.user,
+    );
+
     // Set refresh token as httpOnly cookie
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,

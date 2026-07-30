@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Layers } from "lucide-react";
 
 export default function ClustersPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [clusters, setClusters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

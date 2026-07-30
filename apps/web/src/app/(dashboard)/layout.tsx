@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { auth, signOut } from "../../../auth";
 import { redirect } from "next/navigation";
-
+import Link from "next/link";
 export default async function DashboardLayout({
   children,
 }: {
@@ -22,54 +22,54 @@ export default async function DashboardLayout({
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2">
-          <a
+          <Link
             href="/"
             className="block px-3 py-2 rounded-md bg-gray-800 text-white font-medium"
           >
             Dashboard
-          </a>
-          <a
+          </Link>
+          <Link
             href="/content"
             className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
           >
             Content Review
-          </a>
-          <a
+          </Link>
+          <Link
             href="/clusters"
             className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
           >
             Story Clusters
-          </a>
-          <a
+          </Link>
+          <Link
             href="/trends"
             className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
           >
             Macro Trends
-          </a>
-          <a
+          </Link>
+          <Link
             href="/calendar"
             className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
           >
             Calendar
-          </a>
-          <a
+          </Link>
+          <Link
             href="/settings/feedback"
             className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
           >
             AI Feedback
-          </a>
-          <a
+          </Link>
+          <Link
             href="/intelligence"
             className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
           >
             Intelligence
-          </a>
-          <a
+          </Link>
+          <Link
             href="/settings"
             className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
           >
             Settings
-          </a>
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-gray-800">

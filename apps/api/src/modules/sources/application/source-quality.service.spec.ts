@@ -2,12 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SourceQualityService } from './source-quality.service';
 import { SourceRepository } from '../infrastructure/source.repository';
 import { SourceEntity } from '../domain/source.entity';
-import {
-  SourceType,
-  SourceCategory,
-  CrawlFrequency,
-  SourceStatus,
-} from '@prisma/client';
 
 describe('SourceQualityService', () => {
   let service: SourceQualityService;

@@ -44,7 +44,7 @@ export class CalendarIntelligenceService {
     });
 
     // Start looking for a slot tomorrow at startHour
-    let candidate = new Date(now);
+    const candidate = new Date(now);
     candidate.setDate(candidate.getDate() + 1);
     candidate.setHours(startHour, 0, 0, 0);
 

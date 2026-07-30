@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SourceRepository } from '../../infrastructure/source.repository';
 import { CreateSourceDto } from '../dtos/create-source.dto';
 import { SsrfGuardService } from '../../../../common/security/ssrf-guard.service';

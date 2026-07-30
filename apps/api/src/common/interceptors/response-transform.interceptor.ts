@@ -9,9 +9,10 @@ import { map } from 'rxjs/operators';
 import { ApiResponse } from '@gcc-quest/shared-types';
 
 @Injectable()
-export class ResponseTransformInterceptor<T>
-  implements NestInterceptor<T, ApiResponse<T>>
-{
+export class ResponseTransformInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponse<T>
+> {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
@@ -19,7 +20,12 @@ export class ResponseTransformInterceptor<T>
     return next.handle().pipe(
       map((data) => {
         // If the data is already paginated (has meta), return it directly mapped
-        if (data && typeof data === 'object' && 'meta' in data && 'data' in data) {
+        if (
+          data &&
+          typeof data === 'object' &&
+          'meta' in data &&
+          'data' in data
+        ) {
           return {
             ...data,
             timestamp: new Date().toISOString(),

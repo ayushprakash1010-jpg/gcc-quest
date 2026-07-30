@@ -6,7 +6,6 @@ import {
   Delete,
   Param,
   Body,
-  Query,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BrandVoiceRepository } from '../infrastructure/brand-voice.repository';
 
 @Injectable()

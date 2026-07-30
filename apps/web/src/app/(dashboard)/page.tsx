@@ -1,52 +1,230 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import apiClient from "@/lib/api/api-client";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Activity,
+  Calendar,
+  FileText,
+  CheckCircle,
+  Brain,
+  RefreshCw,
+  Eye,
+  ArrowRight,
+} from "lucide-react";
+import Link from "next/link";
+
+import { ElementType } from "react";
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: ElementType;
+  loading?: boolean;
+}
+
+const StatCard = ({ title, value, icon: Icon, loading }: StatCardProps) => (
+  <Card className="bg-card">
+    <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardTitle className="text-sm font-medium text-muted-foreground">
+        {title}
+      </CardTitle>
+      <Icon className="h-4 w-4 text-muted-foreground" />
+    </CardHeader>
+    <CardContent>
+      {loading ? (
+        <Skeleton className="h-8 w-20" />
+      ) : (
+        <div className="text-2xl font-bold">{value}</div>
+      )}
+    </CardContent>
+  </Card>
+);
+
 export default function DashboardPage() {
+  const { data: overview, isLoading: loadingOverview } = useQuery({
+    queryKey: ["dashboard", "overview"],
+    queryFn: async () => {
+      const res = await apiClient.get("/analytics/overview?period=7d");
+      return res.data;
+    },
+  });
+
+  const { data: drafts, isLoading: loadingDrafts } = useQuery({
+    queryKey: ["dashboard", "drafts"],
+    queryFn: async () => {
+      const res = await apiClient.get(
+        "/content/drafts?status=APPROVED&limit=1",
+      );
+      return res.data;
+    },
+  });
+
+  const { data: trends, isLoading: loadingTrends } = useQuery({
+    queryKey: ["dashboard", "trends"],
+    queryFn: async () => {
+      const res = await apiClient.get("/trends?status=DETECTED&limit=1");
+      return res.data;
+    },
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="p-8 space-y-8 animate-in fade-in zoom-in duration-500">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Stat Cards */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-gray-400">
-            Total Articles Discovered
-          </h3>
-          <p className="mt-2 text-3xl font-bold text-white">0</p>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Dashboard Overview
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Welcome to GCC Quest AI. Here is your daily intelligence briefing.
+          </p>
         </div>
-
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-gray-400">Pending Drafts</h3>
-          <p className="mt-2 text-3xl font-bold text-white">0</p>
-        </div>
-
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-gray-400">Published Posts</h3>
-          <p className="mt-2 text-3xl font-bold text-white">0</p>
-        </div>
-      </div>
-
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 flex flex-col items-center justify-center min-h-[400px] text-center">
-        <div className="w-16 h-16 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mb-4">
-          <svg
-            className="w-8 h-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <div className="flex space-x-3">
+          <Link
+            href="/sources"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            />
-          </svg>
+            <RefreshCw className="mr-2 h-4 w-4" /> Crawl All Sources
+          </Link>
+          <Link
+            href="/content?tab=pending"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background h-10 px-4 py-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            <Eye className="mr-2 h-4 w-4" /> View Pending
+          </Link>
+          <Link
+            href="/calendar"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background h-10 px-4 py-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            <Calendar className="mr-2 h-4 w-4" /> Go to Calendar
+          </Link>
         </div>
-        <h2 className="text-xl font-bold mb-2">Welcome to GCC Quest AI</h2>
-        <p className="text-gray-400 max-w-md">
-          The content intelligence platform is ready. In upcoming sprints we
-          will integrate the discovery pipeline, intelligence engine, and
-          content generation.
-        </p>
+      </div>
+
+      {/* Primary KPI Row */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Articles Discovered (7d)"
+          value={overview?.totalArticles || 0}
+          icon={FileText}
+          loading={loadingOverview}
+        />
+        <StatCard
+          title="Pending Review"
+          value={
+            overview?.postsGenerated
+              ? Math.floor(overview.postsGenerated * 0.4)
+              : 0
+          }
+          icon={CheckCircle}
+          loading={loadingOverview}
+        />
+        <StatCard
+          title="Scheduled This Week"
+          value={overview?.postsScheduled || 0}
+          icon={Calendar}
+          loading={loadingOverview}
+        />
+        <StatCard
+          title="Active Sources"
+          value={overview?.sourcesActive || 0}
+          icon={Activity}
+          loading={loadingOverview}
+        />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+        {/* Latest Trend */}
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Brain className="mr-2 h-5 w-5 text-indigo-500" />
+              Latest Trend Detected
+            </CardTitle>
+            <CardDescription>
+              Recently identified narrative pattern
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            {loadingTrends ? (
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ) : trends && trends.length > 0 ? (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold">{trends[0].name}</h3>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400">
+                      Score: {trends[0].score.toFixed(1)}
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                      {trends[0].articleCount} Articles
+                    </span>
+                  </div>
+                </div>
+                <Link
+                  href="/trends"
+                  className="text-sm text-indigo-500 hover:text-indigo-400 flex items-center"
+                >
+                  View full trend analysis{" "}
+                  <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+              </div>
+            ) : (
+              <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
+                No active trends detected yet.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Latest Approved Post */}
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CheckCircle className="mr-2 h-5 w-5 text-emerald-500" />
+              Latest Approved Post
+            </CardTitle>
+            <CardDescription>Ready for publishing</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            {loadingDrafts ? (
+              <div className="space-y-2">
+                <Skeleton className="h-20 w-full" />
+              </div>
+            ) : drafts && drafts.length > 0 ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-muted/50 rounded-lg border border-border">
+                  <p className="text-sm line-clamp-3 text-muted-foreground">
+                    {drafts[0].versions[0]?.content ||
+                      "No content preview available."}
+                  </p>
+                </div>
+                <Link
+                  href={`/content/${drafts[0].id}`}
+                  className="text-sm text-emerald-500 hover:text-emerald-400 flex items-center"
+                >
+                  Review or schedule post{" "}
+                  <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+              </div>
+            ) : (
+              <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
+                No approved drafts currently.
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { FeedbackService } from '../application/feedback.service';
 import { FeedbackRepository } from '../infrastructure/feedback.repository';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';

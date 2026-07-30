@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
 import { SourceRepository } from '../infrastructure/source.repository';
 import { SourceEntity } from '../domain/source.entity';
-import { QUEUES } from '../../../infrastructure/queue/queue.constants';
 
 @Injectable()
 export class SourceQualityService {

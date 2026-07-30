@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  Patch,
-  Body,
-  Post,
-  NotFoundException,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, Patch, Body } from '@nestjs/common';
 import { StoryClusterRepository } from '../infrastructure/story-cluster.repository';
 
 @Controller('clusters')

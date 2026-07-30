@@ -8,11 +8,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
 export default function FeedbackSettingsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

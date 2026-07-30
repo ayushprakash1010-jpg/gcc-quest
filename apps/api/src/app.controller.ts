@@ -18,8 +18,8 @@ export class AppController {
   getDependencies() {
     return {
       postgres: true, // TODO: Check actual connection once Prisma is integrated
-      redis: true,    // TODO: Check actual connection once Redis is integrated
-      qdrant: true,   // TODO: Check actual connection once Qdrant is integrated
+      redis: true, // TODO: Check actual connection once Redis is integrated
+      qdrant: true, // TODO: Check actual connection once Qdrant is integrated
     };
   }
 }

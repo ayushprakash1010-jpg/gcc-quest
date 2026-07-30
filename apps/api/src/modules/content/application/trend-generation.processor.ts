@@ -64,7 +64,8 @@ export class TrendGenerationProcessor {
       let promptKey = 'trend-analysis';
       try {
         promptVersion = this.promptService.getActive('trend-analysis');
-      } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_e) {
         // Fallback to writer-linkedin-v1 if trend-analysis doesn't exist yet
         promptKey = 'writer-linkedin-v1';
         promptVersion = this.promptService.getActive('writer-linkedin-v1');
@@ -114,7 +115,7 @@ export class TrendGenerationProcessor {
           targetPlatform: 'LINKEDIN',
           currentVersion: 1,
           versions: {
-            create: result.variants.map((content, idx) => ({
+            create: result.variants.map((content) => ({
               versionNumber: 1,
               content,
               promptKey: promptKey,

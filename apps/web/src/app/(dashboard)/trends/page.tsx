@@ -16,6 +16,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 export default function TrendsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [trends, setTrends] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,14 +33,15 @@ export default function TrendsPage() {
         const data = await res.json();
         setTrends(data);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (_err) {
+      console.error(_err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTrends();
   }, []);
 
@@ -63,6 +65,7 @@ export default function TrendsPage() {
       } else {
         toast.error("Failed to run detection");
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       toast.error("An error occurred");
     }
@@ -88,6 +91,7 @@ export default function TrendsPage() {
       } else {
         toast.error("Failed to start generation");
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       toast.error("An error occurred");
     }

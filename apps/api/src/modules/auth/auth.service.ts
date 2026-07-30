@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -14,8 +14,13 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user && user.passwordHash && await bcrypt.compare(pass, user.passwordHash)) {
-      const { passwordHash, ...result } = user;
+    if (
+      user &&
+      user.passwordHash &&
+      (await bcrypt.compare(pass, user.passwordHash))
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { passwordHash: _passwordHash, ...result } = user;
       return result;
     }
     return null;
@@ -23,14 +28,17 @@ export class AuthService {
 
   async login(user: any) {
     const payload = { sub: user.id, email: user.email, role: user.role };
-    
+
     // Generate access token
     const accessToken = this.jwtService.sign(payload);
-    
+
     // Generate refresh token manually since we need different secret/expiry
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d') as any,
+      expiresIn: this.configService.get<string>(
+        'JWT_REFRESH_EXPIRES_IN',
+        '7d',
+      ) as any,
     });
 
     // Update last login

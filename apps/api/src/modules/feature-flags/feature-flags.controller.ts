@@ -19,9 +19,9 @@ export class FeatureFlagsController {
 
   @Put(':key')
   async toggleFlag(
-    @Param('key') key: string, 
+    @Param('key') key: string,
     @Body('value') value: boolean,
-    @CurrentUser() user: any
+    @CurrentUser() user: any,
   ) {
     await this.featureFlagsService.setFlag(key, value, user.id);
     return { success: true, key, value };

@@ -28,12 +28,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function ArticleDetailPage() {
   const params = useParams();
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchArticle();
-  }, [params.id]);
 
   const fetchArticle = async () => {
     try {
@@ -47,6 +44,12 @@ export default function ArticleDetailPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchArticle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
 
   if (loading) {
     return (

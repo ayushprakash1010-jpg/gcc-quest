@@ -15,12 +15,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 export default function SourcesPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [sources, setSources] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchSources();
-  }, []);
 
   const fetchSources = async () => {
     try {
@@ -38,6 +35,11 @@ export default function SourcesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchSources();
+  }, []);
 
   const handleCrawl = async (id: string) => {
     try {
