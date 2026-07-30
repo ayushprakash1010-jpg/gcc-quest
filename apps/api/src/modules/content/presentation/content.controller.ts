@@ -7,6 +7,7 @@ import {
   Body,
   Query,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { ContentRepository } from '../infrastructure/content.repository';
 import { FeedbackService } from '../../feedback/application/feedback.service';
@@ -54,6 +55,14 @@ export class ContentController {
   @Put('drafts/:id/status')
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
   async updateStatus(@Param('id') id: string, @Body() body: { status: any }) {
+    if (body.status === 'APPROVED') {
+      const draft = await this.repository.findById(id);
+      if (!draft.versions || draft.versions.length === 0) {
+        throw new BadRequestException(
+          'Cannot approve a draft with no versions',
+        );
+      }
+    }
     const updated = await this.repository.updateStatus(id, body.status);
     if (body.status === 'APPROVED') {
       this.eventEmitter.emit('draft.approved', { draftId: id });

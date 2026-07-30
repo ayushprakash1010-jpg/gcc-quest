@@ -73,7 +73,9 @@ export class ContentGenerationProcessor {
       }
 
       // 2. Gather Context
-      const promptVersion = this.promptService.getActive('writer-linkedin-v1');
+      const promptVersion = this.promptService.getActive(
+        'writer-industry-news',
+      );
       const defaultBrandVoice = await this.brandVoiceService.getDefault();
       const feedbackContext = await this.feedbackService.getFeedbackContext(
         'LINKEDIN',
@@ -94,7 +96,7 @@ export class ContentGenerationProcessor {
       const result = await this.observability.trackRun(
         {
           runType: 'content-generation',
-          promptKey: 'writer-linkedin-v1',
+          promptKey: 'writer-industry-news',
           promptVersion: promptVersion.version,
           model: 'gemini-2.0-flash',
           contextId: article.id,
@@ -113,7 +115,7 @@ export class ContentGenerationProcessor {
         brandVoiceId: defaultBrandVoice?.id,
         targetPlatform: 'LINKEDIN',
         versions: result.variants,
-        promptKey: 'writer-linkedin-v1',
+        promptKey: 'writer-industry-news',
         promptVersion: promptVersion.version,
       });
 

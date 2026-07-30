@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, Clock, Link as LinkIcon, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import apiClient from "@/lib/api/api-client";
 
 export default function CalendarPage() {
   {
@@ -24,16 +25,8 @@ export default function CalendarPage() {
   const fetchCalendar = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(
-        `http://localhost:3001/api/v1/schedule/calendar`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      if (res.ok) {
-        setCalendar(await res.json());
-      }
+      const res = await apiClient.get("/schedule/calendar");
+      setCalendar(res.data || res);
     } catch (_err) {
       console.error(_err);
     } finally {
@@ -48,20 +41,11 @@ export default function CalendarPage() {
 
   const handleCancel = async (id: string) => {
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(`http://localhost:3001/api/v1/schedule/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+      await apiClient.delete(`/schedule/${id}`);
+      toast.success("Post canceled", {
+        description: "Draft reverted to APPROVED.",
       });
-      if (res.ok) {
-        toast.success("Post canceled", {
-          description: "Draft reverted to APPROVED.",
-        });
-        fetchCalendar();
-      } else {
-        toast.error("Failed to cancel");
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      fetchCalendar();
     } catch (err) {
       toast.error("An error occurred");
     }

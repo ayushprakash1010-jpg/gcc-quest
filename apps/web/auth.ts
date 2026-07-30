@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import apiClient from "./src/lib/api/api-client";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  secret: process.env.AUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -36,6 +37,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_e) {
+          console.error("Authorize Error:", _e);
           return null;
         }
       },

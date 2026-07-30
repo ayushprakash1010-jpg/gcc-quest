@@ -96,13 +96,13 @@ export default function DashboardPage() {
           </Link>
           <Link
             href="/content?tab=pending"
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background h-10 px-4 py-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-gray-800 bg-gray-900 text-white h-10 px-4 py-2 hover:bg-gray-800 transition-colors"
           >
             <Eye className="mr-2 h-4 w-4" /> View Pending
           </Link>
           <Link
             href="/calendar"
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background h-10 px-4 py-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-gray-800 bg-gray-900 text-white h-10 px-4 py-2 hover:bg-gray-800 transition-colors"
           >
             <Calendar className="mr-2 h-4 w-4" /> Go to Calendar
           </Link>

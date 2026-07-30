@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Layers } from "lucide-react";
+import apiClient from "@/lib/api/api-client";
 
 export default function ClustersPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,16 +24,8 @@ export default function ClustersPage() {
     async function fetchClusters() {
       setLoading(true);
       try {
-        const token = localStorage.getItem("auth_token");
-        const res = await fetch(`http://localhost:3001/api/v1/clusters`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setClusters(data);
-        }
+        const res = await apiClient.get(`/clusters`);
+        setClusters(res.data || res);
       } catch (err) {
         console.error(err);
       } finally {

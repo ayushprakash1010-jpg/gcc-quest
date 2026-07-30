@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Activity, Layers, Play } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import apiClient from "@/lib/api/api-client";
 
 export default function TrendsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,16 +24,8 @@ export default function TrendsPage() {
   const fetchTrends = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(`http://localhost:3001/api/v1/trends`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTrends(data);
-      }
+      const res = await apiClient.get("/trends");
+      setTrends(res.data || res);
     } catch (_err) {
       console.error(_err);
     } finally {
@@ -47,25 +40,11 @@ export default function TrendsPage() {
 
   const handleRunDetection = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(
-        `http://localhost:3001/api/v1/trends/run-detection`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      if (res.ok) {
-        toast.success("Detection triggered", {
-          description: "Macro trends are being analyzed.",
-        });
-        setTimeout(fetchTrends, 2000);
-      } else {
-        toast.error("Failed to run detection");
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      await apiClient.post("/trends/run-detection");
+      toast.success("Detection triggered", {
+        description: "Macro trends are being analyzed.",
+      });
+      setTimeout(fetchTrends, 2000);
     } catch (err) {
       toast.error("An error occurred");
     }
@@ -73,25 +52,11 @@ export default function TrendsPage() {
 
   const handleGenerate = async (id: string) => {
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(
-        `http://localhost:3001/api/v1/trends/${id}/generate`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      if (res.ok) {
-        toast.success("Generation started", {
-          description: "A trend report is being written.",
-        });
-        setTimeout(fetchTrends, 2000);
-      } else {
-        toast.error("Failed to start generation");
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      await apiClient.post(`/trends/${id}/generate`);
+      toast.success("Generation started", {
+        description: "A trend report is being written.",
+      });
+      setTimeout(fetchTrends, 2000);
     } catch (err) {
       toast.error("An error occurred");
     }

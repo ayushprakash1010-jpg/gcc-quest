@@ -60,7 +60,9 @@ export class ClusterGenerationProcessor {
       // Wait, task says: "Get active prompt: promptService.getActive('cluster-synthesis')"
       // I'll just use writer-linkedin-v1 for the post generation, but with synthesis text as summary.
 
-      const promptVersion = this.promptService.getActive('writer-linkedin-v1');
+      const promptVersion = this.promptService.getActive(
+        'writer-story-cluster',
+      );
       const defaultBrandVoice = await this.brandVoiceService.getDefault();
       const feedbackContext = await this.feedbackService.getFeedbackContext(
         'LINKEDIN',
@@ -81,7 +83,7 @@ export class ClusterGenerationProcessor {
       const result = await this.observability.trackRun(
         {
           runType: 'cluster-generation',
-          promptKey: 'writer-linkedin-v1',
+          promptKey: 'writer-story-cluster',
           promptVersion: promptVersion.version,
           model: 'gemini-2.0-flash',
           contextId: cluster.id,
@@ -100,7 +102,7 @@ export class ClusterGenerationProcessor {
         brandVoiceId: defaultBrandVoice?.id,
         targetPlatform: 'LINKEDIN',
         versions: result.variants,
-        promptKey: 'writer-linkedin-v1',
+        promptKey: 'writer-story-cluster',
         promptVersion: promptVersion.version,
       });
 

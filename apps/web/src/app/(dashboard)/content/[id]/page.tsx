@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import apiClient from "@/lib/api/api-client";
 
 export default function DraftReviewPage({
   params,
@@ -37,20 +38,12 @@ export default function DraftReviewPage({
   useEffect(() => {
     async function fetchDraft() {
       try {
-        const token = localStorage.getItem("auth_token");
-        const res = await fetch(
-          `http://localhost:3001/api/v1/content/drafts/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setDraft(data);
-          // Load the latest version into the editor
-          if (data.versions && data.versions.length > 0) {
-            setEditedText(data.versions[0].content);
-          }
+        const res = await apiClient.get(`/content/drafts/${id}`);
+        const data = res.data || res;
+        setDraft(data);
+        // Load the latest version into the editor
+        if (data.versions && data.versions.length > 0) {
+          setEditedText(data.versions[0].content);
         }
       } catch (err) {
         console.error(err);
@@ -63,65 +56,35 @@ export default function DraftReviewPage({
 
   const handleApprove = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
       // 1. Capture feedback if it was edited
       if (draft.versions && draft.versions.length > 0) {
         const originalText = draft.versions[draft.versions.length - 1].content;
         if (originalText !== editedText) {
-          await fetch(
-            `http://localhost:3001/api/v1/content/drafts/${id}/feedback`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ originalText, editedText }),
-            },
-          );
+          await apiClient.post(`/content/drafts/${id}/feedback`, {
+            originalText,
+            editedText,
+          });
           // Also save the new version
-          await fetch(
-            `http://localhost:3001/api/v1/content/drafts/${id}/versions`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ content: editedText }),
-            },
-          );
+          await apiClient.post(`/content/drafts/${id}/versions`, {
+            content: editedText,
+          });
         }
       }
 
       // 2. Approve draft
       setScheduleState("approving");
-      const res = await fetch(
-        `http://localhost:3001/api/v1/content/drafts/${id}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status: "APPROVED" }),
-        },
-      );
-      if (res.ok) {
-        setScheduleState("recommending");
-        // Get recommendation
-        const recRes = await fetch(
-          `http://localhost:3001/api/v1/schedule/recommendation/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        if (recRes.ok) {
-          setRecommendation(await recRes.json());
-          setScheduleState("ready");
-        } else {
-          router.push("/content");
-        }
+      await apiClient.put(`/content/drafts/${id}/status`, {
+        status: "APPROVED",
+      });
+
+      setScheduleState("recommending");
+      // Get recommendation
+      try {
+        const recRes = await apiClient.get(`/schedule/recommendation/${id}`);
+        setRecommendation(recRes.data || recRes);
+        setScheduleState("ready");
+      } catch {
+        router.push("/content");
       }
     } catch (err) {
       console.error(err);
@@ -131,21 +94,11 @@ export default function DraftReviewPage({
 
   const handleConfirmSchedule = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(`http://localhost:3001/api/v1/schedule`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          draftId: id,
-          scheduledFor: recommendation?.slot,
-        }),
+      await apiClient.post(`/schedule`, {
+        draftId: id,
+        scheduledFor: recommendation?.slot,
       });
-      if (res.ok) {
-        router.push("/calendar");
-      }
+      router.push("/calendar");
     } catch (err) {
       console.error(err);
     }
@@ -153,21 +106,10 @@ export default function DraftReviewPage({
 
   const handleReject = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(
-        `http://localhost:3001/api/v1/content/drafts/${id}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status: "REJECTED" }),
-        },
-      );
-      if (res.ok) {
-        router.push("/content");
-      }
+      await apiClient.put(`/content/drafts/${id}/status`, {
+        status: "REJECTED",
+      });
+      router.push("/content");
     } catch (err) {
       console.error(err);
     }

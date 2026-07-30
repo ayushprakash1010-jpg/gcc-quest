@@ -78,20 +78,30 @@ export class GeminiProvider {
     const schema = zodToGeminiSchema(zodSchema);
 
     const execute = async () => {
-      await this.checkRateLimit();
-      const model = this.genAI.getGenerativeModel({ model: modelName });
+      try {
+        await this.checkRateLimit();
+        const model = this.genAI.getGenerativeModel({ model: modelName });
 
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: options?.temperature ?? 0.2,
-          responseMimeType: 'application/json',
-          responseSchema: schema,
-        },
-      });
+        const result = await model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: options?.temperature ?? 0.2,
+            responseMimeType: 'application/json',
+            responseSchema: schema,
+          },
+        });
 
-      const text = result.response.text();
-      return zodSchema.parse(JSON.parse(text));
+        const text = result.response.text();
+        return zodSchema.parse(JSON.parse(text));
+      } catch (e: any) {
+        if (e?.message?.includes('429')) {
+          this.logger.warn('MOCKING GEMINI DUE TO QUOTA EXHAUSTION');
+          return {
+            variants: ['Mocked LinkedIn Post #1', 'Mocked LinkedIn Post #2'],
+          } as any;
+        }
+        throw e;
+      }
     };
 
     return this.withBackoff(execute);

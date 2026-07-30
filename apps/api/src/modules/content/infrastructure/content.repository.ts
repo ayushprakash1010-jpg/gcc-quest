@@ -8,21 +8,32 @@ export class ContentRepository {
   async createDraftWithVersions(data: {
     articleId?: string;
     clusterId?: string;
+    trendId?: string;
     brandVoiceId?: string;
     targetPlatform: string;
     versions: string[];
     promptKey?: string;
     promptVersion?: string;
   }) {
+    const validVersions = (data.versions || []).filter(
+      (v) => v && v.trim().length > 0,
+    );
+    if (validVersions.length === 0) {
+      throw new Error(
+        'Cannot create a ContentDraft without at least one valid version.',
+      );
+    }
+
     return this.prisma.contentDraft.create({
       data: {
         articleId: data.articleId,
         clusterId: data.clusterId,
+        trendId: data.trendId,
         brandVoiceId: data.brandVoiceId,
         targetPlatform: data.targetPlatform,
         currentVersion: 1, // Start with version 1 which will be the first one
         versions: {
-          create: data.versions.map((content, idx) => ({
+          create: validVersions.map((content, idx) => ({
             versionNumber: idx + 1,
             content,
             promptKey: data.promptKey,

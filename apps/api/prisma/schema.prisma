@@ -7,25 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  ADMIN
-  EDITOR
-  ANALYST
-  VIEWER
-}
-
 model User {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email        String    @unique @db.VarChar(255)
-  name         String?   @db.VarChar(255)
-  avatarUrl    String?   @map("avatar_url") @db.Text
-  passwordHash String?   @map("password_hash") @db.Text
-  role         UserRole  @default(EDITOR)
-  isActive     Boolean   @default(true) @map("is_active")
-  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String         @unique @db.VarChar(255)
+  name          String?        @db.VarChar(255)
+  avatarUrl     String?        @map("avatar_url")
+  passwordHash  String?        @map("password_hash")
+  role          UserRole       @default(EDITOR)
+  isActive      Boolean        @default(true) @map("is_active")
+  lastLoginAt   DateTime?      @map("last_login_at") @db.Timestamptz(6)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   revokedTokens RevokedToken[]
   sources       Source[]
 
@@ -34,9 +26,9 @@ model User {
 
 model SystemSetting {
   key         String    @id @db.VarChar(100)
-  value       String    @db.Text
-  description String?   @db.Text
-  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  value       String
+  description String?
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   updatedBy   String?   @map("updated_by") @db.Uuid
 
   @@map("system_settings")
@@ -45,10 +37,9 @@ model SystemSetting {
 model RevokedToken {
   jti       String    @id @db.VarChar(36)
   userId    String?   @map("user_id") @db.Uuid
-  revokedAt DateTime? @default(now()) @map("revoked_at") @db.Timestamptz
-  expiresAt DateTime  @map("expires_at") @db.Timestamptz
-
-  user User? @relation(fields: [userId], references: [id])
+  revokedAt DateTime? @default(now()) @map("revoked_at") @db.Timestamptz(6)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  user      User?     @relation(fields: [userId], references: [id])
 
   @@index([expiresAt])
   @@map("revoked_tokens")
@@ -60,12 +51,284 @@ model AnalyticsEvent {
   entityType String?   @map("entity_type") @db.VarChar(50)
   entityId   String?   @map("entity_id") @db.Uuid
   metadata   Json?     @default("{}")
-  occurredAt DateTime? @default(now()) @map("occurred_at") @db.Timestamptz
+  occurredAt DateTime? @default(now()) @map("occurred_at") @db.Timestamptz(6)
 
   @@index([eventType])
   @@index([occurredAt(sort: Desc)])
   @@index([entityType, entityId])
   @@map("analytics_events")
+}
+
+model Source {
+  id               String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String               @db.VarChar(255)
+  url              String               @unique
+  type             SourceType
+  category         SourceCategory
+  crawlFrequency   CrawlFrequency       @default(DAILY) @map("crawl_frequency")
+  status           SourceStatus         @default(ACTIVE)
+  config           Json?                @default("{}")
+  lastCrawledAt    DateTime?            @map("last_crawled_at") @db.Timestamptz(6)
+  nextCrawlAt      DateTime?            @map("next_crawl_at") @db.Timestamptz(6)
+  totalArticles    Int                  @default(0) @map("total_articles")
+  errorCount       Int                  @default(0) @map("error_count")
+  lastError        String?              @map("last_error")
+  tags             String[]             @default([])
+  trustScore       Float                @default(0.5) @map("trust_score")
+  authorityScore   Float                @default(0.5) @map("authority_score")
+  freshnessScore   Float                @default(1.0) @map("freshness_score")
+  compositeScore   Float                @default(0.6) @map("composite_score")
+  robotsTxtChecked Boolean              @default(false) @map("robots_txt_checked")
+  robotsTxtAllowed Boolean              @default(true) @map("robots_txt_allowed")
+  createdBy        String?              @map("created_by") @db.Uuid
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  articles         Article[]
+  crawlHistories   SourceCrawlHistory[]
+  user             User?                @relation(fields: [createdBy], references: [id])
+
+  @@map("sources")
+}
+
+model SourceCrawlHistory {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceId      String    @map("source_id") @db.Uuid
+  startedAt     DateTime  @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz(6)
+  articlesFound Int       @default(0) @map("articles_found")
+  articlesNew   Int       @default(0) @map("articles_new")
+  articlesDedup Int       @default(0) @map("articles_dedup")
+  errors        Int       @default(0)
+  durationMs    Int?      @map("duration_ms")
+  trigger       String    @default("SCHEDULED") @db.VarChar(20)
+  source        Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId, startedAt(sort: Desc)])
+  @@map("source_crawl_history")
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model Article {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceId      String           @map("source_id") @db.Uuid
+  externalUrl   String           @map("external_url")
+  title         String
+  author        String?
+  publishedAt   DateTime?        @map("published_at") @db.Timestamptz(6)
+  rawText       String?          @map("raw_text")
+  contentHash   String           @unique @map("content_hash") @db.VarChar(64)
+  wordCount     Int?             @map("word_count")
+  language      String?          @default("en") @db.VarChar(10)
+  status        ArticleStatus    @default(DISCOVERED)
+  clusterId     String?          @map("cluster_id") @db.Uuid
+  discoveredAt  DateTime         @default(now()) @map("discovered_at") @db.Timestamptz(6)
+  updatedAt     DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  analysis      ArticleAnalysis?
+  storyCluster  StoryCluster?    @relation(fields: [clusterId], references: [id])
+  source        Source           @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  ContentDraft  ContentDraft[]
+  trendArticles TrendArticle[]
+
+  @@index([sourceId])
+  @@index([status])
+  @@index([publishedAt(sort: Desc)])
+  @@index([discoveredAt(sort: Desc)])
+  @@index([clusterId])
+  @@map("articles")
+}
+
+model ArticleAnalysis {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  articleId       String   @unique @map("article_id") @db.Uuid
+  summary         String
+  sentiment       String   @db.VarChar(50)
+  gccCategory     String   @map("gcc_category") @db.VarChar(100)
+  entities        Json     @default("{}")
+  impactScore     Float    @map("impact_score")
+  promptKey       String   @map("prompt_key") @db.VarChar(100)
+  promptVersion   String   @map("prompt_version") @db.VarChar(20)
+  reanalysisCount Int      @default(0) @map("reanalysis_count")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("article_analyses")
+}
+
+model BrandVoice {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String         @db.VarChar(255)
+  description  String?
+  tone         String
+  guidelines   String[]       @default([])
+  isDefault    Boolean        @default(false) @map("is_default")
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  ContentDraft ContentDraft[]
+
+  @@map("brand_voices")
+}
+
+model AgentRun {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runType       String    @map("run_type") @db.VarChar(100)
+  promptKey     String?   @map("prompt_key") @db.VarChar(100)
+  promptVersion String?   @map("prompt_version") @db.VarChar(20)
+  model         String    @db.VarChar(100)
+  tokensInput   Int       @default(0) @map("tokens_input")
+  tokensOutput  Int       @default(0) @map("tokens_output")
+  costUsd       Float     @default(0) @map("cost_usd")
+  latencyMs     Int?      @map("latency_ms")
+  success       Boolean   @default(true)
+  errorMessage  String?   @map("error_message")
+  contextId     String?   @map("context_id") @db.Uuid
+  startedAt     DateTime  @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz(6)
+
+  @@index([runType])
+  @@index([startedAt(sort: Desc)])
+  @@index([contextId])
+  @@map("agent_runs")
+}
+
+model ContentDraft {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  articleId      String?           @map("article_id") @db.Uuid
+  status         ContentStatus     @default(DRAFT)
+  currentVersion Int               @default(1) @map("current_version")
+  targetPlatform String            @default("LINKEDIN") @map("target_platform") @db.VarChar(50)
+  brandVoiceId   String?           @map("brand_voice_id") @db.Uuid
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  clusterId      String?           @map("cluster_id") @db.Uuid
+  trendId        String?           @map("trend_id") @db.Uuid
+  article        Article?          @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  brandVoice     BrandVoice?       @relation(fields: [brandVoiceId], references: [id])
+  cluster        StoryCluster?     @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  trend          Trend?            @relation(fields: [trendId], references: [id], onDelete: Cascade)
+  versions       ContentVersion[]
+  feedbacks      FeedbackExample[]
+  scheduledPost  ScheduledPost?
+
+  @@index([status])
+  @@index([articleId])
+  @@map("content_drafts")
+}
+
+model ContentVersion {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  draftId       String       @map("draft_id") @db.Uuid
+  versionNumber Int          @map("version_number")
+  content       String
+  promptKey     String?      @map("prompt_key") @db.VarChar(100)
+  promptVersion String?      @map("prompt_version") @db.VarChar(20)
+  generatedBy   String       @default("AI") @map("generated_by") @db.VarChar(50)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  draft         ContentDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@unique([draftId, versionNumber])
+  @@map("content_versions")
+}
+
+model FeedbackExample {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  originalText String        @map("original_text")
+  editedText   String        @map("edited_text")
+  diffSummary  String?       @map("diff_summary")
+  category     String?       @db.VarChar(100)
+  applied      Boolean       @default(false)
+  draftId      String?       @map("draft_id") @db.Uuid
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  draft        ContentDraft? @relation(fields: [draftId], references: [id])
+
+  @@map("feedback_examples")
+}
+
+model StoryCluster {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  theme         String?        @db.VarChar(255)
+  synthesisText String?        @map("synthesis_text")
+  articleCount  Int            @default(1) @map("article_count")
+  status        ClusterStatus  @default(FORMING)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  lastArticleAt DateTime       @default(now()) @map("last_article_at") @db.Timestamptz(6)
+  finalizedAt   DateTime?      @map("finalized_at") @db.Timestamptz(6)
+  articles      Article[]
+  ContentDraft  ContentDraft[]
+
+  @@index([status])
+  @@index([lastArticleAt(sort: Desc)])
+  @@map("story_clusters")
+}
+
+model Trend {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type          TrendType
+  name          String         @db.VarChar(255)
+  score         Float          @default(0)
+  articleCount  Int            @default(0) @map("article_count")
+  status        TrendStatus    @default(DETECTED)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  drafts        ContentDraft[]
+  trendArticles TrendArticle[]
+
+  @@index([type])
+  @@index([status])
+  @@index([score(sort: Desc)])
+  @@map("trends")
+}
+
+model TrendArticle {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  trendId   String   @map("trend_id") @db.Uuid
+  articleId String   @map("article_id") @db.Uuid
+  relevance Float    @default(0)
+  addedAt   DateTime @default(now()) @map("added_at") @db.Timestamptz(6)
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  trend     Trend    @relation(fields: [trendId], references: [id], onDelete: Cascade)
+
+  @@unique([trendId, articleId])
+  @@map("trend_articles")
+}
+
+model ScheduledPost {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  draftId           String         @unique @map("draft_id") @db.Uuid
+  status            ScheduleStatus @default(QUEUED)
+  scheduledFor      DateTime       @map("scheduled_for") @db.Timestamptz(6)
+  recommendedSlot   DateTime?      @map("recommended_slot") @db.Timestamptz(6)
+  scheduleRationale String?        @map("schedule_rationale")
+  publishedUrl      String?        @map("published_url")
+  errorMessage      String?        @map("error_message")
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  draft             ContentDraft   @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([scheduledFor])
+  @@map("scheduled_posts")
+}
+
+model CalendarRule {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?
+  ruleType    String   @map("rule_type") @db.VarChar(50)
+  config      Json
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("calendar_rules")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  ANALYST
+  VIEWER
 }
 
 enum SourceType {
@@ -107,230 +370,20 @@ enum ArticleStatus {
   SEMANTIC_DUPLICATE
 }
 
-model Source {
-  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String         @db.VarChar(255)
-  url              String         @unique @db.Text
-  type             SourceType
-  category         SourceCategory
-  crawlFrequency   CrawlFrequency @default(DAILY) @map("crawl_frequency")
-  status           SourceStatus   @default(ACTIVE)
-  config           Json?          @default("{}")
-  lastCrawledAt    DateTime?      @map("last_crawled_at") @db.Timestamptz
-  nextCrawlAt      DateTime?      @map("next_crawl_at") @db.Timestamptz
-  totalArticles    Int            @default(0) @map("total_articles")
-  errorCount       Int            @default(0) @map("error_count")
-  lastError        String?        @map("last_error") @db.Text
-  tags             String[]       @default([])
-  trustScore       Float          @default(0.5) @map("trust_score")
-  authorityScore   Float          @default(0.5) @map("authority_score")
-  freshnessScore   Float          @default(1.0) @map("freshness_score")
-  compositeScore   Float          @default(0.6) @map("composite_score")
-  robotsTxtChecked Boolean        @default(false) @map("robots_txt_checked")
-  robotsTxtAllowed Boolean        @default(true) @map("robots_txt_allowed")
-  createdBy        String?        @map("created_by") @db.Uuid
-  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  user           User?                @relation(fields: [createdBy], references: [id])
-  crawlHistories SourceCrawlHistory[]
-  articles       Article[]
-
-  @@map("sources")
-}
-
-model SourceCrawlHistory {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sourceId      String    @map("source_id") @db.Uuid
-  startedAt     DateTime  @default(now()) @map("started_at") @db.Timestamptz
-  completedAt   DateTime? @map("completed_at") @db.Timestamptz
-  articlesFound Int       @default(0) @map("articles_found")
-  articlesNew   Int       @default(0) @map("articles_new")
-  articlesDedup Int       @default(0) @map("articles_dedup")
-  errors        Int       @default(0)
-  durationMs    Int?      @map("duration_ms")
-  trigger       String    @default("SCHEDULED") @db.VarChar(20)
-
-  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-
-  @@index([sourceId, startedAt(sort: Desc)])
-  @@map("source_crawl_history")
-}
-
-model Article {
-  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sourceId     String        @map("source_id") @db.Uuid
-  externalUrl  String        @map("external_url") @db.Text
-  title        String        @db.Text
-  author       String?       @db.Text
-  publishedAt  DateTime?     @map("published_at") @db.Timestamptz
-  rawText      String?       @map("raw_text") @db.Text
-  contentHash  String        @unique @map("content_hash") @db.VarChar(64)
-  wordCount    Int?          @map("word_count")
-  language     String?       @default("en") @db.VarChar(10)
-  status       ArticleStatus @default(DISCOVERED)
-  clusterId    String?       @map("cluster_id") @db.Uuid
-  discoveredAt DateTime      @default(now()) @map("discovered_at") @db.Timestamptz
-  updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  source        Source           @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  analysis      ArticleAnalysis?
-  storyCluster  StoryCluster?    @relation(fields: [clusterId], references: [id])
-  ContentDraft  ContentDraft[]
-  trendArticles TrendArticle[]
-
-  @@index([sourceId])
-  @@index([status])
-  @@index([publishedAt(sort: Desc)])
-  @@index([discoveredAt(sort: Desc)])
-  @@index([clusterId])
-  @@map("articles")
-}
-
-model ArticleAnalysis {
-  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  articleId       String   @unique @map("article_id") @db.Uuid
-  summary         String   @db.Text
-  sentiment       String   @db.VarChar(50)
-  gccCategory     String   @map("gcc_category") @db.VarChar(100)
-  entities        Json     @default("{}") // { companies: [], locations: [], technologies: [] }
-  impactScore     Float    @map("impact_score")
-  promptKey       String   @map("prompt_key") @db.VarChar(100)
-  promptVersion   String   @map("prompt_version") @db.VarChar(20)
-  reanalysisCount Int      @default(0) @map("reanalysis_count")
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-
-  @@map("article_analyses")
-}
-
-model BrandVoice {
-  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name         String         @db.VarChar(255)
-  description  String?        @db.Text
-  tone         String         @db.Text
-  guidelines   String[]       @default([])
-  isDefault    Boolean        @default(false) @map("is_default")
-  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt    DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-  ContentDraft ContentDraft[]
-
-  @@map("brand_voices")
-}
-
-model AgentRun {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  runType       String    @map("run_type") @db.VarChar(100)
-  promptKey     String?   @map("prompt_key") @db.VarChar(100)
-  promptVersion String?   @map("prompt_version") @db.VarChar(20)
-  model         String    @db.VarChar(100)
-  tokensInput   Int       @default(0) @map("tokens_input")
-  tokensOutput  Int       @default(0) @map("tokens_output")
-  costUsd       Float     @default(0) @map("cost_usd")
-  latencyMs     Int?      @map("latency_ms")
-  success       Boolean   @default(true)
-  errorMessage  String?   @map("error_message") @db.Text
-  contextId     String?   @map("context_id") @db.Uuid
-  startedAt     DateTime  @default(now()) @map("started_at") @db.Timestamptz
-  completedAt   DateTime? @map("completed_at") @db.Timestamptz
-
-  @@index([runType])
-  @@index([startedAt(sort: Desc)])
-  @@index([contextId])
-  @@map("agent_runs")
-}
-
 enum ContentStatus {
   DRAFT
   REVIEWING
   APPROVED
   REJECTED
-  SCHEDULED
   PUBLISHED
   ARCHIVED
-}
-
-model ContentDraft {
-  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  articleId      String?       @map("article_id") @db.Uuid
-  clusterId      String?       @map("cluster_id") @db.Uuid
-  trendId        String?       @map("trend_id") @db.Uuid
-  status         ContentStatus @default(DRAFT)
-  currentVersion Int           @default(1) @map("current_version")
-  targetPlatform String        @default("LINKEDIN") @map("target_platform") @db.VarChar(50)
-  brandVoiceId   String?       @map("brand_voice_id") @db.Uuid
-  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  versions   ContentVersion[]
-  brandVoice BrandVoice?       @relation(fields: [brandVoiceId], references: [id])
-  article    Article?          @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  cluster    StoryCluster?     @relation(fields: [clusterId], references: [id], onDelete: Cascade)
-  trend      Trend?            @relation(fields: [trendId], references: [id], onDelete: Cascade)
-  feedbacks  FeedbackExample[]
-  scheduledPost ScheduledPost?
-
-  @@index([status])
-  @@index([articleId])
-  @@map("content_drafts")
-}
-
-model ContentVersion {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  draftId       String   @map("draft_id") @db.Uuid
-  versionNumber Int      @map("version_number")
-  content       String   @db.Text
-  promptKey     String?  @map("prompt_key") @db.VarChar(100)
-  promptVersion String?  @map("prompt_version") @db.VarChar(20)
-  generatedBy   String   @default("AI") @map("generated_by") @db.VarChar(50) // "AI" or "USER"
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  draft ContentDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
-
-  @@unique([draftId, versionNumber])
-  @@map("content_versions")
-}
-
-model FeedbackExample {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  originalText String   @map("original_text") @db.Text
-  editedText   String   @map("edited_text") @db.Text
-  diffSummary  String?  @map("diff_summary") @db.Text
-  category     String?  @db.VarChar(100)
-  applied      Boolean  @default(false)
-  draftId      String?  @map("draft_id") @db.Uuid
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  draft ContentDraft? @relation(fields: [draftId], references: [id], onDelete: SetNull)
-
-  @@map("feedback_examples")
+  SCHEDULED
 }
 
 enum ClusterStatus {
   FORMING
   READY
   PROCESSED
-}
-
-model StoryCluster {
-  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  theme         String?       @db.VarChar(255)
-  synthesisText String?       @map("synthesis_text") @db.Text
-  articleCount  Int           @default(1) @map("article_count")
-  status        ClusterStatus @default(FORMING)
-  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-  lastArticleAt DateTime      @default(now()) @map("last_article_at") @db.Timestamptz
-  finalizedAt   DateTime?     @map("finalized_at") @db.Timestamptz
-
-  articles     Article[]
-  ContentDraft ContentDraft[]
-
-  @@index([status])
-  @@index([lastArticleAt(sort: Desc)])
-  @@map("story_clusters")
 }
 
 enum TrendType {
@@ -344,76 +397,9 @@ enum TrendStatus {
   PROCESSED
 }
 
-model Trend {
-  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  type         TrendType
-  name         String      @db.VarChar(255)
-  score        Float       @default(0)
-  articleCount Int         @default(0) @map("article_count")
-  status       TrendStatus @default(DETECTED)
-  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  trendArticles TrendArticle[]
-  drafts        ContentDraft[]
-
-  @@index([type])
-  @@index([status])
-  @@index([score(sort: Desc)])
-  @@map("trends")
-}
-
-model TrendArticle {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  trendId   String   @map("trend_id") @db.Uuid
-  articleId String   @map("article_id") @db.Uuid
-  relevance Float    @default(0)
-  addedAt   DateTime @default(now()) @map("added_at") @db.Timestamptz
-
-  trend   Trend   @relation(fields: [trendId], references: [id], onDelete: Cascade)
-  // We can choose to map to Article, but Prisma might complain if we don't add the relation on Article.
-  // I will add the relation here and also in Article.
-  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-
-  @@unique([trendId, articleId])
-  @@map("trend_articles")
-}
-
 enum ScheduleStatus {
   QUEUED
   PUBLISHED
   FAILED
   CANCELED
-}
-
-model ScheduledPost {
-  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  draftId           String         @unique @map("draft_id") @db.Uuid
-  status            ScheduleStatus @default(QUEUED)
-  scheduledFor      DateTime       @map("scheduled_for") @db.Timestamptz
-  recommendedSlot   DateTime?      @map("recommended_slot") @db.Timestamptz
-  scheduleRationale String?        @map("schedule_rationale") @db.Text
-  publishedUrl      String?        @map("published_url") @db.Text
-  errorMessage      String?        @map("error_message") @db.Text
-  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt         DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  draft ContentDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
-
-  @@index([status])
-  @@index([scheduledFor])
-  @@map("scheduled_posts")
-}
-
-model CalendarRule {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String   @db.VarChar(255)
-  description String?  @db.Text
-  ruleType    String   @map("rule_type") @db.VarChar(50) // e.g., 'MAX_PER_DAY', 'SPACING', 'ALLOWED_TIMES'
-  config      Json     // Rule specific configuration
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  @@map("calendar_rules")
 }

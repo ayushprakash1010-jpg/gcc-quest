@@ -59,16 +59,15 @@ export class TrendGenerationProcessor {
       }
 
       // Gather Context
-      // In task.md: Get active prompt: promptService.getActive('trend-analysis')
       let promptVersion;
-      let promptKey = 'trend-analysis';
+      let promptKey = 'trend-report';
       try {
-        promptVersion = this.promptService.getActive('trend-analysis');
+        promptVersion = this.promptService.getActive('trend-report');
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_e) {
-        // Fallback to writer-linkedin-v1 if trend-analysis doesn't exist yet
-        promptKey = 'writer-linkedin-v1';
-        promptVersion = this.promptService.getActive('writer-linkedin-v1');
+        // Fallback to writer-industry-news if trend-report doesn't exist yet
+        promptKey = 'writer-industry-news';
+        promptVersion = this.promptService.getActive('writer-industry-news');
       }
 
       const defaultBrandVoice = await this.brandVoiceService.getDefault();
@@ -108,21 +107,13 @@ export class TrendGenerationProcessor {
       }
 
       // Save to ContentDraft
-      const draft = await this.prisma.contentDraft.create({
-        data: {
-          trendId: trend.id,
-          brandVoiceId: defaultBrandVoice?.id,
-          targetPlatform: 'LINKEDIN',
-          currentVersion: 1,
-          versions: {
-            create: result.variants.map((content) => ({
-              versionNumber: 1,
-              content,
-              promptKey: promptKey,
-              promptVersion: promptVersion.version,
-            })),
-          },
-        },
+      const draft = await this.contentRepository.createDraftWithVersions({
+        trendId: trend.id,
+        brandVoiceId: defaultBrandVoice?.id,
+        targetPlatform: 'LINKEDIN',
+        versions: result.variants,
+        promptKey: promptKey,
+        promptVersion: promptVersion.version,
       });
 
       this.logger.log(

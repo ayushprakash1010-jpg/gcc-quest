@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import apiClient from "@/lib/api/api-client";
 
 export default function FeedbackSettingsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,16 +23,8 @@ export default function FeedbackSettingsPage() {
     async function fetchFeedbacks() {
       setLoading(true);
       try {
-        const token = localStorage.getItem("auth_token");
-        const res = await fetch(`http://localhost:3001/api/v1/feedback`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setFeedbacks(data);
-        }
+        const res = await apiClient.get(`/feedback`);
+        setFeedbacks(res.data || res);
       } catch (err) {
         console.error(err);
       } finally {
@@ -45,7 +38,7 @@ export default function FeedbackSettingsPage() {
     // Basic optimistic UI
     setFeedbacks(feedbacks.filter((f) => f.id !== id));
     // Would normally call the API to delete
-    // fetch(`http://localhost:3001/api/v1/feedback/${id}`, { method: 'DELETE' })
+    // apiClient.delete(`/feedback/${id}`)
   };
 
   return (
