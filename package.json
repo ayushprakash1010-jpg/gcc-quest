@@ -19,8 +19,14 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.2.0",
+    "prisma": "6.4.1",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "turbo": "^2.0.0",
     "typescript": "^5.0.0"
   },
-  "packageManager": "pnpm@9.0.0"
+  "packageManager": "pnpm@9.0.0",
+  "prisma": {
+    "seed": "ts-node apps/api/prisma/seed.ts"
+  }
 }

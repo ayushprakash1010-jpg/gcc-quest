@@ -19,12 +19,12 @@
 
 4. Run database migrations:
    ```bash
-   pnpm --filter api exec prisma migrate dev
+   pnpm exec prisma migrate dev --schema=apps/api/prisma/schema.prisma
    ```
 
 5. Seed database:
    ```bash
-   pnpm --filter api exec prisma db seed
+   pnpm exec prisma db seed
    ```
 
 6. Start development servers:
