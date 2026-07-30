@@ -14,7 +14,7 @@
 
 3. Start local infrastructure (PostgreSQL, Redis, Qdrant):
    ```bash
-   docker compose up -d
+   docker compose up -d --wait
    ```
 
 4. Run database migrations:
