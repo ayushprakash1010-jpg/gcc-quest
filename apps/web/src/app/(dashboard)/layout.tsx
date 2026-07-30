@@ -32,7 +32,31 @@ export default async function DashboardLayout({
             href="/content"
             className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
           >
-            Content
+            Content Review
+          </a>
+          <a
+            href="/clusters"
+            className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            Story Clusters
+          </a>
+          <a
+            href="/trends"
+            className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            Macro Trends
+          </a>
+          <a
+            href="/calendar"
+            className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            Calendar
+          </a>
+          <a
+            href="/settings/feedback"
+            className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          >
+            AI Feedback
           </a>
           <a
             href="/intelligence"

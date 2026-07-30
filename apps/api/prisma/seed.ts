@@ -8,19 +8,71 @@ async function main() {
 
   // 1. Feature Flags & Config
   const settings = [
-    { key: 'feature.story_clustering', value: 'true', description: 'Enable/disable story clustering' },
-    { key: 'feature.trend_detection', value: 'true', description: 'Enable/disable trend detection' },
-    { key: 'feature.feedback_learning', value: 'true', description: 'Enable/disable feedback learning' },
-    { key: 'feature.semantic_dedup', value: 'true', description: 'Enable/disable Qdrant semantic deduplication' },
-    { key: 'feature.auto_generation', value: 'true', description: 'Auto-generate posts for high-impact articles' },
-    { key: 'feature.auto_schedule', value: 'false', description: 'Auto-assign calendar slots' },
-    { key: 'feature.ai_observability', value: 'true', description: 'Log all LLM calls to agent_runs table' },
-    { key: 'config.analysis_threshold', value: '7', description: 'Min businessImpact to trigger generation' },
-    { key: 'config.cluster_similarity', value: '0.80', description: 'Cosine similarity threshold for clustering' },
-    { key: 'config.cluster_window_hours', value: '72', description: 'Hours window for cluster formation' },
-    { key: 'config.trend_score_threshold', value: '15', description: 'Weighted score to classify a trend' },
-    { key: 'config.max_article_tokens', value: '8000', description: 'Max tokens per article before truncation' },
-    { key: 'config.dedup_ttl_days', value: '30', description: 'Redis dedup key TTL in days' },
+    {
+      key: 'feature.story_clustering',
+      value: 'true',
+      description: 'Enable/disable story clustering',
+    },
+    {
+      key: 'feature.trend_detection',
+      value: 'true',
+      description: 'Enable/disable trend detection',
+    },
+    {
+      key: 'feature.feedback_learning',
+      value: 'true',
+      description: 'Enable/disable feedback learning',
+    },
+    {
+      key: 'feature.semantic_dedup',
+      value: 'true',
+      description: 'Enable/disable Qdrant semantic deduplication',
+    },
+    {
+      key: 'feature.auto_generation',
+      value: 'true',
+      description: 'Auto-generate posts for high-impact articles',
+    },
+    {
+      key: 'feature.auto_schedule',
+      value: 'false',
+      description: 'Auto-assign calendar slots',
+    },
+    {
+      key: 'feature.ai_observability',
+      value: 'true',
+      description: 'Log all LLM calls to agent_runs table',
+    },
+    {
+      key: 'config.analysis_threshold',
+      value: '7',
+      description: 'Min businessImpact to trigger generation',
+    },
+    {
+      key: 'config.cluster_similarity',
+      value: '0.80',
+      description: 'Cosine similarity threshold for clustering',
+    },
+    {
+      key: 'config.cluster_window_hours',
+      value: '72',
+      description: 'Hours window for cluster formation',
+    },
+    {
+      key: 'config.trend_score_threshold',
+      value: '15',
+      description: 'Weighted score to classify a trend',
+    },
+    {
+      key: 'config.max_article_tokens',
+      value: '8000',
+      description: 'Max tokens per article before truncation',
+    },
+    {
+      key: 'config.dedup_ttl_days',
+      value: '30',
+      description: 'Redis dedup key TTL in days',
+    },
   ];
 
   for (const setting of settings) {
@@ -34,7 +86,9 @@ async function main() {
 
   // 2. Admin User
   const adminEmail = 'admin@gccquest.com';
-  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail },
+  });
 
   if (!existingAdmin) {
     const passwordHash = await bcrypt.hash('admin123', 10);
@@ -49,6 +103,94 @@ async function main() {
     console.log('Admin user seeded (admin@gccquest.com / admin123).');
   } else {
     console.log('Admin user already exists.');
+  }
+
+  // 3. Initial 5 Trusted Sources
+  const initialSources = [
+    {
+      name: 'ET CIO GCC News',
+      url: 'https://ciso.economictimes.indiatimes.com/rss/topstories',
+      type: 'RSS',
+      category: 'NEWS',
+      crawlFrequency: 'HOURLY',
+      trustScore: 8.5,
+      authorityScore: 8.0,
+      compositeScore: 8.25,
+      status: 'ACTIVE',
+    },
+    {
+      name: 'TechCrunch Enterprise',
+      url: 'https://techcrunch.com/category/enterprise/feed/',
+      type: 'RSS',
+      category: 'NEWS',
+      crawlFrequency: 'HOURLY',
+      trustScore: 9.0,
+      authorityScore: 9.0,
+      compositeScore: 9.0,
+      status: 'ACTIVE',
+    },
+    {
+      name: 'NASSCOM Insights',
+      url: 'https://nasscom.in/insights/rss',
+      type: 'RSS',
+      category: 'RESEARCH',
+      crawlFrequency: 'DAILY',
+      trustScore: 9.5,
+      authorityScore: 9.0,
+      compositeScore: 9.25,
+      status: 'ACTIVE',
+    },
+    {
+      name: 'Zinnov GCC',
+      url: 'https://zinnov.com/global-center-of-excellence/',
+      type: 'WEB',
+      category: 'RESEARCH',
+      crawlFrequency: 'WEEKLY',
+      trustScore: 9.0,
+      authorityScore: 9.0,
+      compositeScore: 9.0,
+      status: 'ACTIVE',
+    },
+    {
+      name: 'India GCC News',
+      url: 'https://www.gccnews.in/',
+      type: 'WEB',
+      category: 'NEWS',
+      crawlFrequency: 'DAILY',
+      trustScore: 7.0,
+      authorityScore: 7.5,
+      compositeScore: 7.25,
+      status: 'ACTIVE',
+    },
+  ];
+
+  for (const src of initialSources) {
+    const existing = await prisma.source.findFirst({ where: { url: src.url } });
+    if (!existing) {
+      await prisma.source.create({ data: src as any });
+    }
+  }
+  console.log('Initial sources seeded.');
+
+  // 4. Default Brand Voice
+  const existingBrandVoice = await prisma.brandVoice.findFirst({
+    where: { isDefault: true },
+  });
+  if (!existingBrandVoice) {
+    await prisma.brandVoice.create({
+      data: {
+        name: 'GCC Quest Default',
+        description: 'Standard analytical and professional tone for GCC Quest',
+        tone: 'Professional, analytical, forward-looking, and objective.',
+        guidelines: [
+          'Use clear business terminology without excessive jargon.',
+          'Focus on business impact, talent strategy, and technological innovation.',
+          'Maintain an objective, third-person perspective.',
+        ],
+        isDefault: true,
+      },
+    });
+    console.log('Default brand voice seeded.');
   }
 
   console.log('Seeding complete.');

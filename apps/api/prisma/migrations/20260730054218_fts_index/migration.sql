@@ -1,0 +1,1 @@
+CREATE INDEX articles_fts_idx ON articles USING GIN(to_tsvector('english', title || ' ' || coalesce(raw_text, '')));

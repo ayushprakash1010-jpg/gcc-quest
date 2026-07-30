@@ -1,0 +1,315 @@
+"use client";
+
+import { useEffect, useState, use } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+
+export default function DraftReviewPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const router = useRouter();
+  const unwrappedParams = use(params);
+  const { id } = unwrappedParams;
+
+  const [draft, setDraft] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [editedText, setEditedText] = useState("");
+  const [activeVariant, setActiveVariant] = useState(0);
+  const [scheduleState, setScheduleState] = useState<
+    "idle" | "approving" | "recommending" | "ready"
+  >("idle");
+  const [recommendation, setRecommendation] = useState<{
+    slot: string;
+    rationale: string;
+  } | null>(null);
+
+  useEffect(() => {
+    async function fetchDraft() {
+      try {
+        const token = localStorage.getItem("auth_token");
+        const res = await fetch(
+          `http://localhost:3001/api/v1/content/drafts/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setDraft(data);
+          // Load the latest version into the editor
+          if (data.versions && data.versions.length > 0) {
+            setEditedText(data.versions[0].content);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDraft();
+  }, [id]);
+
+  const handleApprove = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      // 1. Capture feedback if it was edited
+      if (draft.versions && draft.versions.length > 0) {
+        const originalText = draft.versions[draft.versions.length - 1].content;
+        if (originalText !== editedText) {
+          await fetch(
+            `http://localhost:3001/api/v1/content/drafts/${id}/feedback`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ originalText, editedText }),
+            },
+          );
+          // Also save the new version
+          await fetch(
+            `http://localhost:3001/api/v1/content/drafts/${id}/versions`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ content: editedText }),
+            },
+          );
+        }
+      }
+
+      // 2. Approve draft
+      setScheduleState("approving");
+      const res = await fetch(
+        `http://localhost:3001/api/v1/content/drafts/${id}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: "APPROVED" }),
+        },
+      );
+      if (res.ok) {
+        setScheduleState("recommending");
+        // Get recommendation
+        const recRes = await fetch(
+          `http://localhost:3001/api/v1/schedule/recommendation/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        if (recRes.ok) {
+          setRecommendation(await recRes.json());
+          setScheduleState("ready");
+        } else {
+          router.push("/content");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setScheduleState("idle");
+    }
+  };
+
+  const handleConfirmSchedule = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`http://localhost:3001/api/v1/schedule`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          draftId: id,
+          scheduledFor: recommendation?.slot,
+        }),
+      });
+      if (res.ok) {
+        router.push("/calendar");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(
+        `http://localhost:3001/api/v1/content/drafts/${id}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: "REJECTED" }),
+        },
+      );
+      if (res.ok) {
+        router.push("/content");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading) return <div className="p-8">Loading draft...</div>;
+  if (!draft) return <div className="p-8">Draft not found.</div>;
+
+  const charCount = editedText.length;
+  const isTooLong = charCount > 3000;
+  const isWarning = charCount > 2700 && !isTooLong;
+
+  return (
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden">
+      {/* LEFT PANEL: Source Article Info */}
+      <div className="w-1/2 overflow-y-auto border-r border-border p-6 space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-2">
+            {draft.article?.title || "Unknown Article"}
+          </h2>
+          <div className="flex items-center gap-2 mb-4">
+            <Badge variant="outline">{draft.targetPlatform}</Badge>
+            {draft.article?.analysis?.impactScore && (
+              <Badge variant="secondary">
+                Impact: {draft.article.analysis.impactScore}
+              </Badge>
+            )}
+            <Badge variant={draft.status === "DRAFT" ? "default" : "secondary"}>
+              {draft.status}
+            </Badge>
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Article Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm leading-relaxed">
+              {draft.article?.analysis?.summary || "No summary available."}
+            </p>
+          </CardContent>
+        </Card>
+
+        {draft.article?.analysis?.entities && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Extracted Entities</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="text-xs bg-muted p-4 rounded-md overflow-x-auto">
+                {JSON.stringify(draft.article.analysis.entities, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* RIGHT PANEL: Editor */}
+      <div className="w-1/2 overflow-y-auto p-6 flex flex-col space-y-4 bg-muted/30">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Draft Editor</h2>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleReject}
+              disabled={scheduleState !== "idle"}
+            >
+              Reject
+            </Button>
+            <Button
+              onClick={handleApprove}
+              disabled={isTooLong || scheduleState !== "idle"}
+            >
+              {scheduleState === "approving"
+                ? "Approving..."
+                : scheduleState === "recommending"
+                  ? "Getting AI Slot..."
+                  : "Approve & Schedule"}
+            </Button>
+          </div>
+        </div>
+
+        {scheduleState === "ready" && recommendation && (
+          <Card className="bg-primary/5 border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">
+                AI Schedule Recommendation
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-2">
+                <strong>Recommended Time:</strong>{" "}
+                {new Date(recommendation.slot).toLocaleString()}
+              </p>
+              <p className="text-sm text-muted-foreground mb-4">
+                <strong>Rationale:</strong> {recommendation.rationale}
+              </p>
+              <div className="flex gap-2">
+                <Button onClick={handleConfirmSchedule}>
+                  Accept & Schedule
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push("/calendar")}
+                >
+                  Schedule Later
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Tabs
+          defaultValue="0"
+          onValueChange={(v) => setActiveVariant(Number(v))}
+          className="flex-1 flex flex-col"
+        >
+          <TabsList>
+            {draft.versions.map((v: any, i: number) => (
+              <TabsTrigger key={v.id} value={i.toString()}>
+                Version {v.versionNumber} ({v.generatedBy})
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <div className="flex-1 mt-4 relative flex flex-col">
+            <Label htmlFor="editor" className="mb-2">
+              Edit Post Content
+            </Label>
+            <textarea
+              id="editor"
+              value={editedText}
+              onChange={(e) => setEditedText(e.target.value)}
+              className="flex-1 min-h-[400px] w-full p-4 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none font-sans text-sm leading-relaxed"
+              placeholder="Edit the post content here..."
+            />
+            <div
+              className={`text-xs mt-2 text-right ${isTooLong ? "text-destructive font-bold" : isWarning ? "text-orange-500 font-bold" : "text-muted-foreground"}`}
+            >
+              {charCount} / 3000 characters
+              {isTooLong && " (Too long!)"}
+              {isWarning && " (Getting close to limit)"}
+            </div>
+          </div>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
