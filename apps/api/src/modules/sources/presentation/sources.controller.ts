@@ -25,7 +25,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { UpdateQualityDto } from '../application/dtos/update-quality.dto';
 import { SourceQualityService } from '../application/source-quality.service';
 
-@Controller('api/v1/sources')
+@Controller('sources')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SourcesController {
   constructor(

@@ -6,7 +6,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { ArticleStatus } from '@prisma/client';
 import { UserRole } from '@gcc-quest/shared-types';
 
-@Controller('api/v1/articles')
+@Controller('articles')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ArticlesController {
   constructor(private readonly articleRepository: ArticleRepository) {}

@@ -16,7 +16,7 @@ import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@gcc-quest/shared-types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-@Controller('api/v1/content')
+@Controller('content')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ContentController {
   constructor(

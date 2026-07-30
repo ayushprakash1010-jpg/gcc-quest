@@ -13,7 +13,7 @@ import {
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { CalendarIntelligenceService } from '../../calendar-intelligence/application/calendar-intelligence.service';
 
-@Controller('v1/schedule')
+@Controller('schedule')
 export class SchedulerController {
   constructor(
     private readonly prisma: PrismaService,
@@ -113,7 +113,7 @@ export class SchedulerController {
 
     // Group by date (YYYY-MM-DD)
     const calendar: Record<string, any[]> = {};
-    posts.forEach((p) => {
+    posts.forEach((p: any) => {
       const date = p.scheduledFor.toISOString().split('T')[0];
       if (!calendar[date]) calendar[date] = [];
       calendar[date].push(p);

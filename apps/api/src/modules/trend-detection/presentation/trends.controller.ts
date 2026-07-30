@@ -11,7 +11,7 @@ import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DomainEvents } from '@gcc-quest/shared-types';
 
-@Controller('v1/trends')
+@Controller('trends')
 export class TrendsController {
   constructor(
     private readonly trendService: TrendDetectionService,

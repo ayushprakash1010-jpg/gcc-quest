@@ -14,7 +14,7 @@ import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@gcc-quest/shared-types';
 
-@Controller('api/v1/brand-voices')
+@Controller('brand-voices')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class BrandVoiceController {
   constructor(private readonly repository: BrandVoiceRepository) {}

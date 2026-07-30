@@ -5,7 +5,7 @@ import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { UserRole } from '@gcc-quest/shared-types';
 
-@Controller('api/v1/admin/prompts')
+@Controller('admin/prompts')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PromptsController {
   constructor(private readonly promptService: PromptService) {}

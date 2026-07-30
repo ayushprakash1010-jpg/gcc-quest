@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { StoryClusterRepository } from '../infrastructure/story-cluster.repository';
 
-@Controller('v1/clusters')
+@Controller('clusters')
 export class StoryClustersController {
   constructor(private readonly repository: StoryClusterRepository) {}
 
