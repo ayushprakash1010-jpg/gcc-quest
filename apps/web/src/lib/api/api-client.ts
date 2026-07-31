@@ -21,7 +21,7 @@ apiClient.interceptors.request.use(async (config) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         config.headers.Authorization = `Bearer ${(session as any).accessToken}`;
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
@@ -34,7 +34,11 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     // Auto-refresh token on 401
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/refresh")
+    ) {
       originalRequest._retry = true;
       try {
         await apiClient.post("/auth/refresh");

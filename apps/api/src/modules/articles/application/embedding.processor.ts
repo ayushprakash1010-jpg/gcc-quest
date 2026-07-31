@@ -49,7 +49,7 @@ export class EmbeddingProcessor {
       const vector = await this.observability.trackRun(
         {
           runType: 'embedding',
-          model: 'text-embedding-004',
+          model: 'gemini-embedding-001',
           contextId: article.id,
         },
         () => this.llm.embed(textToEmbed),
@@ -94,7 +94,9 @@ export class EmbeddingProcessor {
           gccCategory: article.analysis.gccCategory,
           locations,
           companies,
-          publishedAt: article.publishedAt,
+          publishedAt: article.publishedAt
+            ? article.publishedAt.toISOString()
+            : null,
           sourceId: article.sourceId,
         });
 

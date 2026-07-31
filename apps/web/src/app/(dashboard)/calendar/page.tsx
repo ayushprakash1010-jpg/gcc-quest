@@ -16,10 +16,7 @@ import { toast } from "sonner";
 import apiClient from "@/lib/api/api-client";
 
 export default function CalendarPage() {
-  {
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  }
-  const [calendar, setCalendar] = useState<Record<string, any[]>>({});
+  const [calendar, setCalendar] = useState<Record<string, unknown[]>>({});
   const [loading, setLoading] = useState(true);
 
   const fetchCalendar = async () => {
@@ -46,7 +43,7 @@ export default function CalendarPage() {
         description: "Draft reverted to APPROVED.",
       });
       fetchCalendar();
-    } catch (err) {
+    } catch {
       toast.error("An error occurred");
     }
   };

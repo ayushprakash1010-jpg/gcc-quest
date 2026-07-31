@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState, use } from "react";
@@ -9,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import apiClient from "@/lib/api/api-client";
+import { LinkedInPostPreview } from "@/components/linkedin-post-preview";
 
 export default function DraftReviewPage({
   params,
@@ -19,9 +21,6 @@ export default function DraftReviewPage({
   const unwrappedParams = use(params);
   const { id } = unwrappedParams;
 
-  {
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  }
   const [draft, setDraft] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editedText, setEditedText] = useState("");
@@ -157,6 +156,7 @@ export default function DraftReviewPage({
         </Card>
 
         {(draft.article?.analysis?.entities ||
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           draft.cluster?.articles?.some((a: any) => a.analysis?.entities)) && (
           <Card>
             <CardHeader>
@@ -167,6 +167,7 @@ export default function DraftReviewPage({
                 {JSON.stringify(
                   draft.article?.analysis?.entities ||
                     draft.cluster?.articles
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       ?.map((a: any) => a.analysis?.entities)
                       .filter(Boolean),
                   null,
@@ -204,7 +205,7 @@ export default function DraftReviewPage({
         </div>
 
         {scheduleState === "ready" && recommendation && (
-          <Card className="bg-primary/5 border-primary/20">
+          <Card className="bg-primary/5 border-primary/20 shrink-0">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">
                 AI Schedule Recommendation
@@ -269,6 +270,14 @@ export default function DraftReviewPage({
               {charCount} / 3000 characters
               {isTooLong && " (Too long!)"}
               {isWarning && " (Getting close to limit)"}
+            </div>
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold mb-4">
+                LinkedIn Live Preview
+              </h3>
+              <div className="bg-zinc-200/50 p-6 rounded-lg flex items-center justify-center">
+                <LinkedInPostPreview content={editedText} />
+              </div>
             </div>
           </div>
         </Tabs>

@@ -127,7 +127,7 @@ export class GeminiProvider {
     const execute = async () => {
       await this.checkRateLimit(); // embedding might have separate limit, using same for MVP
       const model = this.genAI.getGenerativeModel({
-        model: 'text-embedding-004',
+        model: 'gemini-embedding-001',
       });
       const result = await model.embedContent(text);
       return result.embedding.values;

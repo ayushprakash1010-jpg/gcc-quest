@@ -85,6 +85,7 @@ export default function ContentQueuePage() {
                       {draft.article?.source?.name ||
                         (draft.cluster?.articles
                           ? draft.cluster.articles
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
                               .map((a: any) => a.source?.name)
                               .filter(Boolean)
                               .join(", ")

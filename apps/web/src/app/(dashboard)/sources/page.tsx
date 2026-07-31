@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "@/lib/api/api-client";
 import { Plus, Search, RefreshCw, Activity, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,12 +22,7 @@ export default function SourcesPage() {
   const fetchSources = async () => {
     try {
       setLoading(true);
-      // In MVP, we might not have the web proxy configured for /api yet, so we'd hit localhost:4000
-      // Actually we should assume the backend is available at NEXT_PUBLIC_API_URL or relative /api if proxied.
-      // Assuming relative /api points to the backend in a full setup, but for local dev with Turbo it might be separate.
-      // Let's use an env var or fallback.
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-      const res = await axios.get(`${apiUrl}/api/v1/sources`);
+      const res = await apiClient.get("/sources");
       setSources(res.data.items || res.data);
     } catch (error) {
       console.error("Failed to fetch sources", error);
@@ -43,8 +38,7 @@ export default function SourcesPage() {
 
   const handleCrawl = async (id: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-      await axios.post(`${apiUrl}/api/v1/sources/${id}/crawl`);
+      await apiClient.post(`/sources/${id}/crawl`);
       alert("Crawl triggered successfully!");
     } catch (error) {
       console.error("Failed to trigger crawl", error);

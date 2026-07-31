@@ -107,7 +107,14 @@ export class SchedulerController {
   async getCalendarView() {
     const posts = await this.prisma.scheduledPost.findMany({
       where: { status: { in: ['QUEUED', 'PUBLISHED'] } },
-      include: { draft: { include: { brandVoice: true } } },
+      include: {
+        draft: {
+          include: {
+            brandVoice: true,
+            versions: { orderBy: { versionNumber: 'desc' }, take: 1 },
+          },
+        },
+      },
     });
 
     // Group by date (YYYY-MM-DD)

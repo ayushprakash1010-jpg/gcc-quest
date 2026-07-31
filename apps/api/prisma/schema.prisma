@@ -8,20 +8,38 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email         String         @unique @db.VarChar(255)
-  name          String?        @db.VarChar(255)
-  avatarUrl     String?        @map("avatar_url")
-  passwordHash  String?        @map("password_hash")
-  role          UserRole       @default(EDITOR)
-  isActive      Boolean        @default(true) @map("is_active")
-  lastLoginAt   DateTime?      @map("last_login_at") @db.Timestamptz(6)
-  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  revokedTokens RevokedToken[]
-  sources       Source[]
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String            @unique @db.VarChar(255)
+  name             String?           @db.VarChar(255)
+  avatarUrl        String?           @map("avatar_url")
+  passwordHash     String?           @map("password_hash")
+  role             UserRole          @default(EDITOR)
+  isActive         Boolean           @default(true) @map("is_active")
+  lastLoginAt      DateTime?         @map("last_login_at") @db.Timestamptz(6)
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  oauthConnections OAuthConnection[]
+  revokedTokens    RevokedToken[]
+  sources          Source[]
 
   @@map("users")
+}
+
+model OAuthConnection {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  provider          String    @db.VarChar(50)
+  providerAccountId String    @map("provider_account_id") @db.VarChar(255)
+  accessToken       String    @map("access_token")
+  refreshToken      String?   @map("refresh_token")
+  expiresAt         DateTime? @map("expires_at") @db.Timestamptz(6)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
+  @@map("oauth_connections")
 }
 
 model SystemSetting {

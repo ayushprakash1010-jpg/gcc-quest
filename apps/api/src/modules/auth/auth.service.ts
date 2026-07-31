@@ -57,4 +57,38 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
     return this.jwtService.sign(payload);
   }
+
+  async linkOAuthAccount(
+    userId: string,
+    data: {
+      provider: string;
+      providerAccountId: string;
+      accessToken: string;
+      refreshToken?: string;
+      expiresAt?: Date;
+    },
+  ) {
+    return (this.prisma as any).oAuthConnection.upsert({
+      where: {
+        userId_provider: {
+          userId,
+          provider: data.provider,
+        },
+      },
+      update: {
+        providerAccountId: data.providerAccountId,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        expiresAt: data.expiresAt,
+      },
+      create: {
+        userId,
+        provider: data.provider,
+        providerAccountId: data.providerAccountId,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        expiresAt: data.expiresAt,
+      },
+    });
+  }
 }

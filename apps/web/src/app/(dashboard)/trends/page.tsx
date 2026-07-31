@@ -45,7 +45,7 @@ export default function TrendsPage() {
         description: "Macro trends are being analyzed.",
       });
       setTimeout(fetchTrends, 2000);
-    } catch (err) {
+    } catch {
       toast.error("An error occurred");
     }
   };
@@ -57,7 +57,7 @@ export default function TrendsPage() {
         description: "A trend report is being written.",
       });
       setTimeout(fetchTrends, 2000);
-    } catch (err) {
+    } catch {
       toast.error("An error occurred");
     }
   };
