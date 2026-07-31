@@ -139,6 +139,14 @@ export default function CalendarPage() {
                           <LinkIcon className="w-4 h-4 mr-2" /> View Post
                         </a>
                       )}
+                      {post.status === "QUEUED" && post.draftId && (
+                        <a
+                          href={`/content/${post.draftId}`}
+                          className="flex items-center text-sm text-blue-500 hover:underline"
+                        >
+                          <LinkIcon className="w-4 h-4 mr-2" /> Review Draft
+                        </a>
+                      )}
                     </CardContent>
                     {post.status === "QUEUED" && (
                       <Button

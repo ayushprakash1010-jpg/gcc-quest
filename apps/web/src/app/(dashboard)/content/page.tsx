@@ -71,6 +71,7 @@ export default function ContentQueuePage() {
                     <CardTitle className="text-sm font-medium">
                       {draft.article?.title ||
                         draft.cluster?.theme ||
+                        draft.trend?.name ||
                         "Unknown Article"}
                     </CardTitle>
                     <Badge
@@ -89,7 +90,9 @@ export default function ContentQueuePage() {
                               .map((a: any) => a.source?.name)
                               .filter(Boolean)
                               .join(", ")
-                          : "Unknown")}
+                          : draft.trend
+                            ? "Macro Trend Aggregation"
+                            : "Unknown")}
                     </div>
                     <div className="text-sm line-clamp-3 mb-2">
                       {draft.versions[0]?.content || "No content generated"}

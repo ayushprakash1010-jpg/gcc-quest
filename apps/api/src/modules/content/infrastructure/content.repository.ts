@@ -72,6 +72,9 @@ export class ContentRepository {
             articles: { select: { source: { select: { name: true } } } },
           },
         },
+        trend: {
+          select: { name: true },
+        },
         versions: { orderBy: { versionNumber: 'desc' } },
       },
     });
