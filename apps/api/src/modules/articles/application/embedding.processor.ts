@@ -43,7 +43,8 @@ export class EmbeddingProcessor {
       // Generate text to embed
       const companies = (article.analysis.entities as any)?.companies || [];
       const locations = (article.analysis.entities as any)?.locations || [];
-      const textToEmbed = `${article.title} ${article.analysis.summary} ${companies.join(' ')}`;
+      // MED-08: Added locations to embedding string for better search quality
+      const textToEmbed = `${article.title} ${article.analysis.summary} ${companies.join(' ')} ${locations.join(' ')}`;
 
       // Embed via LLM
       const vector = await this.observability.trackRun(
@@ -83,10 +84,7 @@ export class EmbeddingProcessor {
           where: { id: article.id },
           data: { status: 'SEMANTIC_DUPLICATE' },
         });
-        this.eventEmitter.emit('article.semantic_duplicate_found', {
-          articleId: article.id,
-          originalId: 'TODO',
-        }); // MVP simplification
+        // LOW-04: Removed dead event emitter for semantic duplicates
       } else {
         // Store in Qdrant
         await this.qdrant.upsertPoint('articles', article.id, vector, {

@@ -6,6 +6,9 @@ import { ArticlesController } from './presentation/articles.controller';
 
 @Module({
   controllers: [ArticlesController],
+  // AnalysisProcessor extends BullMQ WorkerHost and is registered as a standard NestJS provider.
+  // The @Processor(QUEUES.ANALYSIS) decorator binds it to the analysis-queue,
+  // which is globally registered in QueueModule.
   providers: [ArticleRepository, AnalysisProcessor, EmbeddingProcessor],
   exports: [ArticleRepository],
 })

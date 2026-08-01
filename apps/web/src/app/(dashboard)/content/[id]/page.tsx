@@ -12,6 +12,38 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import apiClient from "@/lib/api/api-client";
 import { LinkedInPostPreview } from "@/components/linkedin-post-preview";
+import { toast } from "sonner";
+
+// LOW-05: Strict TypeScript interfaces
+interface Article {
+  title: string;
+  analysis?: {
+    impactScore?: number;
+    summary?: string;
+    entities?: unknown;
+  };
+}
+
+interface Cluster {
+  theme: string;
+  synthesisText: string;
+  articles: Array<{ analysis?: { entities?: unknown } }>;
+}
+
+interface Version {
+  id: string;
+  versionNumber: number;
+  generatedBy: string;
+  content: string;
+}
+
+interface Draft {
+  article?: Article;
+  cluster?: Cluster;
+  targetPlatform: string;
+  status: string;
+  versions: Version[];
+}
 
 export default function DraftReviewPage({
   params,
@@ -22,7 +54,7 @@ export default function DraftReviewPage({
   const unwrappedParams = use(params);
   const { id } = unwrappedParams;
 
-  const [draft, setDraft] = useState<any>(null);
+  const [draft, setDraft] = useState<Draft | null>(null);
   const [loading, setLoading] = useState(true);
   const [editedText, setEditedText] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -55,6 +87,7 @@ export default function DraftReviewPage({
   }, [id]);
 
   const handleApprove = async () => {
+    if (!draft) return;
     try {
       // 1. Capture feedback if it was edited
       if (draft.versions && draft.versions.length > 0) {
@@ -83,8 +116,12 @@ export default function DraftReviewPage({
         const recRes = await apiClient.get(`/schedule/recommendation/${id}`);
         setRecommendation(recRes.data || recRes);
         setScheduleState("ready");
-      } catch {
-        router.push("/content");
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          "Failed to load AI schedule recommendation. You can still schedule manually.",
+        );
+        setScheduleState("idle");
       }
     } catch (err) {
       console.error(err);
@@ -105,6 +142,7 @@ export default function DraftReviewPage({
   };
 
   const handleReject = async () => {
+    if (!draft) return;
     try {
       await apiClient.put(`/content/drafts/${id}/status`, {
         status: "REJECTED",
@@ -193,8 +231,7 @@ export default function DraftReviewPage({
         </Card>
 
         {(draft.article?.analysis?.entities ||
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          draft.cluster?.articles?.some((a: any) => a.analysis?.entities)) && (
+          draft.cluster?.articles?.some((a) => a.analysis?.entities)) && (
           <Card>
             <CardHeader>
               <CardTitle>Extracted Entities</CardTitle>
@@ -204,8 +241,7 @@ export default function DraftReviewPage({
                 {JSON.stringify(
                   draft.article?.analysis?.entities ||
                     draft.cluster?.articles
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      ?.map((a: any) => a.analysis?.entities)
+                      ?.map((a) => a.analysis?.entities)
                       .filter(Boolean),
                   null,
                   2,
@@ -284,8 +320,7 @@ export default function DraftReviewPage({
           className="flex-1 flex flex-col"
         >
           <TabsList>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {draft.versions.map((v: any, i: number) => (
+            {draft.versions.map((v, i) => (
               <TabsTrigger key={v.id} value={i.toString()}>
                 Version {v.versionNumber} ({v.generatedBy})
               </TabsTrigger>

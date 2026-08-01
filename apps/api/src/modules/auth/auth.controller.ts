@@ -55,8 +55,8 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getProfile(@CurrentUser() user: User) {
-    return user;
+  async getProfile(@CurrentUser() user: User) {
+    return this.authService.getUserProfile(user.id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -95,5 +95,16 @@ export class AuthController {
       expiresAt: expiresAtDate,
     });
     return { success: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('oauth-disconnect/:provider')
+  async unlinkOAuth(@CurrentUser() user: User, @Request() req: any) {
+    const provider = req.params.provider;
+    const success = await this.authService.deleteOAuthConnection(
+      user.id,
+      provider,
+    );
+    return { success };
   }
 }

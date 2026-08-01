@@ -38,16 +38,33 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Global Rate Limiting (100 req / min)
+  // Global Rate Limiting: 1000 requests / minute per IP
   app.use(
     rateLimit({
-      windowMs: 1 * 60 * 1000, // 1 minute
-      max: 1000, // Limit each IP to 1000 requests per `window`
+      windowMs: 1 * 60 * 1000,
+      max: 1000,
       message: 'Too many requests, please try again later.',
     }),
   );
 
-  // Auth Login specific rate limit (5 attempts / 15 min) is handled in auth.controller
+  // HIGH-02: Strict login rate limit — 10 attempts per 15 minutes per IP.
+  // Prevents brute-force password attacks. Uses same express-rate-limit package.
+  // This middleware is scoped ONLY to the login endpoint and does not affect any other route.
+  app.use(
+    '/api/v1/auth/login',
+    rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 10, // 10 login attempts per 15 minutes per IP
+      message: {
+        statusCode: 429,
+        message:
+          'Too many login attempts from this IP. Please try again after 15 minutes.',
+        error: 'Too Many Requests',
+      },
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
+  );
 
   // Global Prefix
   app.setGlobalPrefix('api/v1', {
@@ -81,7 +98,3 @@ async function bootstrap() {
   console.log(`Application is running on: http://localhost:${port}`);
 }
 bootstrap();
-
-// force restart
-
-// restart for final test

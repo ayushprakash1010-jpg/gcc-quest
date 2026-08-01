@@ -4,6 +4,7 @@ import { DomainEvents } from '@gcc-quest/shared-types';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { StoryClusterRepository } from '../infrastructure/story-cluster.repository';
 import { QdrantService } from '../../qdrant/qdrant.service';
+import { SettingsCacheService } from '../../../common/cache/settings-cache.service';
 
 @Injectable()
 export class ClusterProcessor {
@@ -14,16 +15,19 @@ export class ClusterProcessor {
     private readonly repository: StoryClusterRepository,
     private readonly qdrant: QdrantService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly settingsCache: SettingsCacheService,
   ) {}
 
   // Listens to ARTICLE_EMBEDDED
   @OnEvent(DomainEvents.ARTICLE_EMBEDDED, { async: true })
   async handleArticleEmbedded(payload: { articleId: string }) {
     try {
-      const setting = await this.prisma.systemSetting.findUnique({
-        where: { key: 'feature.story_clustering' },
-      });
-      if (setting && setting.value === 'false') return;
+      // HIGH-06: All 3 settings now served from 5-min cache instead of 3 DB queries per article
+      const clusteringEnabled = await this.settingsCache.get(
+        'feature.story_clustering',
+        'true',
+      );
+      if (clusteringEnabled === 'false') return;
 
       const article = await this.prisma.article.findUnique({
         where: { id: payload.articleId },
@@ -31,19 +35,14 @@ export class ClusterProcessor {
       });
       if (!article || article.clusterId) return; // Already clustered somehow
 
-      const simSetting = await this.prisma.systemSetting.findUnique({
-        where: { key: 'config.cluster_similarity' },
-      });
-      const similarityThreshold = simSetting
-        ? parseFloat(simSetting.value)
-        : 0.85;
+      const similarityThreshold = parseFloat(
+        await this.settingsCache.get('config.cluster_similarity', '0.85'),
+      );
 
-      const windowSetting = await this.prisma.systemSetting.findUnique({
-        where: { key: 'config.cluster_window_hours' },
-      });
-      const windowHours = windowSetting
-        ? parseInt(windowSetting.value, 10)
-        : 72;
+      const windowHours = parseInt(
+        await this.settingsCache.get('config.cluster_window_hours', '72'),
+        10,
+      );
 
       const cutoff = new Date();
       cutoff.setHours(cutoff.getHours() - windowHours);
@@ -51,32 +50,36 @@ export class ClusterProcessor {
       // Search Qdrant for similar articles
       const matches = await this.qdrant.searchArticles(
         payload.articleId,
-        1,
+        5, // Fetch top 5 candidates
         similarityThreshold,
       );
 
       if (matches.length > 0) {
-        const matchId = matches[0].id;
-        const matchedArticle = await this.prisma.article.findUnique({
-          where: { id: matchId },
+        const matchIds = matches.map((m) => m.id);
+
+        // MED-07: Fetch all candidate articles in a single batched query (fixes N+1 risk)
+        const matchedArticles = await this.prisma.article.findMany({
+          where: { id: { in: matchIds } },
         });
 
-        if (matchedArticle && matchedArticle.discoveredAt >= cutoff) {
+        // Find the first valid match within the time window
+        const validMatch = matchedArticles.find(
+          (m) => m.discoveredAt >= cutoff,
+        );
+
+        if (validMatch) {
           // If match is already in a cluster, join it
-          if (matchedArticle.clusterId) {
-            await this.repository.addArticle(
-              matchedArticle.clusterId,
-              article.id,
-            );
+          if (validMatch.clusterId) {
+            await this.repository.addArticle(validMatch.clusterId, article.id);
             this.logger.log(
-              `Added article ${article.id} to existing cluster ${matchedArticle.clusterId}`,
+              `Added article ${article.id} to existing cluster ${validMatch.clusterId}`,
             );
           } else {
             // Create a new cluster with both
-            const cluster = await this.repository.create(matchedArticle.id);
+            const cluster = await this.repository.create(validMatch.id);
             await this.repository.addArticle(cluster.id, article.id);
             this.logger.log(
-              `Created new cluster ${cluster.id} for articles ${matchedArticle.id} and ${article.id}`,
+              `Created new cluster ${cluster.id} for articles ${validMatch.id} and ${article.id}`,
             );
           }
           this.eventEmitter.emit(DomainEvents.CLUSTER_FORMED, {

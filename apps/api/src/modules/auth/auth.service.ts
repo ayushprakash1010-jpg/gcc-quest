@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { TokenEncryptionService } from '../../common/encryption/token-encryption.service';
 
 @Injectable()
 export class AuthService {
@@ -10,6 +11,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private encryption: TokenEncryptionService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -68,7 +70,13 @@ export class AuthService {
       expiresAt?: Date;
     },
   ) {
-    return (this.prisma as any).oAuthConnection.upsert({
+    // CRIT-01: Encrypt tokens before storing — tokens are NEVER written to DB in plaintext
+    const encryptedAccessToken = this.encryption.encrypt(data.accessToken);
+    const encryptedRefreshToken = data.refreshToken
+      ? this.encryption.encrypt(data.refreshToken)
+      : undefined;
+
+    return this.prisma.oAuthConnection.upsert({
       where: {
         userId_provider: {
           userId,
@@ -77,18 +85,62 @@ export class AuthService {
       },
       update: {
         providerAccountId: data.providerAccountId,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
+        accessToken: encryptedAccessToken,
+        refreshToken: encryptedRefreshToken,
         expiresAt: data.expiresAt,
       },
       create: {
         userId,
         provider: data.provider,
         providerAccountId: data.providerAccountId,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
+        accessToken: encryptedAccessToken,
+        refreshToken: encryptedRefreshToken,
         expiresAt: data.expiresAt,
       },
     });
+  }
+
+  async deleteOAuthConnection(userId: string, provider: string) {
+    try {
+      await this.prisma.oAuthConnection.delete({
+        where: {
+          userId_provider: {
+            userId,
+            provider,
+          },
+        },
+      });
+      return true;
+    } catch (e) {
+      // Ignore if not found
+      return false;
+    }
+  }
+
+  async getUserProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        lastLoginAt: true,
+      },
+    });
+
+    const linkedInConnection = await this.prisma.oAuthConnection.findUnique({
+      where: {
+        userId_provider: {
+          userId,
+          provider: 'linkedin',
+        },
+      },
+    });
+
+    return {
+      ...user,
+      hasLinkedInConnection: !!linkedInConnection,
+    };
   }
 }

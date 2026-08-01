@@ -9,19 +9,40 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import apiClient from "@/lib/api/api-client";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
   const [isLinkedInConnected, setIsLinkedInConnected] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    // If we have a session after clicking connect, show connected state
-    if (session) {
-      setIsLinkedInConnected(true);
-    }
+    const fetchStatus = async () => {
+      try {
+        const res = await apiClient.get("/auth/me");
+        setIsLinkedInConnected(res.data.hasLinkedInConnection === true);
+      } catch (e) {
+        console.error("Failed to check LinkedIn status", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStatus();
   }, [session]);
+
+  const handleDisconnect = async () => {
+    try {
+      await apiClient.post("/auth/oauth-disconnect/linkedin");
+      setIsLinkedInConnected(false);
+      toast.success("LinkedIn disconnected successfully.");
+    } catch (e) {
+      console.error("Failed to disconnect", e);
+      toast.error("Failed to disconnect LinkedIn.");
+    }
+  };
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6 max-w-4xl mx-auto">
@@ -41,17 +62,20 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {isLinkedInConnected ? (
+            {loading ? (
+              <p className="text-sm text-muted-foreground">
+                Checking status...
+              </p>
+            ) : isLinkedInConnected ? (
               <div className="border rounded-md p-4 bg-muted/20">
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 bg-zinc-900 rounded-md flex items-center justify-center text-xl font-bold text-white">
-                    {/* Simulated Company Logo */}
                     GCC
                   </div>
                   <div>
                     <h3 className="font-bold text-lg">GCC Quest (Connected)</h3>
                     <p className="text-sm text-muted-foreground">
-                      Technology, Information and Internet • 29.2K followers
+                      Company Profile
                     </p>
                   </div>
                 </div>
@@ -59,6 +83,7 @@ export default function SettingsPage() {
                   <Button
                     variant="outline"
                     className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    onClick={handleDisconnect}
                   >
                     Disconnect
                   </Button>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import apiClient from "@/lib/api/api-client";
 import { Plus, Search, RefreshCw, Activity, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -14,10 +15,22 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+// LOW-05: Strict TypeScript interface instead of any
+interface Source {
+  id: string;
+  name: string;
+  url: string;
+  status: string;
+  type: string;
+  category: string;
+  compositeScore: number;
+  totalArticles: number;
+}
+
 export default function SourcesPage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [sources, setSources] = useState<any[]>([]);
+  const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(""); // MED-02: Search state
 
   const fetchSources = async () => {
     try {
@@ -39,12 +52,19 @@ export default function SourcesPage() {
   const handleCrawl = async (id: string) => {
     try {
       await apiClient.post(`/sources/${id}/crawl`);
-      alert("Crawl triggered successfully!");
+      toast.success("Crawl triggered successfully!"); // MED-01: Use toast instead of alert
     } catch (error) {
       console.error("Failed to trigger crawl", error);
-      alert("Failed to trigger crawl.");
+      toast.error("Failed to trigger crawl."); // MED-01: Use toast instead of alert
     }
   };
+
+  // MED-02: Filter logic
+  const filteredSources = sources.filter(
+    (source) =>
+      source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      source.url.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -57,7 +77,10 @@ export default function SourcesPage() {
             Manage your RSS and Web sources for GCC discovery.
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
+        <Button
+          className="bg-primary hover:bg-primary/90"
+          onClick={() => toast.info("Add Source dialog coming in Phase 2")}
+        >
           <Plus className="mr-2 h-4 w-4" /> Add Source
         </Button>
       </div>
@@ -69,9 +92,15 @@ export default function SourcesPage() {
             type="search"
             placeholder="Search sources..."
             className="pl-8 bg-zinc-900 border-zinc-800"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button variant="secondary" onClick={fetchSources}>
+        <Button
+          variant="secondary"
+          onClick={fetchSources}
+          aria-label="Refresh sources"
+        >
           <RefreshCw className="mr-2 h-4 w-4" /> Refresh
         </Button>
       </div>
@@ -79,10 +108,10 @@ export default function SourcesPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {loading ? (
           <p className="text-white">Loading sources...</p>
-        ) : sources.length === 0 ? (
+        ) : filteredSources.length === 0 ? (
           <p className="text-muted-foreground">No sources found.</p>
         ) : (
-          sources.map((source) => (
+          filteredSources.map((source) => (
             <Card key={source.id} className="bg-zinc-900 border-zinc-800">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">

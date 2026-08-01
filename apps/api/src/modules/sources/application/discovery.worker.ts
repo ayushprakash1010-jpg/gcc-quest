@@ -1,11 +1,12 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { SourceRepository } from '../infrastructure/source.repository';
 import { AdapterFactory } from '../infrastructure/adapters/adapter.factory';
 import { DeduplicationEngine } from './deduplication.engine';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
+import { QUEUES } from '../../../infrastructure/queue/queue.constants';
 
 @Processor('crawl-queue')
 export class DiscoveryWorker extends WorkerHost {
@@ -15,8 +16,8 @@ export class DiscoveryWorker extends WorkerHost {
     private readonly sourceRepository: SourceRepository,
     private readonly adapterFactory: AdapterFactory,
     private readonly deduplicationEngine: DeduplicationEngine,
-    private readonly eventEmitter: EventEmitter2,
-    private readonly prisma: PrismaService, // For direct DB operations on Articles, though ideally via a repo.
+    @InjectQueue(QUEUES.ANALYSIS) private readonly analysisQueue: Queue,
+    private readonly prisma: PrismaService,
   ) {
     super();
   }
@@ -78,8 +79,9 @@ export class DiscoveryWorker extends WorkerHost {
 
           articlesNew++;
 
-          // Emit event for Sprint 3
-          this.eventEmitter.emit('article.discovered', {
+          // Enqueue analysis job in BullMQ (CRIT-04: replaces eventEmitter.emit to eliminate race condition)
+          // The job is enqueued AFTER prisma.article.create() returns, guaranteeing the article exists in DB.
+          await this.analysisQueue.add('analyze-article', {
             articleId: savedArticle.id,
           });
         } catch (articleError: any) {
@@ -108,9 +110,12 @@ export class DiscoveryWorker extends WorkerHost {
       }
 
       // Update last crawled timestamp
-      await this.sourceRepository.update(sourceId, {
-        lastCrawledAt: new Date(),
-      } as any);
+      // Update last crawled timestamp — using prisma directly since lastCrawledAt is
+      // an internal operational field not part of the public UpdateSourceDto contract.
+      await this.prisma.source.update({
+        where: { id: sourceId },
+        data: { lastCrawledAt: new Date() },
+      });
     } catch (e: any) {
       this.logger.error(
         `Fatal error crawling source ${sourceId}: ${e.message}`,

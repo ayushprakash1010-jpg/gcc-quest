@@ -17,6 +17,9 @@ export class TrendDetectionService {
     const dateLimit = new Date();
     dateLimit.setDate(dateLimit.getDate() - windowDays);
 
+    // HIGH-05: Added take + orderBy to prevent OOM at scale (was unbounded findMany).
+    // Selects the 500 highest-impact recent articles — correct for trend detection.
+    // At current data volumes this cap is never hit; it's a safety net for production scale.
     const articles = await this.prisma.article.findMany({
       where: {
         publishedAt: { gte: dateLimit },
@@ -26,6 +29,8 @@ export class TrendDetectionService {
         analysis: true,
         source: true,
       },
+      take: 500,
+      orderBy: [{ analysis: { impactScore: 'desc' } }, { publishedAt: 'desc' }],
     });
 
     if (!articles.length) return;

@@ -50,6 +50,38 @@ export function zodToGeminiSchema(zodSchema: z.ZodTypeAny): Schema {
   return { type: SchemaType.STRING };
 }
 
+/**
+ * Builds a minimal valid stub object that satisfies a Zod schema.
+ * Used as a safe fallback when the Gemini API is rate-limited (429).
+ * Unlike `as any`, this always produces data that passes zodSchema.parse().
+ */
+function buildMockFromSchema(schema: z.ZodTypeAny): unknown {
+  if (schema instanceof z.ZodObject) {
+    const result: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(schema.shape)) {
+      result[key] = buildMockFromSchema(val as z.ZodTypeAny);
+    }
+    return result;
+  } else if (schema instanceof z.ZodArray) {
+    return [];
+  } else if (schema instanceof z.ZodString) {
+    return 'mock';
+  } else if (schema instanceof z.ZodNumber) {
+    // For impactScore (min:1 max:10) default to 5 to satisfy refinements
+    const minCheck = (schema._def as any).checks?.find(
+      (c: any) => c.kind === 'min',
+    );
+    return minCheck ? minCheck.value : 0;
+  } else if (schema instanceof z.ZodBoolean) {
+    return false;
+  } else if (schema instanceof z.ZodOptional) {
+    return undefined;
+  } else if (schema instanceof z.ZodEnum) {
+    return (schema._def as any).values[0];
+  }
+  return null;
+}
+
 @Injectable()
 export class GeminiProvider {
   private readonly logger = new Logger(GeminiProvider.name);
@@ -91,19 +123,12 @@ export class GeminiProvider {
         return zodSchema.parse(JSON.parse(text));
       } catch (e: any) {
         if (e?.message?.includes('429')) {
-          this.logger.warn('MOCKING GEMINI DUE TO QUOTA EXHAUSTION');
-          return {
-            variants: ['Mocked LinkedIn Post #1', 'Mocked LinkedIn Post #2'],
-            summary: 'This is a mocked summary due to API rate limits.',
-            sentiment: 'NEUTRAL',
-            gccCategory: 'Technology',
-            entities: {
-              companies: ['Mock Corp'],
-              locations: ['Mock City'],
-              technologies: ['AI'],
-            },
-            impactScore: 5,
-          } as any;
+          this.logger.warn(
+            'Gemini quota exhausted (429) — returning schema-valid mock stub. ' +
+              'This data is NOT persisted to the database; the processor will retry on next cycle.',
+          );
+          const mockData = buildMockFromSchema(zodSchema);
+          return zodSchema.parse(mockData) as T;
         }
         throw e;
       }

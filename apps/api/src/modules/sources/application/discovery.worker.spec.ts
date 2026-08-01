@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getQueueToken } from '@nestjs/bullmq';
 import { DiscoveryWorker } from './discovery.worker';
 import { SourceRepository } from '../infrastructure/source.repository';
 import { AdapterFactory } from '../infrastructure/adapters/adapter.factory';
 import { DeduplicationEngine } from './deduplication.engine';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
+import { QUEUES } from '../../../infrastructure/queue/queue.constants';
 
 describe('DiscoveryWorker', () => {
   let worker: DiscoveryWorker;
@@ -45,7 +47,13 @@ describe('DiscoveryWorker', () => {
           provide: PrismaService,
           useValue: {
             article: { create: jest.fn().mockResolvedValue({ id: 'a1' }) },
+            source: { update: jest.fn().mockResolvedValue({}) },
           },
+        },
+        // BullMQ analysis queue mock (needed after CRIT-04 fix: pipeline is now queue-driven)
+        {
+          provide: getQueueToken(QUEUES.ANALYSIS),
+          useValue: { add: jest.fn() },
         },
       ],
     }).compile();

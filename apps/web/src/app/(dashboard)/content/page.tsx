@@ -16,9 +16,35 @@ import { Skeleton } from "@/components/ui/skeleton";
 import apiClient from "@/lib/api/api-client";
 import { FileText, Clock, ArrowRight } from "lucide-react";
 
+// LOW-05: Strict TypeScript interface
+interface DraftPreview {
+  id: string;
+  status: string;
+  targetPlatform: string;
+  createdAt: string;
+  article?: {
+    title: string;
+    source?: {
+      name: string;
+    };
+    analysis?: {
+      impactScore?: number;
+    };
+  };
+  cluster?: {
+    theme: string;
+    articles?: Array<{ id: string }>;
+  };
+  trend?: {
+    name: string;
+  };
+  versions: Array<{
+    content: string;
+  }>;
+}
+
 export default function ContentQueuePage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [drafts, setDrafts] = useState<any[]>([]);
+  const [drafts, setDrafts] = useState<DraftPreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("DRAFT");
 

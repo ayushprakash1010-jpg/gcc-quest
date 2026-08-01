@@ -23,6 +23,7 @@ import { StoryClusteringModule } from './modules/story-clustering/story-clusteri
 import { TrendDetectionModule } from './modules/trend-detection/trend-detection.module';
 import { CalendarIntelligenceModule } from './modules/calendar-intelligence/calendar-intelligence.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { EncryptionModule } from './common/encryption/encryption.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { SchedulerModule } from './modules/scheduler/scheduler.module';
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     PrismaModule,
+    EncryptionModule,
     EventsModule,
     AuthModule,
     FeatureFlagsModule,

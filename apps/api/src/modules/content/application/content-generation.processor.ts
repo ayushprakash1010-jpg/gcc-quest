@@ -8,6 +8,7 @@ import { BrandVoiceService } from '../../brand-intelligence/application/brand-vo
 import { FeedbackService } from '../../feedback/application/feedback.service';
 import { ContentRepository } from '../infrastructure/content.repository';
 import { DomainEvents } from '@gcc-quest/shared-types';
+import { SettingsCacheService } from '../../../common/cache/settings-cache.service';
 import { z } from 'zod';
 
 const draftsSchema = z.object({
@@ -29,6 +30,7 @@ export class ContentGenerationProcessor {
     private readonly feedbackService: FeedbackService,
     private readonly contentRepository: ContentRepository,
     private readonly eventEmitter: EventEmitter2,
+    private readonly settingsCache: SettingsCacheService,
   ) {}
 
   @OnEvent(DomainEvents.ARTICLE_ANALYZED)
@@ -48,13 +50,10 @@ export class ContentGenerationProcessor {
 
       if (!article || !article.analysis) return;
 
-      // 1. Rule Check: threshold
-      const thresholdSetting = await this.prisma.systemSetting.findUnique({
-        where: { key: 'config.analysis_threshold' },
-      });
-      const threshold = thresholdSetting
-        ? parseFloat(thresholdSetting.value)
-        : 7;
+      // 1. Rule Check: threshold (HIGH-06: cached, avoids DB hit on every article)
+      const threshold = parseFloat(
+        await this.settingsCache.get('config.analysis_threshold', '7'),
+      );
 
       if (article.analysis.impactScore < threshold) {
         this.logger.log(
@@ -63,11 +62,12 @@ export class ContentGenerationProcessor {
         return;
       }
 
-      // Check if feature enabled
-      const autoGenSetting = await this.prisma.systemSetting.findUnique({
-        where: { key: 'feature.auto_generation' },
-      });
-      if (autoGenSetting && autoGenSetting.value === 'false') {
+      // Check if feature enabled (HIGH-06: cached)
+      const autoGenEnabled = await this.settingsCache.get(
+        'feature.auto_generation',
+        'true',
+      );
+      if (autoGenEnabled === 'false') {
         this.logger.log(`Auto generation feature flag is disabled.`);
         return;
       }
@@ -117,6 +117,12 @@ export class ContentGenerationProcessor {
         versions: result.variants,
         promptKey: 'writer-industry-news',
         promptVersion: promptVersion.version,
+      });
+
+      // MED-09: Update article status so it doesn't stay stuck in ANALYZED
+      await this.prisma.article.update({
+        where: { id: article.id },
+        data: { status: 'CONTENT_GENERATED' },
       });
 
       this.logger.log(

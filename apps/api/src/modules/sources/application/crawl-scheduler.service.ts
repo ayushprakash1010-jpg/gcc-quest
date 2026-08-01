@@ -31,7 +31,28 @@ export class CrawlSchedulerService implements OnApplicationBootstrap {
       take: 1000, // For MVP, assuming <1000 sources. In real app, we'd paginate.
     });
 
-    // 3. Register jobs
+    const activeSourceIds = new Set(activeSources.map((s) => s.id));
+
+    // HIGH-03: Also clean up orphaned waiting/delayed one-time jobs for deleted sources.
+    // Previously only repeatable jobs were cleared, leaving ghost jobs that would fire once
+    // and log "Source is not active or missing" on every server restart.
+    const [waitingJobs, delayedJobs] = await Promise.all([
+      this.crawlQueue.getWaiting(),
+      this.crawlQueue.getDelayed(),
+    ]);
+
+    const orphanedJobs = [...waitingJobs, ...delayedJobs].filter(
+      (job) => job.data?.sourceId && !activeSourceIds.has(job.data.sourceId),
+    );
+
+    if (orphanedJobs.length > 0) {
+      this.logger.log(
+        `Removing ${orphanedJobs.length} orphaned job(s) for deleted/inactive sources`,
+      );
+      await Promise.all(orphanedJobs.map((job) => job.remove()));
+    }
+
+    // 3. Register jobs for active sources
     let registered = 0;
     for (const source of activeSources) {
       if (source.crawlFrequency === CrawlFrequency.MANUAL) continue;
