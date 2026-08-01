@@ -23,8 +23,8 @@ export class QdrantService implements OnModuleInit {
       this.qdrantAvailable = true;
 
       // Ensure collections exist
-      await this.ensureCollection('articles', 768);
-      await this.ensureCollection('feedback_examples', 768);
+      await this.ensureCollection('articles', 3072);
+      await this.ensureCollection('feedback_examples', 3072);
 
       this.logger.log('Qdrant initialized successfully');
     } catch (error: any) {
@@ -73,8 +73,20 @@ export class QdrantService implements OnModuleInit {
           },
         ],
       });
-    } catch (error) {
-      this.logger.error(`Error upserting point to Qdrant: ${error}`);
+    } catch (error: any) {
+      this.logger.error(
+        `Error upserting point to Qdrant: ${error.message || error}`,
+      );
+      if (error.response && error.response.json) {
+        error.response
+          .json()
+          .then((data: any) =>
+            this.logger.error(`Qdrant details: ${JSON.stringify(data)}`),
+          )
+          .catch(() => {});
+      } else if (error.data) {
+        this.logger.error(`Qdrant details: ${JSON.stringify(error.data)}`);
+      }
     }
   }
 

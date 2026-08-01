@@ -94,6 +94,15 @@ export class GeminiProvider {
           this.logger.warn('MOCKING GEMINI DUE TO QUOTA EXHAUSTION');
           return {
             variants: ['Mocked LinkedIn Post #1', 'Mocked LinkedIn Post #2'],
+            summary: 'This is a mocked summary due to API rate limits.',
+            sentiment: 'NEUTRAL',
+            gccCategory: 'Technology',
+            entities: {
+              companies: ['Mock Corp'],
+              locations: ['Mock City'],
+              technologies: ['AI'],
+            },
+            impactScore: 5,
           } as any;
         }
         throw e;
