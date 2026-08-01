@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { auth, signOut } from "../../../auth";
 import { redirect } from "next/navigation";
-
+import { SidebarNav } from "@/components/sidebar-nav";
 export default async function DashboardLayout({
   children,
 }: {
@@ -21,32 +21,7 @@ export default async function DashboardLayout({
           <h1 className="text-xl font-bold tracking-tight">GCC Quest AI</h1>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2">
-          <a
-            href="/"
-            className="block px-3 py-2 rounded-md bg-gray-800 text-white font-medium"
-          >
-            Dashboard
-          </a>
-          <a
-            href="/content"
-            className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-          >
-            Content
-          </a>
-          <a
-            href="/intelligence"
-            className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-          >
-            Intelligence
-          </a>
-          <a
-            href="/settings"
-            className="block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
-          >
-            Settings
-          </a>
-        </nav>
+        <SidebarNav />
 
         <div className="p-4 border-t border-gray-800">
           <div className="flex items-center space-x-3 mb-4">

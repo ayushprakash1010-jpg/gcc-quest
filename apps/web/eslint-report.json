@@ -1,0 +1,1218 @@
+[
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(auth)\\login\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 32,
+        "column": 14,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 32,
+        "endColumn": 17
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useState } from \"react\";\nimport { signIn } from \"next-auth/react\";\nimport { useRouter } from \"next/navigation\";\n\nexport default function LoginPage() {\n  const router = useRouter();\n  const [email, setEmail] = useState(\"\");\n  const [password, setPassword] = useState(\"\");\n  const [error, setError] = useState(\"\");\n  const [loading, setLoading] = useState(false);\n\n  const handleSubmit = async (e: React.FormEvent) => {\n    e.preventDefault();\n    setLoading(true);\n    setError(\"\");\n\n    try {\n      const result = await signIn(\"credentials\", {\n        redirect: false,\n        email,\n        password,\n      });\n\n      if (result?.error) {\n        setError(\"Invalid credentials\");\n      } else {\n        router.push(\"/\");\n        router.refresh();\n      }\n    } catch (err) {\n      setError(\"An error occurred. Please try again.\");\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return (\n    <div className=\"min-h-screen flex items-center justify-center bg-gray-950\">\n      <div className=\"w-full max-w-md p-8 space-y-8 bg-gray-900 rounded-xl shadow-2xl border border-gray-800\">\n        <div className=\"text-center\">\n          <h2 className=\"text-3xl font-bold text-white tracking-tight\">\n            GCC Quest AI\n          </h2>\n          <p className=\"mt-2 text-sm text-gray-400\">Sign in to your account</p>\n        </div>\n\n        <form className=\"mt-8 space-y-6\" onSubmit={handleSubmit}>\n          {error && (\n            <div className=\"p-3 rounded bg-red-900/50 border border-red-500/50 text-red-200 text-sm\">\n              {error}\n            </div>\n          )}\n\n          <div className=\"space-y-4\">\n            <div>\n              <label className=\"block text-sm font-medium text-gray-300\">\n                Email address\n              </label>\n              <input\n                type=\"email\"\n                required\n                value={email}\n                onChange={(e) => setEmail(e.target.value)}\n                className=\"mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm\"\n                placeholder=\"admin@gccquest.com\"\n              />\n            </div>\n\n            <div>\n              <label className=\"block text-sm font-medium text-gray-300\">\n                Password\n              </label>\n              <input\n                type=\"password\"\n                required\n                value={password}\n                onChange={(e) => setPassword(e.target.value)}\n                className=\"mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm\"\n                placeholder=\"••••••••\"\n              />\n            </div>\n          </div>\n\n          <button\n            type=\"submit\"\n            disabled={loading}\n            className=\"w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors\"\n          >\n            {loading ? \"Signing in...\" : \"Sign in\"}\n          </button>\n        </form>\n      </div>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\analytics\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'LineChart' is defined but never used.",
+        "line": 7,
+        "column": 3,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 12,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": {
+              "varName": "LineChart"
+            },
+            "fix": {
+              "range": [
+                227,
+                237
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable \"LineChart\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'TrendingUp' is defined but never used.",
+        "line": 22,
+        "column": 60,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 22,
+        "endColumn": 70,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": {
+              "varName": "TrendingUp"
+            },
+            "fix": {
+              "range": [
+                783,
+                795
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable \"TrendingUp\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Users' is defined but never used.",
+        "line": 22,
+        "column": 72,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 22,
+        "endColumn": 77,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": {
+              "varName": "Users"
+            },
+            "fix": {
+              "range": [
+                795,
+                802
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable \"Users\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 125,
+        "column": 46,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 125,
+        "endColumn": 49,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                5755,
+                5758
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                5755,
+                5758
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 217,
+        "column": 53,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 217,
+        "endColumn": 56,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                10070,
+                10073
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                10070,
+                10073
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 247,
+        "column": 53,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 247,
+        "endColumn": 56,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                11386,
+                11389
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                11386,
+                11389
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 3,
+    "fatalErrorCount": 0,
+    "warningCount": 3,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "'use client';\n\nimport { useState } from 'react';\nimport { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';\nimport { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';\nimport { \n  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,\n  BarChart, Bar, PieChart, Pie, Cell, ComposedChart\n} from 'recharts';\nimport { \n  useAnalyticsOverview, \n  useAnalyticsFunnel, \n  useAnalyticsTimeSeries,\n  useAnalyticsTopCompanies,\n  useAnalyticsTopCities,\n  useAnalyticsCategories,\n  useAnalyticsSources,\n  useAnalyticsAiUsage,\n  useAnalyticsPromptPerformance\n} from '@/lib/api/hooks/useAnalytics';\nimport { Skeleton } from '@/components/ui/skeleton';\nimport { Activity, Brain, CheckCircle, Database, FileText, TrendingUp, Users } from 'lucide-react';\n\nimport { ElementType } from 'react';\n\nconst COLORS = ['#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#64748b'];\n\ninterface StatCardProps {\n  title: string;\n  value: string | number;\n  icon: ElementType;\n  loading?: boolean;\n}\n\nconst StatCard = ({ title, value, icon: Icon, loading }: StatCardProps) => (\n  <Card>\n    <CardHeader className=\"flex flex-row items-center justify-between pb-2\">\n      <CardTitle className=\"text-sm font-medium text-muted-foreground\">{title}</CardTitle>\n      <Icon className=\"h-4 w-4 text-muted-foreground\" />\n    </CardHeader>\n    <CardContent>\n      {loading ? (\n        <Skeleton className=\"h-8 w-20\" />\n      ) : (\n        <div className=\"text-2xl font-bold\">{value}</div>\n      )}\n    </CardContent>\n  </Card>\n);\n\nexport default function AnalyticsPage() {\n  const [period, setPeriod] = useState('30d');\n\n  const { data: overview, isLoading: loadingOverview } = useAnalyticsOverview(period);\n  const { data: funnel, isLoading: loadingFunnel } = useAnalyticsFunnel(period);\n  const { data: timeSeries, isLoading: loadingTimeSeries } = useAnalyticsTimeSeries(period);\n  const { data: companies, isLoading: loadingCompanies } = useAnalyticsTopCompanies(period);\n  const { data: cities, isLoading: loadingCities } = useAnalyticsTopCities(period);\n  const { data: categories, isLoading: loadingCategories } = useAnalyticsCategories(period);\n  const { data: sources, isLoading: loadingSources } = useAnalyticsSources(period);\n  const { data: aiUsage, isLoading: loadingAi } = useAnalyticsAiUsage(period);\n  const { data: prompts, isLoading: loadingPrompts } = useAnalyticsPromptPerformance(period);\n\n\n\n  return (\n    <div className=\"p-8 space-y-8 animate-in fade-in zoom-in duration-500\">\n      <div className=\"flex items-center justify-between\">\n        <div>\n          <h1 className=\"text-3xl font-bold tracking-tight\">Analytics</h1>\n          <p className=\"text-muted-foreground mt-2\">Comprehensive performance and intelligence metrics.</p>\n        </div>\n        <Tabs value={period} onValueChange={setPeriod} className=\"w-[400px] justify-end\">\n          <TabsList className=\"grid w-full grid-cols-3\">\n            <TabsTrigger value=\"7d\">Last 7 Days</TabsTrigger>\n            <TabsTrigger value=\"30d\">Last 30 Days</TabsTrigger>\n            <TabsTrigger value=\"90d\">Last 90 Days</TabsTrigger>\n          </TabsList>\n        </Tabs>\n      </div>\n\n      {/* KPI Row */}\n      <div className=\"grid gap-4 md:grid-cols-2 lg:grid-cols-5\">\n        <StatCard title=\"Total Articles\" value={overview?.totalArticles || 0} icon={Database} loading={loadingOverview} />\n        <StatCard title=\"Posts Generated\" value={overview?.postsGenerated || 0} icon={FileText} loading={loadingOverview} />\n        <StatCard title=\"Approval Rate\" value={`${(overview?.approvalRate || 0).toFixed(1)}%`} icon={CheckCircle} loading={loadingOverview} />\n        <StatCard title=\"Active Sources\" value={overview?.sourcesActive || 0} icon={Activity} loading={loadingOverview} />\n        <StatCard title=\"AI Tokens Used\" value={(aiUsage?.totalTokens || 0).toLocaleString()} icon={Brain} loading={loadingAi} />\n      </div>\n\n      <div className=\"grid gap-4 md:grid-cols-2 lg:grid-cols-7\">\n        \n        {/* Content Pipeline Funnel */}\n        <Card className=\"lg:col-span-4\">\n          <CardHeader>\n            <CardTitle>Content Processing Pipeline</CardTitle>\n            <CardDescription>Article discovery through publication funnel</CardDescription>\n          </CardHeader>\n          <CardContent className=\"h-[350px]\">\n            {loadingFunnel ? <Skeleton className=\"h-full w-full\" /> : (\n              <ResponsiveContainer width=\"100%\" height=\"100%\">\n                <BarChart data={funnel} layout=\"vertical\" margin={{ top: 20, right: 30, left: 40, bottom: 5 }}>\n                  <CartesianGrid strokeDasharray=\"3 3\" horizontal={false} />\n                  <XAxis type=\"number\" />\n                  <YAxis dataKey=\"step\" type=\"category\" width={100} />\n                  <RechartsTooltip />\n                  <Bar dataKey=\"count\" fill=\"#8b5cf6\" radius={[0, 4, 4, 0]} barSize={40} />\n                </BarChart>\n              </ResponsiveContainer>\n            )}\n          </CardContent>\n        </Card>\n\n        {/* Categories Donut */}\n        <Card className=\"lg:col-span-3\">\n          <CardHeader>\n            <CardTitle>GCC Categories</CardTitle>\n            <CardDescription>Distribution of analyzed articles</CardDescription>\n          </CardHeader>\n          <CardContent className=\"h-[350px] flex justify-center items-center\">\n            {loadingCategories ? <Skeleton className=\"h-[300px] w-[300px] rounded-full\" /> : (\n              <ResponsiveContainer width=\"100%\" height=\"100%\">\n                <PieChart>\n                  <Pie data={categories} cx=\"50%\" cy=\"50%\" innerRadius={80} outerRadius={120} paddingAngle={5} dataKey=\"count\" nameKey=\"category\">\n                    {categories?.map((entry: any, index: number) => (\n                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />\n                    ))}\n                  </Pie>\n                  <RechartsTooltip />\n                </PieChart>\n              </ResponsiveContainer>\n            )}\n          </CardContent>\n        </Card>\n\n        {/* Time Series */}\n        <Card className=\"lg:col-span-7\">\n          <CardHeader>\n            <CardTitle>Article Discovery & AI Usage Over Time</CardTitle>\n          </CardHeader>\n          <CardContent className=\"h-[350px]\">\n            {loadingTimeSeries || loadingAi ? <Skeleton className=\"h-full w-full\" /> : (\n              <ResponsiveContainer width=\"100%\" height=\"100%\">\n                <ComposedChart data={timeSeries} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>\n                  <CartesianGrid strokeDasharray=\"3 3\" vertical={false} />\n                  <XAxis dataKey=\"date\" />\n                  <YAxis yAxisId=\"left\" orientation=\"left\" stroke=\"#0ea5e9\" />\n                  <YAxis yAxisId=\"right\" orientation=\"right\" stroke=\"#ec4899\" />\n                  <RechartsTooltip />\n                  <Bar yAxisId=\"left\" dataKey=\"count\" name=\"Articles Discovered\" fill=\"#0ea5e9\" opacity={0.3} />\n                  <Line yAxisId=\"right\" type=\"monotone\" data={aiUsage?.dailyTokens} dataKey=\"tokens\" name=\"AI Tokens\" stroke=\"#ec4899\" strokeWidth={3} />\n                </ComposedChart>\n              </ResponsiveContainer>\n            )}\n          </CardContent>\n        </Card>\n\n        {/* Entity Intelligence */}\n        <Card className=\"lg:col-span-4\">\n          <CardHeader>\n            <CardTitle>Entity Intelligence (Top 10)</CardTitle>\n            <CardDescription>Most frequently mentioned companies</CardDescription>\n          </CardHeader>\n          <CardContent className=\"h-[350px]\">\n             {loadingCompanies ? <Skeleton className=\"h-full w-full\" /> : (\n               <ResponsiveContainer width=\"100%\" height=\"100%\">\n                 <BarChart data={companies} layout=\"vertical\" margin={{ left: 60, right: 20 }}>\n                   <CartesianGrid strokeDasharray=\"3 3\" horizontal={false} />\n                   <XAxis type=\"number\" />\n                   <YAxis dataKey=\"name\" type=\"category\" width={100} />\n                   <RechartsTooltip />\n                   <Bar dataKey=\"count\" fill=\"#10b981\" radius={[0, 4, 4, 0]} barSize={25} />\n                 </BarChart>\n               </ResponsiveContainer>\n             )}\n          </CardContent>\n        </Card>\n\n        {/* Top Cities */}\n        <Card className=\"lg:col-span-3\">\n          <CardHeader>\n            <CardTitle>Top Locations</CardTitle>\n          </CardHeader>\n          <CardContent className=\"h-[350px]\">\n             {loadingCities ? <Skeleton className=\"h-full w-full\" /> : (\n               <ResponsiveContainer width=\"100%\" height=\"100%\">\n                 <BarChart data={cities} layout=\"vertical\" margin={{ left: 60, right: 20 }}>\n                   <CartesianGrid strokeDasharray=\"3 3\" horizontal={false} />\n                   <XAxis type=\"number\" />\n                   <YAxis dataKey=\"name\" type=\"category\" width={80} />\n                   <RechartsTooltip />\n                   <Bar dataKey=\"count\" fill=\"#f59e0b\" radius={[0, 4, 4, 0]} barSize={25} />\n                 </BarChart>\n               </ResponsiveContainer>\n             )}\n          </CardContent>\n        </Card>\n\n        {/* Source Performance & AI Prompt Performance Tables */}\n        <div className=\"lg:col-span-7 grid md:grid-cols-2 gap-4\">\n          <Card>\n            <CardHeader>\n              <CardTitle>Source Yield</CardTitle>\n            </CardHeader>\n            <CardContent>\n              {loadingSources ? <Skeleton className=\"h-48\" /> : (\n                <div className=\"relative overflow-x-auto\">\n                  <table className=\"w-full text-sm text-left\">\n                    <thead className=\"text-xs uppercase bg-muted\">\n                      <tr>\n                        <th className=\"px-6 py-3\">Source Name</th>\n                        <th className=\"px-6 py-3\">Articles</th>\n                        <th className=\"px-6 py-3\">Composite Score</th>\n                      </tr>\n                    </thead>\n                    <tbody>\n                      {sources?.slice(0, 8).map((s: any) => (\n                        <tr key={s.id} className=\"border-b border-border/50\">\n                          <td className=\"px-6 py-4 font-medium\">{s.name}</td>\n                          <td className=\"px-6 py-4\">{s.articlesCount}</td>\n                          <td className=\"px-6 py-4\">{(s.compositeScore * 10).toFixed(1)}/10</td>\n                        </tr>\n                      ))}\n                    </tbody>\n                  </table>\n                </div>\n              )}\n            </CardContent>\n          </Card>\n\n          <Card>\n            <CardHeader>\n              <CardTitle>Prompt Performance & Latency</CardTitle>\n            </CardHeader>\n            <CardContent>\n              {loadingPrompts ? <Skeleton className=\"h-48\" /> : (\n                <div className=\"relative overflow-x-auto\">\n                  <table className=\"w-full text-sm text-left\">\n                    <thead className=\"text-xs uppercase bg-muted\">\n                      <tr>\n                        <th className=\"px-6 py-3\">Prompt Key</th>\n                        <th className=\"px-6 py-3\">Success Rate</th>\n                        <th className=\"px-6 py-3\">Avg Latency</th>\n                      </tr>\n                    </thead>\n                    <tbody>\n                      {prompts?.slice(0, 8).map((p: any) => (\n                        <tr key={`${p.promptKey}-${p.version}`} className=\"border-b border-border/50\">\n                          <td className=\"px-6 py-4 font-medium\">{p.promptKey} (v{p.version})</td>\n                          <td className=\"px-6 py-4 text-emerald-500\">{p.successRate.toFixed(1)}%</td>\n                          <td className=\"px-6 py-4\">{p.avgLatency.toFixed(0)} ms</td>\n                        </tr>\n                      ))}\n                    </tbody>\n                  </table>\n                </div>\n              )}\n            </CardContent>\n          </Card>\n        </div>\n      </div>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\articles\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 12,
+        "column": 44,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 12,
+        "endColumn": 47,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                414,
+                417
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                414,
+                417
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nC:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\articles\\page.tsx:36:5\n  34 |\n  35 |   useEffect(() => {\n> 36 |     fetchArticles();\n     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  37 |   }, []);\n  38 |\n  39 |   const handleSearch = (e: React.FormEvent) => {",
+        "line": 36,
+        "column": 5,
+        "nodeType": null,
+        "endLine": 36,
+        "endColumn": 18
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 2,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport axios from \"axios\";\nimport { Search, ExternalLink, Calendar, Hash } from \"lucide-react\";\nimport { Button } from \"@/components/ui/button\";\nimport { Input } from \"@/components/ui/input\";\nimport { Badge } from \"@/components/ui/badge\";\nimport Link from \"next/link\";\n\nexport default function ArticlesPage() {\n  const [articles, setArticles] = useState<any[]>([]);\n  const [loading, setLoading] = useState(true);\n  const [searchQuery, setSearchQuery] = useState(\"\");\n\n  const fetchArticles = async (query?: string) => {\n    try {\n      setLoading(true);\n      const apiUrl = process.env.NEXT_PUBLIC_API_URL || \"http://localhost:4000\";\n\n      let url = `${apiUrl}/api/v1/articles`;\n      if (query) {\n        url = `${apiUrl}/api/v1/articles/search?q=${encodeURIComponent(query)}`;\n      }\n\n      const res = await axios.get(url);\n      setArticles(res.data.items || res.data || []);\n    } catch (error) {\n      console.error(\"Failed to fetch articles\", error);\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  useEffect(() => {\n    fetchArticles();\n  }, []);\n\n  const handleSearch = (e: React.FormEvent) => {\n    e.preventDefault();\n    fetchArticles(searchQuery);\n  };\n\n  const handleSkip = async (id: string) => {\n    try {\n      const apiUrl = process.env.NEXT_PUBLIC_API_URL || \"http://localhost:4000\";\n      await axios.post(`${apiUrl}/api/v1/articles/${id}/skip`);\n      // Update locally\n      setArticles(\n        articles.map((a) => (a.id === id ? { ...a, status: \"SKIPPED\" } : a)),\n      );\n    } catch (error) {\n      console.error(\"Failed to skip\", error);\n    }\n  };\n\n  const handleAnalyze = async (id: string) => {\n    try {\n      const apiUrl = process.env.NEXT_PUBLIC_API_URL || \"http://localhost:4000\";\n      await axios.post(`${apiUrl}/api/v1/articles/${id}/analyze`);\n      setArticles(\n        articles.map((a) => (a.id === id ? { ...a, status: \"ANALYZED\" } : a)),\n      );\n    } catch (error) {\n      console.error(\"Failed to analyze\", error);\n    }\n  };\n\n  return (\n    <div className=\"p-6 space-y-6\">\n      <div className=\"flex flex-col md:flex-row justify-between items-start md:items-center gap-4\">\n        <div>\n          <h1 className=\"text-3xl font-bold tracking-tight text-white\">\n            Article Inbox\n          </h1>\n          <p className=\"text-muted-foreground mt-1\">\n            Review and analyze discovered GCC articles.\n          </p>\n        </div>\n      </div>\n\n      <form onSubmit={handleSearch} className=\"flex gap-4 items-center\">\n        <div className=\"relative flex-1 max-w-2xl\">\n          <Search className=\"absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground\" />\n          <Input\n            type=\"search\"\n            placeholder=\"Search articles by full-text search...\"\n            className=\"pl-8 bg-zinc-900 border-zinc-800\"\n            value={searchQuery}\n            onChange={(e) => setSearchQuery(e.target.value)}\n          />\n        </div>\n        <Button type=\"submit\">Search</Button>\n        {searchQuery && (\n          <Button\n            type=\"button\"\n            variant=\"ghost\"\n            onClick={() => {\n              setSearchQuery(\"\");\n              fetchArticles();\n            }}\n          >\n            Clear\n          </Button>\n        )}\n      </form>\n\n      <div className=\"space-y-4\">\n        {loading ? (\n          <p className=\"text-white\">Loading articles...</p>\n        ) : articles.length === 0 ? (\n          <p className=\"text-muted-foreground\">No articles found.</p>\n        ) : (\n          articles.map((article) => (\n            <div\n              key={article.id}\n              className=\"p-4 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col md:flex-row gap-4 justify-between items-start\"\n            >\n              <div className=\"space-y-2 flex-1\">\n                <div className=\"flex items-start justify-between\">\n                  <Link\n                    href={`/articles/${article.id}`}\n                    className=\"hover:underline\"\n                  >\n                    <h3 className=\"font-semibold text-lg text-white\">\n                      {article.title}\n                    </h3>\n                  </Link>\n                  <Badge variant=\"outline\" className=\"ml-2 whitespace-nowrap\">\n                    {article.status}\n                  </Badge>\n                </div>\n\n                <p className=\"text-zinc-400 text-sm line-clamp-2\">\n                  {article.rawText?.substring(0, 200) ||\n                    \"No content available.\"}\n                </p>\n\n                <div className=\"flex items-center gap-4 text-xs text-zinc-500 pt-2\">\n                  {article.source && (\n                    <span className=\"flex items-center gap-1\">\n                      <Hash className=\"h-3 w-3\" /> {article.source.name}\n                    </span>\n                  )}\n                  {article.publishedAt && (\n                    <span className=\"flex items-center gap-1\">\n                      <Calendar className=\"h-3 w-3\" />\n                      {new Date(article.publishedAt).toLocaleDateString()}\n                    </span>\n                  )}\n                  <a\n                    href={article.externalUrl}\n                    target=\"_blank\"\n                    rel=\"noreferrer\"\n                    className=\"flex items-center gap-1 text-primary hover:underline\"\n                  >\n                    <ExternalLink className=\"h-3 w-3\" /> Original Source\n                  </a>\n                </div>\n              </div>\n\n              <div className=\"flex md:flex-col gap-2 min-w-[120px]\">\n                <Link href={`/articles/${article.id}`}>\n                  <Button size=\"sm\">View Details</Button>\n                </Link>\n                <Button\n                  size=\"sm\"\n                  variant=\"outline\"\n                  onClick={() => handleAnalyze(article.id)}\n                >\n                  Analyze Now\n                </Button>\n                <Button\n                  size=\"sm\"\n                  variant=\"outline\"\n                  onClick={() => handleSkip(article.id)}\n                >\n                  Skip\n                </Button>\n              </div>\n            </div>\n          ))\n        )}\n      </div>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\articles\\[id]\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 31,
+        "column": 42,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 31,
+        "endColumn": 45,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                685,
+                688
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                685,
+                688
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nC:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\articles\\[id]\\page.tsx:48:5\n  46 |\n  47 |   useEffect(() => {\n> 48 |     fetchArticle();\n     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  49 |   // eslint-disable-next-line react-hooks/exhaustive-deps\n  50 |   }, [params.id]);\n  51 |",
+        "line": 48,
+        "column": 5,
+        "nodeType": null,
+        "endLine": 48,
+        "endColumn": 17
+      }
+    ],
+    "suppressedMessages": [
+      {
+        "ruleId": "react-hooks/exhaustive-deps",
+        "severity": 1,
+        "message": "React Hook useEffect has a missing dependency: 'fetchArticle'. Either include it or remove the dependency array.",
+        "line": 50,
+        "column": 6,
+        "nodeType": "ArrayExpression",
+        "endLine": 50,
+        "endColumn": 17,
+        "suggestions": [
+          {
+            "desc": "Update the dependencies array to be: [fetchArticle, params.id]",
+            "fix": {
+              "range": [
+                1236,
+                1247
+              ],
+              "text": "[fetchArticle, params.id]"
+            }
+          }
+        ],
+        "suppressions": [
+          {
+            "kind": "directive",
+            "justification": ""
+          }
+        ]
+      }
+    ],
+    "errorCount": 2,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport { useParams, useRouter } from \"next/navigation\";\nimport axios from \"axios\";\nimport {\n  ArrowLeft,\n  ExternalLink,\n  Calendar,\n  Hash,\n  Activity,\n  Building,\n  MapPin,\n  Cpu,\n  RefreshCcw,\n} from \"lucide-react\";\nimport { Button } from \"@/components/ui/button\";\nimport { Badge } from \"@/components/ui/badge\";\nimport {\n  Card,\n  CardContent,\n  CardDescription,\n  CardHeader,\n  CardTitle,\n} from \"@/components/ui/card\";\nimport { Skeleton } from \"@/components/ui/skeleton\";\n\nexport default function ArticleDetailPage() {\n  const params = useParams();\n  const router = useRouter();\n  const [article, setArticle] = useState<any>(null);\n  const [loading, setLoading] = useState(true);\n\n  const fetchArticle = async () => {\n    try {\n      setLoading(true);\n      const apiUrl = process.env.NEXT_PUBLIC_API_URL || \"http://localhost:4000\";\n      const res = await axios.get(`${apiUrl}/api/v1/articles/${params.id}`);\n      setArticle(res.data);\n    } catch (error) {\n      console.error(\"Failed to fetch article\", error);\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  useEffect(() => {\n    fetchArticle();\n  // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [params.id]);\n\n  if (loading) {\n    return (\n      <div className=\"p-6 space-y-6\">\n        <Skeleton className=\"h-8 w-1/3 bg-zinc-800\" />\n        <Skeleton className=\"h-4 w-1/4 bg-zinc-800\" />\n        <Skeleton className=\"h-64 w-full bg-zinc-800 mt-8\" />\n        <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6 mt-6\">\n          <Skeleton className=\"h-32 bg-zinc-800\" />\n          <Skeleton className=\"h-32 bg-zinc-800\" />\n        </div>\n      </div>\n    );\n  }\n\n  if (!article) {\n    return <div className=\"p-6 text-white\">Article not found.</div>;\n  }\n\n  const analysis = article.analysis;\n\n  return (\n    <div className=\"p-6 space-y-6 max-w-5xl\">\n      <Button variant=\"ghost\" onClick={() => router.back()} className=\"mb-4\">\n        <ArrowLeft className=\"mr-2 h-4 w-4\" /> Back to Inbox\n      </Button>\n\n      <div className=\"flex flex-col gap-4 border-b border-zinc-800 pb-6\">\n        <div className=\"flex items-start justify-between\">\n          <h1 className=\"text-3xl font-bold tracking-tight text-white leading-tight\">\n            {article.title}\n          </h1>\n          <Badge variant=\"outline\" className=\"ml-4 whitespace-nowrap text-sm\">\n            {article.status}\n          </Badge>\n        </div>\n\n        <div className=\"flex flex-wrap items-center gap-4 text-sm text-zinc-400\">\n          {article.source && (\n            <span className=\"flex items-center gap-1\">\n              <Hash className=\"h-4 w-4 text-zinc-500\" />\n              {article.source.name}\n              <span className=\"text-xs text-zinc-600 ml-1\">\n                (Score: {article.source.compositeScore})\n              </span>\n            </span>\n          )}\n          {article.publishedAt && (\n            <span className=\"flex items-center gap-1\">\n              <Calendar className=\"h-4 w-4 text-zinc-500\" />\n              {new Date(article.publishedAt).toLocaleDateString()}\n            </span>\n          )}\n          <a\n            href={article.externalUrl}\n            target=\"_blank\"\n            rel=\"noreferrer\"\n            className=\"flex items-center gap-1 text-primary hover:underline\"\n          >\n            <ExternalLink className=\"h-4 w-4\" /> View Original\n          </a>\n        </div>\n      </div>\n\n      {!analysis && article.status !== \"ANALYZED\" && (\n        <Card className=\"bg-zinc-900/50 border-zinc-800 border-dashed\">\n          <CardHeader>\n            <CardTitle className=\"text-zinc-400 flex items-center gap-2\">\n              <RefreshCcw className=\"h-4 w-4 animate-spin\" />\n              Analysis Pending...\n            </CardTitle>\n            <CardDescription>\n              The AI analyzer is currently processing this article. Please check\n              back in a few seconds.\n            </CardDescription>\n          </CardHeader>\n        </Card>\n      )}\n\n      {analysis && (\n        <div className=\"grid grid-cols-1 md:grid-cols-3 gap-6\">\n          <div className=\"md:col-span-2 space-y-6\">\n            <Card className=\"bg-zinc-900 border-zinc-800\">\n              <CardHeader>\n                <CardTitle>AI Summary</CardTitle>\n              </CardHeader>\n              <CardContent>\n                <p className=\"text-zinc-300 leading-relaxed\">\n                  {analysis.summary}\n                </p>\n              </CardContent>\n            </Card>\n\n            <Card className=\"bg-zinc-900 border-zinc-800\">\n              <CardHeader>\n                <CardTitle>Raw Content</CardTitle>\n              </CardHeader>\n              <CardContent>\n                <p className=\"text-zinc-400 text-sm whitespace-pre-wrap\">\n                  {article.rawText || \"No content available.\"}\n                </p>\n              </CardContent>\n            </Card>\n          </div>\n\n          <div className=\"space-y-6\">\n            <Card className=\"bg-zinc-900 border-zinc-800\">\n              <CardHeader>\n                <CardTitle>Analysis Metrics</CardTitle>\n              </CardHeader>\n              <CardContent className=\"space-y-4\">\n                <div>\n                  <div className=\"text-xs text-zinc-500 mb-1\">\n                    Business Impact\n                  </div>\n                  <div className=\"flex items-center gap-2\">\n                    <Activity className=\"h-5 w-5 text-amber-500\" />\n                    <span className=\"text-2xl font-semibold text-white\">\n                      {analysis.impactScore}/10\n                    </span>\n                  </div>\n                </div>\n\n                <div>\n                  <div className=\"text-xs text-zinc-500 mb-1\">GCC Category</div>\n                  <Badge\n                    variant=\"secondary\"\n                    className=\"bg-blue-500/10 text-blue-400 border-blue-500/20\"\n                  >\n                    {analysis.gccCategory}\n                  </Badge>\n                </div>\n\n                <div>\n                  <div className=\"text-xs text-zinc-500 mb-1\">Sentiment</div>\n                  <Badge\n                    variant=\"secondary\"\n                    className={\n                      analysis.sentiment.toLowerCase() === \"positive\"\n                        ? \"bg-green-500/10 text-green-400\"\n                        : analysis.sentiment.toLowerCase() === \"negative\"\n                          ? \"bg-red-500/10 text-red-400\"\n                          : \"bg-zinc-500/10 text-zinc-400\"\n                    }\n                  >\n                    {analysis.sentiment}\n                  </Badge>\n                </div>\n              </CardContent>\n            </Card>\n\n            <Card className=\"bg-zinc-900 border-zinc-800\">\n              <CardHeader>\n                <CardTitle>Extracted Entities</CardTitle>\n              </CardHeader>\n              <CardContent className=\"space-y-4\">\n                <div>\n                  <div className=\"flex items-center gap-2 text-xs text-zinc-500 mb-2\">\n                    <Building className=\"h-3 w-3\" /> Companies\n                  </div>\n                  <div className=\"flex flex-wrap gap-2\">\n                    {analysis.entities?.companies?.length > 0 ? (\n                      analysis.entities.companies.map((c: string) => (\n                        <Badge\n                          key={c}\n                          variant=\"outline\"\n                          className=\"border-zinc-700 bg-zinc-800/50\"\n                        >\n                          {c}\n                        </Badge>\n                      ))\n                    ) : (\n                      <span className=\"text-zinc-600 text-sm\">None</span>\n                    )}\n                  </div>\n                </div>\n\n                <div>\n                  <div className=\"flex items-center gap-2 text-xs text-zinc-500 mb-2\">\n                    <MapPin className=\"h-3 w-3\" /> Locations\n                  </div>\n                  <div className=\"flex flex-wrap gap-2\">\n                    {analysis.entities?.locations?.length > 0 ? (\n                      analysis.entities.locations.map((l: string) => (\n                        <Badge\n                          key={l}\n                          variant=\"outline\"\n                          className=\"border-zinc-700 bg-zinc-800/50\"\n                        >\n                          {l}\n                        </Badge>\n                      ))\n                    ) : (\n                      <span className=\"text-zinc-600 text-sm\">None</span>\n                    )}\n                  </div>\n                </div>\n\n                <div>\n                  <div className=\"flex items-center gap-2 text-xs text-zinc-500 mb-2\">\n                    <Cpu className=\"h-3 w-3\" /> Technologies\n                  </div>\n                  <div className=\"flex flex-wrap gap-2\">\n                    {analysis.entities?.technologies?.length > 0 ? (\n                      analysis.entities.technologies.map((t: string) => (\n                        <Badge\n                          key={t}\n                          variant=\"outline\"\n                          className=\"border-zinc-700 bg-zinc-800/50\"\n                        >\n                          {t}\n                        </Badge>\n                      ))\n                    ) : (\n                      <span className=\"text-zinc-600 text-sm\">None</span>\n                    )}\n                  </div>\n                </div>\n              </CardContent>\n            </Card>\n          </div>\n        </div>\n      )}\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\calendar\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CardDescription' is defined but never used.",
+        "line": 9,
+        "column": 3,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 9,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": {
+              "varName": "CardDescription"
+            },
+            "fix": {
+              "range": [
+                117,
+                136
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable \"CardDescription\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 17,
+        "column": 59,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 17,
+        "endColumn": 62,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                474,
+                477
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                474,
+                477
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nC:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\calendar\\page.tsx:41:5\n  39 |\n  40 |   useEffect(() => {\n> 41 |     fetchCalendar();\n     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  42 |   }, []);\n  43 |\n  44 |   const handleCancel = async (id: string) => {",
+        "line": 41,
+        "column": 5,
+        "nodeType": null,
+        "endLine": 41,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 59,
+        "column": 14,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 59,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 104,
+        "column": 44,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 104,
+        "endColumn": 47,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                3282,
+                3285
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                3282,
+                3285
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 3,
+    "fatalErrorCount": 0,
+    "warningCount": 2,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport {\n  Card,\n  CardContent,\n  CardHeader,\n  CardTitle,\n  CardDescription,\n} from \"@/components/ui/card\";\nimport { Badge } from \"@/components/ui/badge\";\nimport { CalendarIcon, Clock, Link as LinkIcon, Trash } from \"lucide-react\";\nimport { Button } from \"@/components/ui/button\";\nimport { toast } from \"sonner\";\n\nexport default function CalendarPage() {\n  const [calendar, setCalendar] = useState<Record<string, any[]>>({});\n  const [loading, setLoading] = useState(true);\n\n  const fetchCalendar = async () => {\n    setLoading(true);\n    try {\n      const token = localStorage.getItem(\"auth_token\");\n      const res = await fetch(\n        `http://localhost:3001/api/v1/schedule/calendar`,\n        {\n          headers: { Authorization: `Bearer ${token}` },\n        }\n      );\n      if (res.ok) {\n        setCalendar(await res.json());\n      }\n    } catch (_err) {\n      console.error(_err);\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  useEffect(() => {\n    fetchCalendar();\n  }, []);\n\n  const handleCancel = async (id: string) => {\n    try {\n      const token = localStorage.getItem(\"auth_token\");\n      const res = await fetch(`http://localhost:3001/api/v1/schedule/${id}`, {\n        method: \"DELETE\",\n        headers: { Authorization: `Bearer ${token}` },\n      });\n      if (res.ok) {\n        toast.success(\"Post canceled\", {\n          description: \"Draft reverted to APPROVED.\",\n        });\n        fetchCalendar();\n      } else {\n        toast.error(\"Failed to cancel\");\n      }\n    } catch (err) {\n      toast.error(\"An error occurred\");\n    }\n  };\n\n  const dates = Object.keys(calendar).sort();\n\n  return (\n    <div className=\"flex-1 space-y-4 p-8 pt-6\">\n      <div className=\"flex items-center justify-between space-y-2\">\n        <div>\n          <h2 className=\"text-3xl font-bold tracking-tight\">\n            Content Calendar\n          </h2>\n          <p className=\"text-muted-foreground mt-1\">\n            Manage scheduled posts across all platforms. AI automatically spaces\n            posts to optimize reach.\n          </p>\n        </div>\n      </div>\n\n      {loading ? (\n        <div className=\"py-8\">Loading calendar...</div>\n      ) : dates.length === 0 ? (\n        <div className=\"text-muted-foreground py-8 border-2 border-dashed rounded-lg p-8 text-center flex flex-col items-center justify-center\">\n          <CalendarIcon className=\"h-10 w-10 mb-4 text-muted-foreground/50\" />\n          <p>No posts scheduled yet.</p>\n          <p className=\"text-sm\">\n            Approve and schedule drafts from the Content section.\n          </p>\n        </div>\n      ) : (\n        <div className=\"space-y-8 mt-6\">\n          {dates.map((date) => (\n            <div key={date}>\n              <h3 className=\"text-xl font-semibold mb-4 border-b pb-2 flex items-center\">\n                <CalendarIcon className=\"w-5 h-5 mr-2 text-muted-foreground\" />\n                {new Date(date).toLocaleDateString(undefined, {\n                  weekday: \"long\",\n                  year: \"numeric\",\n                  month: \"long\",\n                  day: \"numeric\",\n                })}\n              </h3>\n              <div className=\"grid gap-4 md:grid-cols-2 lg:grid-cols-3\">\n                {calendar[date].map((post: any) => (\n                  <Card key={post.id} className=\"relative\">\n                    <CardHeader className=\"pb-3\">\n                      <div className=\"flex justify-between items-start mb-2\">\n                        <Badge\n                          variant={\n                            post.status === \"PUBLISHED\"\n                              ? \"default\"\n                              : \"secondary\"\n                          }\n                        >\n                          {post.status}\n                        </Badge>\n                        <Badge variant=\"outline\">\n                          {post.draft?.targetPlatform}\n                        </Badge>\n                      </div>\n                      <CardTitle className=\"text-lg leading-tight line-clamp-2\">\n                        {post.draft?.versions?.[0]?.content?.substring(0, 100)}\n                        ...\n                      </CardTitle>\n                    </CardHeader>\n                    <CardContent className=\"space-y-4\">\n                      <div className=\"flex items-center text-sm text-muted-foreground\">\n                        <Clock className=\"w-4 h-4 mr-2\" />\n                        {new Date(post.scheduledFor).toLocaleTimeString([], {\n                          hour: \"2-digit\",\n                          minute: \"2-digit\",\n                        })}\n                      </div>\n\n                      {post.scheduleRationale && (\n                        <div className=\"bg-muted p-3 rounded-md text-xs\">\n                          <span className=\"font-semibold text-primary block mb-1\">\n                            AI Recommendation\n                          </span>\n                          {post.scheduleRationale}\n                        </div>\n                      )}\n\n                      {post.status === \"PUBLISHED\" && post.publishedUrl && (\n                        <a\n                          href={post.publishedUrl}\n                          target=\"_blank\"\n                          rel=\"noreferrer\"\n                          className=\"flex items-center text-sm text-blue-500 hover:underline\"\n                        >\n                          <LinkIcon className=\"w-4 h-4 mr-2\" /> View Post\n                        </a>\n                      )}\n                    </CardContent>\n                    {post.status === \"QUEUED\" && (\n                      <Button\n                        variant=\"ghost\"\n                        size=\"icon\"\n                        className=\"absolute top-2 right-2 text-muted-foreground hover:text-red-500\"\n                        onClick={() => handleCancel(post.id)}\n                        title=\"Cancel Schedule\"\n                      >\n                        <Trash className=\"w-4 h-4\" />\n                      </Button>\n                    )}\n                  </Card>\n                ))}\n              </div>\n            </div>\n          ))}\n        </div>\n      )}\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\clusters\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 18,
+        "column": 44,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 18,
+        "endColumn": 47,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                433,
+                436
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                433,
+                436
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport Link from \"next/link\";\nimport {\n  Card,\n  CardContent,\n  CardHeader,\n  CardTitle,\n  CardFooter,\n  CardDescription,\n} from \"@/components/ui/card\";\nimport { Badge } from \"@/components/ui/badge\";\nimport { Button } from \"@/components/ui/button\";\nimport { Layers } from \"lucide-react\";\n\nexport default function ClustersPage() {\n  const [clusters, setClusters] = useState<any[]>([]);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    async function fetchClusters() {\n      setLoading(true);\n      try {\n        const token = localStorage.getItem(\"auth_token\");\n        const res = await fetch(`http://localhost:3001/api/v1/clusters`, {\n          headers: {\n            Authorization: `Bearer ${token}`,\n          },\n        });\n        if (res.ok) {\n          const data = await res.json();\n          setClusters(data);\n        }\n      } catch (err) {\n        console.error(err);\n      } finally {\n        setLoading(false);\n      }\n    }\n    fetchClusters();\n  }, []);\n\n  return (\n    <div className=\"flex-1 space-y-4 p-8 pt-6\">\n      <div className=\"flex items-center justify-between space-y-2\">\n        <h2 className=\"text-3xl font-bold tracking-tight\">Story Clusters</h2>\n      </div>\n      <p className=\"text-muted-foreground mb-6\">\n        AI automatically groups related news articles over a 72-hour window and\n        synthesizes them into comprehensive stories.\n      </p>\n\n      {loading ? (\n        <div>Loading clusters...</div>\n      ) : clusters.length === 0 ? (\n        <div className=\"text-muted-foreground py-8\">\n          No story clusters found.\n        </div>\n      ) : (\n        <div className=\"grid gap-6 md:grid-cols-2 lg:grid-cols-3\">\n          {clusters.map((cluster) => (\n            <Card key={cluster.id} className=\"flex flex-col\">\n              <CardHeader className=\"pb-3\">\n                <div className=\"flex justify-between items-start mb-2\">\n                  <Badge\n                    variant={\n                      cluster.status === \"READY\" ? \"default\" : \"secondary\"\n                    }\n                  >\n                    {cluster.status}\n                  </Badge>\n                  <div className=\"flex items-center text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full\">\n                    <Layers className=\"w-3 h-3 mr-1\" />\n                    {cluster._count?.articles || cluster.articleCount} articles\n                  </div>\n                </div>\n                <CardTitle className=\"text-lg leading-tight\">\n                  {cluster.theme || \"Forming Cluster...\"}\n                </CardTitle>\n                <CardDescription className=\"text-xs mt-1\">\n                  Last article:{\" \"}\n                  {new Date(cluster.lastArticleAt).toLocaleString()}\n                </CardDescription>\n              </CardHeader>\n              <CardContent className=\"flex-1\">\n                {cluster.synthesisText ? (\n                  <p className=\"text-sm text-muted-foreground line-clamp-4\">\n                    {cluster.synthesisText}\n                  </p>\n                ) : (\n                  <div className=\"flex h-full items-center justify-center border-2 border-dashed rounded-md p-4 text-sm text-muted-foreground\">\n                    Waiting for AI synthesis...\n                  </div>\n                )}\n              </CardContent>\n              <CardFooter className=\"pt-4 border-t\">\n                {/* Normally we'd link to a cluster detail page, but for now we just link to the content queue if it's ready */}\n                {cluster.status === \"READY\" ? (\n                  <Link href=\"/content\" className=\"w-full\">\n                    <Button className=\"w-full\" variant=\"outline\">\n                      View Generated Post\n                    </Button>\n                  </Link>\n                ) : (\n                  <Button disabled className=\"w-full\" variant=\"ghost\">\n                    Processing\n                  </Button>\n                )}\n              </CardFooter>\n            </Card>\n          ))}\n        </div>\n      )}\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\content\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 17,
+        "column": 40,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 17,
+        "endColumn": 43,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                456,
+                459
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                456,
+                459
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport Link from \"next/link\";\nimport {\n  Card,\n  CardContent,\n  CardHeader,\n  CardTitle,\n  CardFooter,\n} from \"@/components/ui/card\";\nimport { Badge } from \"@/components/ui/badge\";\nimport { Button } from \"@/components/ui/button\";\nimport { Tabs, TabsContent, TabsList, TabsTrigger } from \"@/components/ui/tabs\";\n\nexport default function ContentQueuePage() {\n  const [drafts, setDrafts] = useState<any[]>([]);\n  const [loading, setLoading] = useState(true);\n  const [statusFilter, setStatusFilter] = useState(\"DRAFT\");\n\n  useEffect(() => {\n    async function fetchDrafts() {\n      setLoading(true);\n      try {\n        const token = localStorage.getItem(\"auth_token\");\n        const res = await fetch(\n          `http://localhost:3001/api/v1/content/drafts?status=${statusFilter}`,\n          {\n            headers: {\n              Authorization: `Bearer ${token}`,\n            },\n          },\n        );\n        if (res.ok) {\n          const data = await res.json();\n          setDrafts(data);\n        }\n      } catch (err) {\n        console.error(err);\n      } finally {\n        setLoading(false);\n      }\n    }\n    fetchDrafts();\n  }, [statusFilter]);\n\n  return (\n    <div className=\"flex-1 space-y-4 p-8 pt-6\">\n      <div className=\"flex items-center justify-between space-y-2\">\n        <h2 className=\"text-3xl font-bold tracking-tight\">\n          Content Review Queue\n        </h2>\n      </div>\n\n      <Tabs\n        defaultValue=\"DRAFT\"\n        onValueChange={setStatusFilter}\n        className=\"space-y-4\"\n      >\n        <TabsList>\n          <TabsTrigger value=\"DRAFT\">Pending Review</TabsTrigger>\n          <TabsTrigger value=\"APPROVED\">Approved</TabsTrigger>\n          <TabsTrigger value=\"REJECTED\">Rejected</TabsTrigger>\n          <TabsTrigger value=\"ARCHIVED\">Archived</TabsTrigger>\n        </TabsList>\n        <TabsContent value={statusFilter} className=\"space-y-4\">\n          {loading ? (\n            <div>Loading drafts...</div>\n          ) : drafts.length === 0 ? (\n            <div className=\"text-muted-foreground py-8\">\n              No drafts found in this queue.\n            </div>\n          ) : (\n            <div className=\"grid gap-4 md:grid-cols-2 lg:grid-cols-3\">\n              {drafts.map((draft) => (\n                <Card key={draft.id}>\n                  <CardHeader className=\"flex flex-row items-center justify-between space-y-0 pb-2\">\n                    <CardTitle className=\"text-sm font-medium\">\n                      {draft.article?.title || \"Unknown Article\"}\n                    </CardTitle>\n                    <Badge\n                      variant={statusFilter === \"DRAFT\" ? \"default\" : \"outline\"}\n                    >\n                      {draft.targetPlatform}\n                    </Badge>\n                  </CardHeader>\n                  <CardContent>\n                    <div className=\"text-xs text-muted-foreground mb-4\">\n                      Source: {draft.article?.source?.name || \"Unknown\"}\n                    </div>\n                    <div className=\"text-sm line-clamp-3 mb-2\">\n                      {draft.versions[0]?.content || \"No content generated\"}\n                    </div>\n                    <div className=\"text-xs text-muted-foreground\">\n                      Generated:{\" \"}\n                      {new Date(draft.createdAt).toLocaleDateString()}\n                    </div>\n                  </CardContent>\n                  <CardFooter>\n                    <Link href={`/content/${draft.id}`} className=\"w-full\">\n                      <Button className=\"w-full\">Review Draft</Button>\n                    </Link>\n                  </CardFooter>\n                </Card>\n              ))}\n            </div>\n          )}\n        </TabsContent>\n      </Tabs>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\content\\[id]\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'TabsContent' is defined but never used.",
+        "line": 8,
+        "column": 16,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 8,
+        "endColumn": 27,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": {
+              "varName": "TabsContent"
+            },
+            "fix": {
+              "range": [
+                300,
+                313
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable \"TabsContent\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 20,
+        "column": 38,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 20,
+        "endColumn": 41,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                654,
+                657
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                654,
+                657
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'activeVariant' is assigned a value but never used.",
+        "line": 23,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 285,
+        "column": 37,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 285,
+        "endColumn": 40,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                9087,
+                9090
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                9087,
+                9090
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 2,
+    "fatalErrorCount": 0,
+    "warningCount": 2,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useState, use } from \"react\";\nimport { useRouter } from \"next/navigation\";\nimport { Card, CardContent, CardHeader, CardTitle } from \"@/components/ui/card\";\nimport { Button } from \"@/components/ui/button\";\nimport { Badge } from \"@/components/ui/badge\";\nimport { Tabs, TabsContent, TabsList, TabsTrigger } from \"@/components/ui/tabs\";\nimport { Label } from \"@/components/ui/label\";\n\nexport default function DraftReviewPage({\n  params,\n}: {\n  params: Promise<{ id: string }>;\n}) {\n  const router = useRouter();\n  const unwrappedParams = use(params);\n  const { id } = unwrappedParams;\n\n  const [draft, setDraft] = useState<any>(null);\n  const [loading, setLoading] = useState(true);\n  const [editedText, setEditedText] = useState(\"\");\n  const [activeVariant, setActiveVariant] = useState(0);\n  const [scheduleState, setScheduleState] = useState<\n    \"idle\" | \"approving\" | \"recommending\" | \"ready\"\n  >(\"idle\");\n  const [recommendation, setRecommendation] = useState<{\n    slot: string;\n    rationale: string;\n  } | null>(null);\n\n  useEffect(() => {\n    async function fetchDraft() {\n      try {\n        const token = localStorage.getItem(\"auth_token\");\n        const res = await fetch(\n          `http://localhost:3001/api/v1/content/drafts/${id}`,\n          {\n            headers: { Authorization: `Bearer ${token}` },\n          },\n        );\n        if (res.ok) {\n          const data = await res.json();\n          setDraft(data);\n          // Load the latest version into the editor\n          if (data.versions && data.versions.length > 0) {\n            setEditedText(data.versions[0].content);\n          }\n        }\n      } catch (err) {\n        console.error(err);\n      } finally {\n        setLoading(false);\n      }\n    }\n    fetchDraft();\n  }, [id]);\n\n  const handleApprove = async () => {\n    try {\n      const token = localStorage.getItem(\"auth_token\");\n      // 1. Capture feedback if it was edited\n      if (draft.versions && draft.versions.length > 0) {\n        const originalText = draft.versions[draft.versions.length - 1].content;\n        if (originalText !== editedText) {\n          await fetch(\n            `http://localhost:3001/api/v1/content/drafts/${id}/feedback`,\n            {\n              method: \"POST\",\n              headers: {\n                \"Content-Type\": \"application/json\",\n                Authorization: `Bearer ${token}`,\n              },\n              body: JSON.stringify({ originalText, editedText }),\n            },\n          );\n          // Also save the new version\n          await fetch(\n            `http://localhost:3001/api/v1/content/drafts/${id}/versions`,\n            {\n              method: \"POST\",\n              headers: {\n                \"Content-Type\": \"application/json\",\n                Authorization: `Bearer ${token}`,\n              },\n              body: JSON.stringify({ content: editedText }),\n            },\n          );\n        }\n      }\n\n      // 2. Approve draft\n      setScheduleState(\"approving\");\n      const res = await fetch(\n        `http://localhost:3001/api/v1/content/drafts/${id}/status`,\n        {\n          method: \"PUT\",\n          headers: {\n            \"Content-Type\": \"application/json\",\n            Authorization: `Bearer ${token}`,\n          },\n          body: JSON.stringify({ status: \"APPROVED\" }),\n        },\n      );\n      if (res.ok) {\n        setScheduleState(\"recommending\");\n        // Get recommendation\n        const recRes = await fetch(\n          `http://localhost:3001/api/v1/schedule/recommendation/${id}`,\n          {\n            headers: { Authorization: `Bearer ${token}` },\n          },\n        );\n        if (recRes.ok) {\n          setRecommendation(await recRes.json());\n          setScheduleState(\"ready\");\n        } else {\n          router.push(\"/content\");\n        }\n      }\n    } catch (err) {\n      console.error(err);\n      setScheduleState(\"idle\");\n    }\n  };\n\n  const handleConfirmSchedule = async () => {\n    try {\n      const token = localStorage.getItem(\"auth_token\");\n      const res = await fetch(`http://localhost:3001/api/v1/schedule`, {\n        method: \"POST\",\n        headers: {\n          \"Content-Type\": \"application/json\",\n          Authorization: `Bearer ${token}`,\n        },\n        body: JSON.stringify({\n          draftId: id,\n          scheduledFor: recommendation?.slot,\n        }),\n      });\n      if (res.ok) {\n        router.push(\"/calendar\");\n      }\n    } catch (err) {\n      console.error(err);\n    }\n  };\n\n  const handleReject = async () => {\n    try {\n      const token = localStorage.getItem(\"auth_token\");\n      const res = await fetch(\n        `http://localhost:3001/api/v1/content/drafts/${id}/status`,\n        {\n          method: \"PUT\",\n          headers: {\n            \"Content-Type\": \"application/json\",\n            Authorization: `Bearer ${token}`,\n          },\n          body: JSON.stringify({ status: \"REJECTED\" }),\n        },\n      );\n      if (res.ok) {\n        router.push(\"/content\");\n      }\n    } catch (err) {\n      console.error(err);\n    }\n  };\n\n  if (loading) return <div className=\"p-8\">Loading draft...</div>;\n  if (!draft) return <div className=\"p-8\">Draft not found.</div>;\n\n  const charCount = editedText.length;\n  const isTooLong = charCount > 3000;\n  const isWarning = charCount > 2700 && !isTooLong;\n\n  return (\n    <div className=\"flex h-[calc(100vh-64px)] overflow-hidden\">\n      {/* LEFT PANEL: Source Article Info */}\n      <div className=\"w-1/2 overflow-y-auto border-r border-border p-6 space-y-6\">\n        <div>\n          <h2 className=\"text-2xl font-bold mb-2\">\n            {draft.article?.title || \"Unknown Article\"}\n          </h2>\n          <div className=\"flex items-center gap-2 mb-4\">\n            <Badge variant=\"outline\">{draft.targetPlatform}</Badge>\n            {draft.article?.analysis?.impactScore && (\n              <Badge variant=\"secondary\">\n                Impact: {draft.article.analysis.impactScore}\n              </Badge>\n            )}\n            <Badge variant={draft.status === \"DRAFT\" ? \"default\" : \"secondary\"}>\n              {draft.status}\n            </Badge>\n          </div>\n        </div>\n\n        <Card>\n          <CardHeader>\n            <CardTitle>Article Summary</CardTitle>\n          </CardHeader>\n          <CardContent>\n            <p className=\"text-sm leading-relaxed\">\n              {draft.article?.analysis?.summary || \"No summary available.\"}\n            </p>\n          </CardContent>\n        </Card>\n\n        {draft.article?.analysis?.entities && (\n          <Card>\n            <CardHeader>\n              <CardTitle>Extracted Entities</CardTitle>\n            </CardHeader>\n            <CardContent>\n              <pre className=\"text-xs bg-muted p-4 rounded-md overflow-x-auto\">\n                {JSON.stringify(draft.article.analysis.entities, null, 2)}\n              </pre>\n            </CardContent>\n          </Card>\n        )}\n      </div>\n\n      {/* RIGHT PANEL: Editor */}\n      <div className=\"w-1/2 overflow-y-auto p-6 flex flex-col space-y-4 bg-muted/30\">\n        <div className=\"flex items-center justify-between\">\n          <h2 className=\"text-xl font-bold\">Draft Editor</h2>\n          <div className=\"flex items-center gap-2\">\n            <Button\n              variant=\"outline\"\n              onClick={handleReject}\n              disabled={scheduleState !== \"idle\"}\n            >\n              Reject\n            </Button>\n            <Button\n              onClick={handleApprove}\n              disabled={isTooLong || scheduleState !== \"idle\"}\n            >\n              {scheduleState === \"approving\"\n                ? \"Approving...\"\n                : scheduleState === \"recommending\"\n                  ? \"Getting AI Slot...\"\n                  : \"Approve & Schedule\"}\n            </Button>\n          </div>\n        </div>\n\n        {scheduleState === \"ready\" && recommendation && (\n          <Card className=\"bg-primary/5 border-primary/20\">\n            <CardHeader className=\"pb-3\">\n              <CardTitle className=\"text-lg\">\n                AI Schedule Recommendation\n              </CardTitle>\n            </CardHeader>\n            <CardContent>\n              <p className=\"mb-2\">\n                <strong>Recommended Time:</strong>{\" \"}\n                {new Date(recommendation.slot).toLocaleString()}\n              </p>\n              <p className=\"text-sm text-muted-foreground mb-4\">\n                <strong>Rationale:</strong> {recommendation.rationale}\n              </p>\n              <div className=\"flex gap-2\">\n                <Button onClick={handleConfirmSchedule}>\n                  Accept & Schedule\n                </Button>\n                <Button\n                  variant=\"outline\"\n                  onClick={() => router.push(\"/calendar\")}\n                >\n                  Schedule Later\n                </Button>\n              </div>\n            </CardContent>\n          </Card>\n        )}\n\n        <Tabs\n          defaultValue=\"0\"\n          onValueChange={(v) => setActiveVariant(Number(v))}\n          className=\"flex-1 flex flex-col\"\n        >\n          <TabsList>\n            {draft.versions.map((v: any, i: number) => (\n              <TabsTrigger key={v.id} value={i.toString()}>\n                Version {v.versionNumber} ({v.generatedBy})\n              </TabsTrigger>\n            ))}\n          </TabsList>\n\n          <div className=\"flex-1 mt-4 relative flex flex-col\">\n            <Label htmlFor=\"editor\" className=\"mb-2\">\n              Edit Post Content\n            </Label>\n            <textarea\n              id=\"editor\"\n              value={editedText}\n              onChange={(e) => setEditedText(e.target.value)}\n              className=\"flex-1 min-h-[400px] w-full p-4 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none font-sans text-sm leading-relaxed\"\n              placeholder=\"Edit the post content here...\"\n            />\n            <div\n              className={`text-xs mt-2 text-right ${isTooLong ? \"text-destructive font-bold\" : isWarning ? \"text-orange-500 font-bold\" : \"text-muted-foreground\"}`}\n            >\n              {charCount} / 3000 characters\n              {isTooLong && \" (Too long!)\"}\n              {isWarning && \" (Getting close to limit)\"}\n            </div>\n          </div>\n        </Tabs>\n      </div>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\layout.tsx",
+    "messages": [
+      {
+        "ruleId": "@next/next/no-html-link-for-pages",
+        "severity": 2,
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages",
+        "line": 25,
+        "column": 11,
+        "nodeType": "JSXOpeningElement",
+        "endLine": 28,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@next/next/no-html-link-for-pages",
+        "severity": 2,
+        "message": "Do not use an `<a>` element to navigate to `/content/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages",
+        "line": 31,
+        "column": 11,
+        "nodeType": "JSXOpeningElement",
+        "endLine": 34,
+        "endColumn": 12
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 2,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import { ReactNode } from \"react\";\nimport { auth, signOut } from \"../../../auth\";\nimport { redirect } from \"next/navigation\";\n\nexport default async function DashboardLayout({\n  children,\n}: {\n  children: ReactNode;\n}) {\n  const session = await auth();\n\n  if (!session?.user) {\n    redirect(\"/login\");\n  }\n\n  return (\n    <div className=\"min-h-screen bg-gray-950 text-white flex\">\n      {/* Sidebar */}\n      <aside className=\"w-64 bg-gray-900 border-r border-gray-800 flex flex-col hidden md:flex\">\n        <div className=\"h-16 flex items-center px-6 border-b border-gray-800\">\n          <h1 className=\"text-xl font-bold tracking-tight\">GCC Quest AI</h1>\n        </div>\n\n        <nav className=\"flex-1 px-4 py-6 space-y-2\">\n          <a\n            href=\"/\"\n            className=\"block px-3 py-2 rounded-md bg-gray-800 text-white font-medium\"\n          >\n            Dashboard\n          </a>\n          <a\n            href=\"/content\"\n            className=\"block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors\"\n          >\n            Content Review\n          </a>\n          <a\n            href=\"/clusters\"\n            className=\"block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors\"\n          >\n            Story Clusters\n          </a>\n          <a\n            href=\"/trends\"\n            className=\"block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors\"\n          >\n            Macro Trends\n          </a>\n          <a\n            href=\"/calendar\"\n            className=\"block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors\"\n          >\n            Calendar\n          </a>\n          <a\n            href=\"/settings/feedback\"\n            className=\"block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors\"\n          >\n            AI Feedback\n          </a>\n          <a\n            href=\"/intelligence\"\n            className=\"block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors\"\n          >\n            Intelligence\n          </a>\n          <a\n            href=\"/settings\"\n            className=\"block px-3 py-2 rounded-md text-gray-400 hover:bg-gray-800 hover:text-white transition-colors\"\n          >\n            Settings\n          </a>\n        </nav>\n\n        <div className=\"p-4 border-t border-gray-800\">\n          <div className=\"flex items-center space-x-3 mb-4\">\n            <div className=\"w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold\">\n              {session.user.name?.charAt(0) ||\n                session.user.email?.charAt(0) ||\n                \"U\"}\n            </div>\n            <div className=\"overflow-hidden\">\n              <p className=\"text-sm font-medium truncate\">\n                {session.user.name || \"User\"}\n              </p>\n              <p className=\"text-xs text-gray-400 truncate\">\n                {session.user.email}\n              </p>\n            </div>\n          </div>\n          <form\n            action={async () => {\n              \"use server\";\n              await signOut();\n            }}\n          >\n            <button className=\"w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-gray-800 rounded-md transition-colors\">\n              Sign out\n            </button>\n          </form>\n        </div>\n      </aside>\n\n      {/* Main Content */}\n      <main className=\"flex-1 flex flex-col h-screen overflow-hidden\">\n        <header className=\"h-16 flex items-center justify-between px-8 border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm md:hidden\">\n          <h1 className=\"text-xl font-bold\">GCC Quest AI</h1>\n        </header>\n        <div className=\"flex-1 overflow-y-auto p-8\">{children}</div>\n      </main>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\settings\\feedback\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Badge' is defined but never used.",
+        "line": 11,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 11,
+        "endColumn": 15,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedImportDeclaration",
+            "data": {
+              "varName": "Badge"
+            },
+            "fix": {
+              "range": [
+                169,
+                216
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused import declaration."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 16,
+        "column": 46,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 16,
+        "endColumn": 49,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                399,
+                402
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                399,
+                402
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport {\n  Card,\n  CardContent,\n  CardHeader,\n  CardTitle,\n  CardDescription,\n} from \"@/components/ui/card\";\nimport { Badge } from \"@/components/ui/badge\";\nimport { Button } from \"@/components/ui/button\";\nimport { Trash2 } from \"lucide-react\";\n\nexport default function FeedbackSettingsPage() {\n  const [feedbacks, setFeedbacks] = useState<any[]>([]);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    async function fetchFeedbacks() {\n      setLoading(true);\n      try {\n        const token = localStorage.getItem(\"auth_token\");\n        const res = await fetch(`http://localhost:3001/api/v1/feedback`, {\n          headers: {\n            Authorization: `Bearer ${token}`,\n          },\n        });\n        if (res.ok) {\n          const data = await res.json();\n          setFeedbacks(data);\n        }\n      } catch (err) {\n        console.error(err);\n      } finally {\n        setLoading(false);\n      }\n    }\n    fetchFeedbacks();\n  }, []);\n\n  const handleDelete = async (id: string) => {\n    // Basic optimistic UI\n    setFeedbacks(feedbacks.filter((f) => f.id !== id));\n    // Would normally call the API to delete\n    // fetch(`http://localhost:3001/api/v1/feedback/${id}`, { method: 'DELETE' })\n  };\n\n  return (\n    <div className=\"flex-1 space-y-4 p-8 pt-6\">\n      <div className=\"flex items-center justify-between space-y-2\">\n        <h2 className=\"text-3xl font-bold tracking-tight\">\n          AI Feedback Learning\n        </h2>\n      </div>\n      <p className=\"text-muted-foreground mb-6\">\n        Review past corrections made by human editors. The AI uses these\n        examples to improve future generated drafts.\n      </p>\n\n      {loading ? (\n        <div>Loading feedback examples...</div>\n      ) : feedbacks.length === 0 ? (\n        <div className=\"text-muted-foreground py-8\">\n          No feedback examples captured yet.\n        </div>\n      ) : (\n        <div className=\"grid gap-6\">\n          {feedbacks.map((fb) => (\n            <Card key={fb.id}>\n              <CardHeader className=\"flex flex-row items-center justify-between pb-2\">\n                <div className=\"space-y-1\">\n                  <CardTitle className=\"text-lg\">\n                    Correction #{fb.id.slice(0, 8)}\n                  </CardTitle>\n                  <CardDescription>\n                    Captured on {new Date(fb.createdAt).toLocaleDateString()}{\" \"}\n                    for {fb.category || \"General\"}\n                  </CardDescription>\n                </div>\n                <Button\n                  variant=\"ghost\"\n                  size=\"icon\"\n                  onClick={() => handleDelete(fb.id)}\n                >\n                  <Trash2 className=\"h-4 w-4 text-destructive\" />\n                </Button>\n              </CardHeader>\n              <CardContent>\n                <div className=\"grid md:grid-cols-2 gap-4 mt-2\">\n                  <div className=\"space-y-2\">\n                    <h4 className=\"font-semibold text-sm text-destructive\">\n                      Original (AI Generated)\n                    </h4>\n                    <div className=\"p-3 bg-destructive/10 text-sm rounded-md border border-destructive/20 h-[200px] overflow-y-auto whitespace-pre-wrap\">\n                      {fb.originalText}\n                    </div>\n                  </div>\n                  <div className=\"space-y-2\">\n                    <h4 className=\"font-semibold text-sm text-green-600 dark:text-green-400\">\n                      Corrected (Human Edited)\n                    </h4>\n                    <div className=\"p-3 bg-green-500/10 text-sm rounded-md border border-green-500/20 h-[200px] overflow-y-auto whitespace-pre-wrap\">\n                      {fb.editedText}\n                    </div>\n                  </div>\n                </div>\n                {fb.diffSummary && (\n                  <div className=\"mt-4 p-3 bg-muted rounded-md text-sm\">\n                    <span className=\"font-semibold\">Summary:</span>{\" \"}\n                    {fb.diffSummary}\n                  </div>\n                )}\n              </CardContent>\n            </Card>\n          ))}\n        </div>\n      )}\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\sources\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 18,
+        "column": 42,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 18,
+        "endColumn": 45,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                500,
+                503
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                500,
+                503
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nC:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\sources\\page.tsx:39:5\n  37 |\n  38 |   useEffect(() => {\n> 39 |     fetchSources();\n     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  40 |   }, []);\n  41 |\n  42 |   const handleCrawl = async (id: string) => {",
+        "line": 39,
+        "column": 5,
+        "nodeType": null,
+        "endLine": 39,
+        "endColumn": 17
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 2,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport axios from \"axios\";\nimport { Plus, Search, RefreshCw, Activity, AlertCircle } from \"lucide-react\";\nimport { Button } from \"@/components/ui/button\";\nimport { Input } from \"@/components/ui/input\";\nimport {\n  Card,\n  CardContent,\n  CardDescription,\n  CardHeader,\n  CardTitle,\n} from \"@/components/ui/card\";\nimport { Badge } from \"@/components/ui/badge\";\n\nexport default function SourcesPage() {\n  const [sources, setSources] = useState<any[]>([]);\n  const [loading, setLoading] = useState(true);\n\n  const fetchSources = async () => {\n    try {\n      setLoading(true);\n      // In MVP, we might not have the web proxy configured for /api yet, so we'd hit localhost:4000\n      // Actually we should assume the backend is available at NEXT_PUBLIC_API_URL or relative /api if proxied.\n      // Assuming relative /api points to the backend in a full setup, but for local dev with Turbo it might be separate.\n      // Let's use an env var or fallback.\n      const apiUrl = process.env.NEXT_PUBLIC_API_URL || \"http://localhost:4000\";\n      const res = await axios.get(`${apiUrl}/api/v1/sources`);\n      setSources(res.data.items || res.data);\n    } catch (error) {\n      console.error(\"Failed to fetch sources\", error);\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  useEffect(() => {\n    fetchSources();\n  }, []);\n\n  const handleCrawl = async (id: string) => {\n    try {\n      const apiUrl = process.env.NEXT_PUBLIC_API_URL || \"http://localhost:4000\";\n      await axios.post(`${apiUrl}/api/v1/sources/${id}/crawl`);\n      alert(\"Crawl triggered successfully!\");\n    } catch (error) {\n      console.error(\"Failed to trigger crawl\", error);\n      alert(\"Failed to trigger crawl.\");\n    }\n  };\n\n  return (\n    <div className=\"p-6 space-y-6\">\n      <div className=\"flex flex-col md:flex-row justify-between items-start md:items-center gap-4\">\n        <div>\n          <h1 className=\"text-3xl font-bold tracking-tight text-white\">\n            Sources Dashboard\n          </h1>\n          <p className=\"text-muted-foreground mt-1\">\n            Manage your RSS and Web sources for GCC discovery.\n          </p>\n        </div>\n        <Button className=\"bg-primary hover:bg-primary/90\">\n          <Plus className=\"mr-2 h-4 w-4\" /> Add Source\n        </Button>\n      </div>\n\n      <div className=\"flex gap-4 items-center\">\n        <div className=\"relative flex-1 max-w-md\">\n          <Search className=\"absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground\" />\n          <Input\n            type=\"search\"\n            placeholder=\"Search sources...\"\n            className=\"pl-8 bg-zinc-900 border-zinc-800\"\n          />\n        </div>\n        <Button variant=\"outline\" onClick={fetchSources}>\n          <RefreshCw className=\"mr-2 h-4 w-4\" /> Refresh\n        </Button>\n      </div>\n\n      <div className=\"grid gap-4 md:grid-cols-2 lg:grid-cols-3\">\n        {loading ? (\n          <p className=\"text-white\">Loading sources...</p>\n        ) : sources.length === 0 ? (\n          <p className=\"text-muted-foreground\">No sources found.</p>\n        ) : (\n          sources.map((source) => (\n            <Card key={source.id} className=\"bg-zinc-900 border-zinc-800\">\n              <CardHeader className=\"pb-2\">\n                <div className=\"flex justify-between items-start\">\n                  <div>\n                    <CardTitle className=\"text-lg text-white\">\n                      {source.name}\n                    </CardTitle>\n                    <CardDescription className=\"truncate max-w-[200px]\">\n                      {source.url}\n                    </CardDescription>\n                  </div>\n                  <Badge\n                    variant={\n                      source.status === \"ACTIVE\" ? \"default\" : \"destructive\"\n                    }\n                    className={\n                      source.status === \"ACTIVE\"\n                        ? \"bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20\"\n                        : \"\"\n                    }\n                  >\n                    {source.status}\n                  </Badge>\n                </div>\n              </CardHeader>\n              <CardContent>\n                <div className=\"flex justify-between text-sm text-zinc-400 mb-4\">\n                  <div className=\"flex items-center gap-1\">\n                    <Activity className=\"h-4 w-4\" />\n                    {source.type}\n                  </div>\n                  <div className=\"flex items-center gap-1\">\n                    <AlertCircle className=\"h-4 w-4\" />\n                    {source.category}\n                  </div>\n                  <div>\n                    Score:{\" \"}\n                    <span className=\"font-bold text-white\">\n                      {source.compositeScore}\n                    </span>\n                  </div>\n                </div>\n\n                <div className=\"flex justify-between items-center pt-2 border-t border-zinc-800\">\n                  <span className=\"text-xs text-muted-foreground\">\n                    Articles: {source.totalArticles}\n                  </span>\n                  <Button\n                    size=\"sm\"\n                    variant=\"secondary\"\n                    onClick={() => handleCrawl(source.id)}\n                  >\n                    Crawl Now\n                  </Button>\n                </div>\n              </CardContent>\n            </Card>\n          ))\n        )}\n      </div>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\trends\\page.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-explicit-any",
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type.",
+        "line": 19,
+        "column": 40,
+        "nodeType": "TSAnyKeyword",
+        "messageId": "unexpectedAny",
+        "endLine": 19,
+        "endColumn": 43,
+        "suggestions": [
+          {
+            "messageId": "suggestUnknown",
+            "fix": {
+              "range": [
+                475,
+                478
+              ],
+              "text": "unknown"
+            },
+            "desc": "Use `unknown` instead, this will force you to explicitly, and safely assert the type is correct."
+          },
+          {
+            "messageId": "suggestNever",
+            "fix": {
+              "range": [
+                475,
+                478
+              ],
+              "text": "never"
+            },
+            "desc": "Use `never` instead, this is useful when instantiating generic type parameters that you don't need to know the type of."
+          }
+        ]
+      },
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nC:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\(dashboard)\\trends\\page.tsx:43:5\n  41 |\n  42 |   useEffect(() => {\n> 43 |     fetchTrends();\n     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  44 |   }, []);\n  45 |\n  46 |   const handleRunDetection = async () => {",
+        "line": 43,
+        "column": 5,
+        "nodeType": null,
+        "endLine": 43,
+        "endColumn": 16
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 66,
+        "column": 14,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 66,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 91,
+        "column": 14,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 91,
+        "endColumn": 17
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 2,
+    "fatalErrorCount": 0,
+    "warningCount": 2,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "\"use client\";\n\nimport { useEffect, useState } from \"react\";\nimport {\n  Card,\n  CardContent,\n  CardHeader,\n  CardTitle,\n  CardFooter,\n  CardDescription,\n} from \"@/components/ui/card\";\nimport { Badge } from \"@/components/ui/badge\";\nimport { Button } from \"@/components/ui/button\";\nimport { Activity, Layers, Play } from \"lucide-react\";\nimport Link from \"next/link\";\nimport { toast } from \"sonner\";\n\nexport default function TrendsPage() {\n  const [trends, setTrends] = useState<any[]>([]);\n  const [loading, setLoading] = useState(true);\n\n  const fetchTrends = async () => {\n    setLoading(true);\n    try {\n      const token = localStorage.getItem(\"auth_token\");\n      const res = await fetch(`http://localhost:3001/api/v1/trends`, {\n        headers: {\n          Authorization: `Bearer ${token}`,\n        },\n      });\n      if (res.ok) {\n        const data = await res.json();\n        setTrends(data);\n      }\n    } catch (_err) {\n      console.error(_err);\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  useEffect(() => {\n    fetchTrends();\n  }, []);\n\n  const handleRunDetection = async () => {\n    try {\n      const token = localStorage.getItem(\"auth_token\");\n      const res = await fetch(\n        `http://localhost:3001/api/v1/trends/run-detection`,\n        {\n          method: \"POST\",\n          headers: {\n            Authorization: `Bearer ${token}`,\n          },\n        },\n      );\n      if (res.ok) {\n        toast.success(\"Detection triggered\", {\n          description: \"Macro trends are being analyzed.\",\n        });\n        setTimeout(fetchTrends, 2000);\n      } else {\n        toast.error(\"Failed to run detection\");\n      }\n    } catch (err) {\n      toast.error(\"An error occurred\");\n    }\n  };\n\n  const handleGenerate = async (id: string) => {\n    try {\n      const token = localStorage.getItem(\"auth_token\");\n      const res = await fetch(\n        `http://localhost:3001/api/v1/trends/${id}/generate`,\n        {\n          method: \"POST\",\n          headers: {\n            Authorization: `Bearer ${token}`,\n          },\n        },\n      );\n      if (res.ok) {\n        toast.success(\"Generation started\", {\n          description: \"A trend report is being written.\",\n        });\n        setTimeout(fetchTrends, 2000);\n      } else {\n        toast.error(\"Failed to start generation\");\n      }\n    } catch (err) {\n      toast.error(\"An error occurred\");\n    }\n  };\n\n  return (\n    <div className=\"flex-1 space-y-4 p-8 pt-6\">\n      <div className=\"flex items-center justify-between space-y-2\">\n        <div>\n          <h2 className=\"text-3xl font-bold tracking-tight\">Macro Trends</h2>\n          <p className=\"text-muted-foreground mt-1\">\n            Detect industry-wide shifts across technology, categories, and\n            locations based on aggregated article scores.\n          </p>\n        </div>\n        <Button onClick={handleRunDetection}>\n          <Play className=\"mr-2 h-4 w-4\" /> Run Detection\n        </Button>\n      </div>\n\n      {loading ? (\n        <div className=\"py-8\">Analyzing trends...</div>\n      ) : trends.length === 0 ? (\n        <div className=\"text-muted-foreground py-8 border-2 border-dashed rounded-lg p-8 text-center flex flex-col items-center justify-center\">\n          <Activity className=\"h-10 w-10 mb-4 text-muted-foreground/50\" />\n          <p>No macro trends detected yet.</p>\n          <p className=\"text-sm\">\n            Trends require high-impact articles within a concentrated time\n            window.\n          </p>\n        </div>\n      ) : (\n        <div className=\"grid gap-6 md:grid-cols-2 lg:grid-cols-3\">\n          {trends.map((trend) => (\n            <Card key={trend.id} className=\"flex flex-col\">\n              <CardHeader className=\"pb-3\">\n                <div className=\"flex justify-between items-start mb-2\">\n                  <Badge\n                    variant={\n                      trend.type === \"TECHNOLOGY\"\n                        ? \"default\"\n                        : trend.type === \"CATEGORY\"\n                          ? \"secondary\"\n                          : \"outline\"\n                    }\n                  >\n                    {trend.type}\n                  </Badge>\n                  <div className=\"flex items-center gap-2\">\n                    <span className=\"text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full flex items-center\">\n                      <Activity className=\"w-3 h-3 mr-1\" />\n                      Score: {trend.score.toFixed(1)}\n                    </span>\n                  </div>\n                </div>\n                <CardTitle className=\"text-xl leading-tight\">\n                  {trend.name}\n                </CardTitle>\n                <CardDescription className=\"text-xs mt-1\">\n                  Detected {new Date(trend.createdAt).toLocaleDateString()}\n                </CardDescription>\n              </CardHeader>\n              <CardContent className=\"flex-1\">\n                <div className=\"flex items-center text-sm mb-4\">\n                  <Layers className=\"w-4 h-4 mr-2 text-muted-foreground\" />\n                  <span className=\"font-medium\">{trend.articleCount}</span>\n                  <span className=\"text-muted-foreground ml-1\">\n                    supporting articles\n                  </span>\n                </div>\n                {trend.status === \"PROCESSED\" && (\n                  <p className=\"text-sm text-green-600 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-md\">\n                    Trend report generated.\n                  </p>\n                )}\n              </CardContent>\n              <CardFooter className=\"pt-4 border-t gap-2 flex-col\">\n                {trend.status === \"DETECTED\" ? (\n                  <Button\n                    className=\"w-full\"\n                    onClick={() => handleGenerate(trend.id)}\n                  >\n                    Generate Trend Report\n                  </Button>\n                ) : (\n                  <Link href=\"/content\" className=\"w-full\">\n                    <Button variant=\"outline\" className=\"w-full\">\n                      View Generated Post\n                    </Button>\n                  </Link>\n                )}\n              </CardFooter>\n            </Card>\n          ))}\n        </div>\n      )}\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\api\\auth\\[...nextauth]\\route.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\app\\layout.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\avatar.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\badge.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\button.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\card.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\dropdown-menu.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\input.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\label.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\separator.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\sheet.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\sidebar.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\skeleton.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\tabs.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\toast.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\components\\ui\\tooltip.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\hooks\\use-mobile.ts",
+    "messages": [
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\nC:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\hooks\\use-mobile.ts:16:5\n  14 |     };\n  15 |     mql.addEventListener(\"change\", onChange);\n> 16 |     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);\n     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  17 |     return () => mql.removeEventListener(\"change\", onChange);\n  18 |   }, []);\n  19 |",
+        "line": 16,
+        "column": 5,
+        "nodeType": null,
+        "endLine": 16,
+        "endColumn": 16
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import * as React from \"react\";\n\nconst MOBILE_BREAKPOINT = 768;\n\nexport function useIsMobile() {\n  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(\n    undefined,\n  );\n\n  React.useEffect(() => {\n    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);\n    const onChange = () => {\n      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);\n    };\n    mql.addEventListener(\"change\", onChange);\n    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);\n    return () => mql.removeEventListener(\"change\", onChange);\n  }, []);\n\n  return !!isMobile;\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\lib\\api\\api-client.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\lib\\api\\hooks\\useAnalytics.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\lib\\utils.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\ayush\\Downloads\\gcc-quest\\apps\\web\\src\\middleware.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  }
+]

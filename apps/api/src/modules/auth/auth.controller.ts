@@ -1,4 +1,12 @@
-import { Controller, Post, UseGuards, Request, Get, Res, UnauthorizedException, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Request,
+  Get,
+  Res,
+  Body,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -13,8 +21,10 @@ export class AuthController {
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@Request() req: any, @Res({ passthrough: true }) res: Response) {
-    const { accessToken, refreshToken } = await this.authService.login(req.user);
-    
+    const { accessToken, refreshToken } = await this.authService.login(
+      req.user,
+    );
+
     // Set refresh token as httpOnly cookie
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
@@ -45,7 +55,56 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getProfile(@CurrentUser() user: User) {
-    return user;
+  async getProfile(@CurrentUser() user: User) {
+    return this.authService.getUserProfile(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('oauth-connect')
+  async linkOAuth(
+    @CurrentUser() user: User,
+    @Body()
+    body: {
+      provider: string;
+      providerAccountId: string;
+      accessToken: string;
+      refreshToken?: string;
+      expiresAt?: string | number;
+    },
+  ) {
+    let expiresAtDate: Date | undefined = undefined;
+    if (body.expiresAt) {
+      if (typeof body.expiresAt === 'number') {
+        // If it's in seconds since epoch (like NextAuth sometimes provides)
+        // Check if it's seconds or milliseconds. If it's < 10^12, likely seconds
+        if (body.expiresAt < 10000000000) {
+          expiresAtDate = new Date(body.expiresAt * 1000);
+        } else {
+          expiresAtDate = new Date(body.expiresAt);
+        }
+      } else {
+        expiresAtDate = new Date(body.expiresAt);
+      }
+    }
+
+    await this.authService.linkOAuthAccount(user.id, {
+      provider: body.provider,
+      providerAccountId: body.providerAccountId,
+      accessToken: body.accessToken,
+      refreshToken: body.refreshToken,
+      expiresAt: expiresAtDate,
+    });
+    return { success: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('oauth-disconnect/:provider')
+  async unlinkOAuth(@CurrentUser() user: User, @Request() req: any) {
+    const provider = req.params.provider;
+    const success = await this.authService.deleteOAuthConnection(
+      user.id,
+      provider,
+    );
+    return { success };
   }
 }

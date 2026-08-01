@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import * as Sentry from '@sentry/node';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -16,7 +17,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | object = 'Internal server error';
 
@@ -26,12 +27,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else if (exception instanceof Error) {
       message = exception.message;
       this.logger.error(`[${request.method}] ${request.url}`, exception.stack);
+      Sentry.captureException(exception);
     } else {
       this.logger.error(`[${request.method}] ${request.url}`, exception);
+      Sentry.captureException(exception);
     }
 
     response.status(status).json({
-      error: typeof message === 'string' ? message : (message as any).message || message,
+      error:
+        typeof message === 'string'
+          ? message
+          : (message as any).message || message,
       timestamp: new Date().toISOString(),
       path: request.url,
     });

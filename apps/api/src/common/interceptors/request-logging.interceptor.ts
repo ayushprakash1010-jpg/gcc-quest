@@ -17,7 +17,7 @@ export class RequestLoggingInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const req = ctx.getRequest<Request>();
     const res = ctx.getResponse<Response>();
-    
+
     const { method, originalUrl } = req;
     const startTime = Date.now();
 
@@ -26,7 +26,7 @@ export class RequestLoggingInterceptor implements NestInterceptor {
         const endTime = Date.now();
         const duration = endTime - startTime;
         const statusCode = res.statusCode;
-        
+
         this.logger.log(
           `${method} ${originalUrl} ${statusCode} - ${duration}ms`,
         );
