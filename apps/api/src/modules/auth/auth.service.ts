@@ -111,7 +111,7 @@ export class AuthService {
         },
       });
       return true;
-    } catch (e) {
+    } catch {
       // Ignore if not found
       return false;
     }

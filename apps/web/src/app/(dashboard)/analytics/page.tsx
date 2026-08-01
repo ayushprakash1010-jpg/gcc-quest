@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -36,7 +35,6 @@ import {
   useAnalyticsPromptPerformance,
 } from "@/lib/api/hooks/useAnalytics";
 import { Skeleton } from "@/components/ui/skeleton";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Activity, Brain, CheckCircle, Database, FileText } from "lucide-react";
 
 import { ElementType } from "react";

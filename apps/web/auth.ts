@@ -53,11 +53,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user, account }) {
-      if (user && (user as any).accessToken) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        token.accessToken = (user as any).accessToken;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        token.role = (user as any).role;
+      if (user && (user as { accessToken?: string }).accessToken) {
+        token.accessToken = (user as { accessToken?: string }).accessToken;
+        token.role = (user as { role?: string }).role;
       }
 
       if (account && account.provider === "linkedin") {
@@ -83,11 +81,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (session as any).accessToken = token.accessToken;
+      (session as { accessToken?: unknown }).accessToken = token.accessToken;
       if (session.user) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (session.user as any).role = token.role;
+        (session.user as { role?: unknown }).role = token.role;
       }
       return session;
     },
