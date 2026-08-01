@@ -52,6 +52,7 @@ export class AnalyticsService {
       approvedCount,
       sourcesActive,
       postsScheduled,
+      pendingReview,
     ] = await Promise.all([
       this.prisma.article.count({ where: { discoveredAt: { gte: after } } }),
       this.prisma.contentDraft.count({ where: { createdAt: { gte: after } } }),
@@ -65,6 +66,8 @@ export class AnalyticsService {
       this.prisma.scheduledPost.count({
         where: { scheduledFor: { gte: after }, status: 'QUEUED' },
       }),
+      // Real count of drafts currently awaiting human review
+      this.prisma.contentDraft.count({ where: { status: 'DRAFT' } }),
     ]);
 
     const approvalRate =
@@ -76,6 +79,7 @@ export class AnalyticsService {
       approvalRate,
       sourcesActive,
       postsScheduled,
+      pendingReview,
     };
   }
 

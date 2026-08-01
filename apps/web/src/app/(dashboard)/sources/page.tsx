@@ -71,7 +71,7 @@ export default function SourcesPage() {
             className="pl-8 bg-zinc-900 border-zinc-800"
           />
         </div>
-        <Button variant="outline" onClick={fetchSources}>
+        <Button variant="secondary" onClick={fetchSources}>
           <RefreshCw className="mr-2 h-4 w-4" /> Refresh
         </Button>
       </div>

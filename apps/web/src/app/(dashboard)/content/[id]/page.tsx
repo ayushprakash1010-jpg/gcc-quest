@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -114,8 +115,34 @@ export default function DraftReviewPage({
     }
   };
 
-  if (loading) return <div className="p-8">Loading draft...</div>;
-  if (!draft) return <div className="p-8">Draft not found.</div>;
+  if (loading)
+    return (
+      <div className="flex h-[calc(100vh-64px)] overflow-hidden">
+        <div className="w-1/2 p-6 space-y-4 border-r border-border">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-3/4" />
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-5 w-16" />
+            </div>
+          </div>
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+        <div className="w-1/2 p-6 space-y-4">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-7 w-32" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-9 w-36" />
+            </div>
+          </div>
+          <Skeleton className="h-[400px] w-full" />
+        </div>
+      </div>
+    );
+  if (!draft)
+    return <div className="p-8 text-muted-foreground">Draft not found.</div>;
 
   const charCount = editedText.length;
   const isTooLong = charCount > 3000;
@@ -129,16 +156,26 @@ export default function DraftReviewPage({
           <h2 className="text-2xl font-bold mb-2">
             {draft.article?.title || draft.cluster?.theme || "Unknown Article"}
           </h2>
-          <div className="flex items-center gap-2 mb-4">
-            <Badge variant="outline">{draft.targetPlatform}</Badge>
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#0a66c2] text-white">
+              {draft.targetPlatform}
+            </span>
             {draft.article?.analysis?.impactScore && (
-              <Badge variant="secondary">
-                Impact: {draft.article.analysis.impactScore}
-              </Badge>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                ⚡ Impact: {draft.article.analysis.impactScore}
+              </span>
             )}
-            <Badge variant={draft.status === "DRAFT" ? "default" : "secondary"}>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                draft.status === "DRAFT"
+                  ? "bg-zinc-700 text-zinc-200"
+                  : draft.status === "APPROVED"
+                    ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/30"
+                    : "bg-red-600/20 text-red-400 border border-red-500/30"
+              }`}
+            >
               {draft.status}
-            </Badge>
+            </span>
           </div>
         </div>
 
@@ -185,21 +222,23 @@ export default function DraftReviewPage({
           <h2 className="text-xl font-bold">Draft Editor</h2>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="destructive"
               onClick={handleReject}
               disabled={scheduleState !== "idle"}
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               Reject
             </Button>
             <Button
               onClick={handleApprove}
               disabled={isTooLong || scheduleState !== "idle"}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               {scheduleState === "approving"
                 ? "Approving..."
                 : scheduleState === "recommending"
                   ? "Getting AI Slot..."
-                  : "Approve & Schedule"}
+                  : "✓ Approve & Schedule"}
             </Button>
           </div>
         </div>

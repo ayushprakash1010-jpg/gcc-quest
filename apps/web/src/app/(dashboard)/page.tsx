@@ -119,11 +119,7 @@ export default function DashboardPage() {
         />
         <StatCard
           title="Pending Review"
-          value={
-            overview?.postsGenerated
-              ? Math.floor(overview.postsGenerated * 0.4)
-              : 0
-          }
+          value={overview?.pendingReview ?? 0}
           icon={CheckCircle}
           loading={loadingOverview}
         />

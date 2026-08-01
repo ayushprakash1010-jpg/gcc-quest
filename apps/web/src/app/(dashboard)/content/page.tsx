@@ -12,7 +12,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import apiClient from "@/lib/api/api-client";
+import { FileText, Clock, ArrowRight } from "lucide-react";
 
 export default function ContentQueuePage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,7 +27,7 @@ export default function ContentQueuePage() {
       setLoading(true);
       try {
         const res = await apiClient.get(
-          `/content/drafts?status=${statusFilter}`,
+          `/content/drafts?status=${statusFilter}&take=200`,
         );
         setDrafts(res.data || res);
       } catch (err) {
@@ -39,10 +41,23 @@ export default function ContentQueuePage() {
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">
-          Content Review Queue
-        </h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Content Review Queue
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Review and approve AI-generated LinkedIn posts before publishing.
+          </p>
+        </div>
+        {!loading && drafts.length > 0 && statusFilter === "DRAFT" && (
+          <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg px-4 py-2">
+            <Clock className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-primary">
+              {drafts.length} pending review
+            </span>
+          </div>
+        )}
       </div>
 
       <Tabs
@@ -58,17 +73,43 @@ export default function ContentQueuePage() {
         </TabsList>
         <TabsContent value={statusFilter} className="space-y-4">
           {loading ? (
-            <div>Loading drafts...</div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i}>
+                  <CardHeader className="pb-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/3 mt-1" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-3 w-full mb-2" />
+                    <Skeleton className="h-3 w-full mb-2" />
+                    <Skeleton className="h-3 w-2/3" />
+                  </CardContent>
+                  <CardFooter>
+                    <Skeleton className="h-9 w-full" />
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
           ) : drafts.length === 0 ? (
-            <div className="text-muted-foreground py-8">
-              No drafts found in this queue.
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <FileText className="h-12 w-12 text-muted-foreground mb-4 opacity-40" />
+              <p className="text-lg font-medium text-muted-foreground">
+                No drafts in this queue
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Crawl your sources to generate new content drafts.
+              </p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {drafts.map((draft) => (
-                <Card key={draft.id}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
+                <Card
+                  key={draft.id}
+                  className="flex flex-col hover:border-primary/50 transition-colors"
+                >
+                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-semibold leading-tight line-clamp-2 pr-2">
                       {draft.article?.title ||
                         draft.cluster?.theme ||
                         draft.trend?.name ||
@@ -76,35 +117,49 @@ export default function ContentQueuePage() {
                     </CardTitle>
                     <Badge
                       variant={statusFilter === "DRAFT" ? "default" : "outline"}
+                      className="shrink-0 text-xs"
                     >
                       {draft.targetPlatform}
                     </Badge>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-xs text-muted-foreground mb-4">
-                      Source:{" "}
-                      {draft.article?.source?.name ||
-                        (draft.cluster?.articles
-                          ? draft.cluster.articles
-                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                              .map((a: any) => a.source?.name)
-                              .filter(Boolean)
-                              .join(", ")
-                          : draft.trend
-                            ? "Macro Trend Aggregation"
-                            : "Unknown")}
+                  <CardContent className="flex-1">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                      <span className="truncate">
+                        {draft.article?.source?.name ||
+                          (draft.cluster?.articles
+                            ? draft.cluster.articles
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                .map((a: any) => a.source?.name)
+                                .filter(Boolean)
+                                .join(", ")
+                            : draft.trend
+                              ? "Macro Trend"
+                              : "Unknown")}
+                      </span>
+                      {draft.article?.analysis?.impactScore && (
+                        <Badge variant="secondary" className="text-xs shrink-0">
+                          Impact: {draft.article.analysis.impactScore}
+                        </Badge>
+                      )}
                     </div>
-                    <div className="text-sm line-clamp-3 mb-2">
+                    <div className="text-sm line-clamp-3 text-muted-foreground mb-3 leading-relaxed">
                       {draft.versions[0]?.content || "No content generated"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Generated:{" "}
-                      {new Date(draft.createdAt).toLocaleDateString()}
+                      {new Date(draft.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
                     </div>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="pt-0">
                     <Link href={`/content/${draft.id}`} className="w-full">
-                      <Button className="w-full">Review Draft</Button>
+                      <Button className="w-full group" variant="outline">
+                        Review Draft
+                        <ArrowRight className="ml-2 h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                      </Button>
                     </Link>
                   </CardFooter>
                 </Card>
