@@ -106,7 +106,7 @@ export class ContentRepository {
     const draft = await this.findById(draftId);
     const nextVersion = (draft.versions[0]?.versionNumber || 0) + 1;
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
       await tx.contentVersion.create({
         data: {
           draftId,

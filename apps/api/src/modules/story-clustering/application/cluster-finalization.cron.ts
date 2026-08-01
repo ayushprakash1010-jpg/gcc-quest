@@ -56,7 +56,7 @@ export class ClusterFinalizationCron {
 
         const summaries = cluster.articles
           .map(
-            (a, i) =>
+            (a: any, i: number) =>
               `Article ${i + 1} (${a.title}): ${a.analysis?.summary || ''}`,
           )
           .join('\n\n');

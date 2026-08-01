@@ -165,7 +165,7 @@ export class AnalyticsService {
 
     return Array.from(counts.entries())
       .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
+      .sort((a: any, b: any) => b.count - a.count)
       .slice(0, 10);
   }
 
@@ -177,8 +177,11 @@ export class AnalyticsService {
       where: { createdAt: { gte: after } },
     });
     return result
-      .map((r) => ({ category: r.gccCategory, count: r._count.gccCategory }))
-      .sort((a, b) => b.count - a.count);
+      .map((r: any) => ({
+        category: r.gccCategory,
+        count: r._count.gccCategory,
+      }))
+      .sort((a: any, b: any) => b.count - a.count);
   }
 
   async getSources(days: number) {
@@ -193,7 +196,7 @@ export class AnalyticsService {
     });
 
     return sources
-      .map((s) => ({
+      .map((s: any) => ({
         id: s.id,
         name: s.name,
         compositeScore: s.compositeScore,
@@ -201,7 +204,7 @@ export class AnalyticsService {
         lastCrawled: s.lastCrawledAt,
         status: s.status,
       }))
-      .sort((a, b) => b.articlesCount - a.articlesCount);
+      .sort((a: any, b: any) => b.articlesCount - a.articlesCount);
   }
 
   async getAiUsage(days: number) {

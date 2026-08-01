@@ -58,7 +58,7 @@ export class SourceRepository {
     ]);
 
     return {
-      items: items.map((item) => new SourceEntity(item as any)),
+      items: items.map((item: any) => new SourceEntity(item as any)),
       total,
     };
   }
@@ -98,7 +98,7 @@ export class SourceRepository {
     const items = await this.prisma.source.findMany({
       orderBy: { compositeScore: 'desc' },
     });
-    return items.map((item) => new SourceEntity(item as any));
+    return items.map((item: any) => new SourceEntity(item as any));
   }
 
   async delete(id: string): Promise<void> {

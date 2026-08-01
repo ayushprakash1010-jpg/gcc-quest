@@ -55,7 +55,7 @@ export class ClusterProcessor {
       );
 
       if (matches.length > 0) {
-        const matchIds = matches.map((m) => m.id);
+        const matchIds = matches.map((m: any) => m.id);
 
         // MED-07: Fetch all candidate articles in a single batched query (fixes N+1 risk)
         const matchedArticles = await this.prisma.article.findMany({
@@ -64,7 +64,7 @@ export class ClusterProcessor {
 
         // Find the first valid match within the time window
         const validMatch = matchedArticles.find(
-          (m) => m.discoveredAt >= cutoff,
+          (m: any) => m.discoveredAt >= cutoff,
         );
 
         if (validMatch) {

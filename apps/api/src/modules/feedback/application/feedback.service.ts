@@ -44,7 +44,7 @@ export class FeedbackService {
     if (examples.length === 0) return '';
 
     let context = 'LEARN FROM THESE PAST CORRECTIONS:\n\n';
-    examples.forEach((ex, i) => {
+    examples.forEach((ex: any, i: number) => {
       context += `Example ${i + 1}:\n`;
       context += `Original (Do not do this): ${ex.originalText}\n`;
       context += `Correction (Do this instead): ${ex.editedText}\n`;

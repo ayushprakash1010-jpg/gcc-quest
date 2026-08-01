@@ -16,7 +16,8 @@ async function bootstrap() {
 
   const summaries = cluster!.articles
     .map(
-      (a, i) => `Article ${i + 1} (${a.title}): ${a.analysis?.summary || ''}`,
+      (a: any, i: number) =>
+        `Article ${i + 1} (${a.title}): ${a.analysis?.summary || ''}`,
     )
     .join('\n\n');
 

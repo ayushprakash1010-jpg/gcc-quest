@@ -36,7 +36,7 @@ export class TrendDetectionService {
     if (!articles.length) return;
 
     // Calculate score for each article: sourceCompositeScore * businessImpact * recencyDecay
-    const scoredArticles = articles.map((article) => {
+    const scoredArticles = articles.map((article: any) => {
       const daysOld =
         (new Date().getTime() -
           (article.publishedAt?.getTime() || article.discoveredAt.getTime())) /
@@ -57,7 +57,7 @@ export class TrendDetectionService {
     const locMap = new Map<string, { score: number; articles: any[] }>();
     const catMap = new Map<string, { score: number; articles: any[] }>();
 
-    scoredArticles.forEach((article) => {
+    scoredArticles.forEach((article: any) => {
       if (!article.analysis) return;
       const entities = article.analysis.entities as any;
       const score = article.trendScore;
