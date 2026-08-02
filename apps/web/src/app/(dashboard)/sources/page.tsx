@@ -61,7 +61,7 @@ export default function SourcesPage() {
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     try {
-      const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      const newStatus = currentStatus === "ACTIVE" ? "PAUSED" : "ACTIVE";
       await apiClient.put(`/sources/${id}`, { status: newStatus });
       toast.success(`Source marked as ${newStatus}`);
       fetchSources();
