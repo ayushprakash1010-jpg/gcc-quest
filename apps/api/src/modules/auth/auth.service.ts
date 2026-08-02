@@ -143,4 +143,13 @@ export class AuthService {
       hasLinkedInConnection: !!linkedInConnection,
     };
   }
+
+  async updatePassword(userId: string, newPassword: string) {
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+    return true;
+  }
 }
