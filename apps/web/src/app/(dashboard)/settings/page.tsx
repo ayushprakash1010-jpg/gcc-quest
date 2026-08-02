@@ -16,8 +16,9 @@ import apiClient from "@/lib/api/api-client";
 export default function SettingsPage() {
   const { data: session } = useSession();
   const [isLinkedInConnected, setIsLinkedInConnected] = useState(false);
-
   const [loading, setLoading] = useState(true);
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -41,6 +42,24 @@ export default function SettingsPage() {
     } catch (e) {
       console.error("Failed to disconnect", e);
       toast.error("Failed to disconnect LinkedIn.");
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters.");
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      await apiClient.post("/auth/password", { newPassword });
+      toast.success("Password updated successfully.");
+      setNewPassword("");
+    } catch (e) {
+      console.error("Failed to update password", e);
+      toast.error("Failed to update password.");
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -105,6 +124,32 @@ export default function SettingsPage() {
                 </Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Security</CardTitle>
+            <CardDescription>Update your account password.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">New Password</label>
+              <input
+                type="password"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+              />
+            </div>
+            <Button
+              className="w-full"
+              onClick={handleChangePassword}
+              disabled={passwordLoading || !newPassword}
+            >
+              {passwordLoading ? "Updating..." : "Update Password"}
+            </Button>
           </CardContent>
         </Card>
       </div>

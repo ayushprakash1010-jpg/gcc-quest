@@ -107,4 +107,17 @@ export class AuthController {
     );
     return { success };
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('password')
+  async updatePassword(
+    @CurrentUser() user: User,
+    @Body() body: { newPassword: string },
+  ) {
+    if (!body.newPassword || body.newPassword.length < 6) {
+      throw new Error('Password must be at least 6 characters');
+    }
+    await this.authService.updatePassword(user.id, body.newPassword);
+    return { success: true };
+  }
 }
