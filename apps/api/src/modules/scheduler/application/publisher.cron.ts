@@ -79,11 +79,10 @@ export class PublisherCron {
             }
           }
 
-          // FALLBACK TO PERSONAL PROFILE: Since LinkedIn blocked the organization scope,
-          // we will post to the personal profile of the connected user for this test!
-          const urn = `urn:li:person:${connection.providerAccountId}`;
-
           if (connection && connection.accessToken) {
+            // FALLBACK TO PERSONAL PROFILE: Since LinkedIn blocked the organization scope,
+            // we will post to the personal profile of the connected user for this test!
+            const urn = `urn:li:person:${connection.providerAccountId}`;
             this.logger.log(
               `Found LinkedIn connection. Publishing to LinkedIn API...`,
             );
