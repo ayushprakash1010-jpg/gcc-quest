@@ -70,16 +70,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             const { decode } = await import("next-auth/jwt");
             const cookieStore = await cookies();
             const sessionToken =
+              cookieStore.get("authjs.session-token")?.value ||
+              cookieStore.get("__Secure-authjs.session-token")?.value ||
               cookieStore.get("next-auth.session-token")?.value ||
               cookieStore.get("__Secure-next-auth.session-token")?.value;
 
             if (sessionToken && process.env.AUTH_SECRET) {
+              // Determine the exact cookie name that was found to use as the salt
+              const cookieName = cookieStore.has(
+                "__Secure-authjs.session-token",
+              )
+                ? "__Secure-authjs.session-token"
+                : cookieStore.has("authjs.session-token")
+                  ? "authjs.session-token"
+                  : cookieStore.has("__Secure-next-auth.session-token")
+                    ? "__Secure-next-auth.session-token"
+                    : "next-auth.session-token";
+
               const decoded = await decode({
                 token: sessionToken,
                 secret: process.env.AUTH_SECRET,
-                salt: cookieStore.has("__Secure-next-auth.session-token")
-                  ? "__Secure-next-auth.session-token"
-                  : "next-auth.session-token",
+                salt: cookieName,
               });
               if (decoded?.accessToken) {
                 existingAccessToken = decoded.accessToken;
