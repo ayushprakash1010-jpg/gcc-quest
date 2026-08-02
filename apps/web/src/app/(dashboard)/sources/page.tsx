@@ -14,6 +14,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // LOW-05: Strict TypeScript interface instead of any
 interface Source {
@@ -31,6 +47,14 @@ export default function SourcesPage() {
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(""); // MED-02: Search state
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [addLoading, setAddLoading] = useState(false);
+  const [newSource, setNewSource] = useState({
+    name: "",
+    url: "",
+    type: "RSS",
+    category: "RESEARCH",
+  });
 
   const fetchSources = async () => {
     try {
@@ -71,6 +95,28 @@ export default function SourcesPage() {
     }
   };
 
+  const handleAddSource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSource.name || !newSource.url) {
+      toast.error("Name and URL are required.");
+      return;
+    }
+
+    setAddLoading(true);
+    try {
+      await apiClient.post("/sources", newSource);
+      toast.success("Source added successfully!");
+      setIsAddDialogOpen(false);
+      setNewSource({ name: "", url: "", type: "RSS", category: "RESEARCH" });
+      fetchSources();
+    } catch (error) {
+      console.error("Failed to add source", error);
+      toast.error("Failed to add source.");
+    } finally {
+      setAddLoading(false);
+    }
+  };
+
   // MED-02: Filter logic
   const filteredSources = sources.filter(
     (source) =>
@@ -89,12 +135,97 @@ export default function SourcesPage() {
             Manage your RSS and Web sources for GCC discovery.
           </p>
         </div>
-        <Button
-          className="bg-primary hover:bg-primary/90"
-          onClick={() => toast.info("Add Source dialog coming in Phase 2")}
-        >
-          <Plus className="mr-2 h-4 w-4" /> Add Source
-        </Button>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger
+            render={<Button className="bg-primary hover:bg-primary/90" />}
+          >
+            <Plus className="mr-2 h-4 w-4" /> Add Source
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <form onSubmit={handleAddSource}>
+              <DialogHeader>
+                <DialogTitle>Add New Source</DialogTitle>
+                <DialogDescription>
+                  Add a new web or RSS source to feed into the content engine.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={newSource.name}
+                    onChange={(e) =>
+                      setNewSource({ ...newSource, name: e.target.value })
+                    }
+                    className="col-span-3"
+                    placeholder="e.g. Google AI Blog"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="url" className="text-right">
+                    URL
+                  </Label>
+                  <Input
+                    id="url"
+                    value={newSource.url}
+                    onChange={(e) =>
+                      setNewSource({ ...newSource, url: e.target.value })
+                    }
+                    className="col-span-3"
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Type</Label>
+                  <Select
+                    value={newSource.type}
+                    onValueChange={(val) =>
+                      setNewSource({ ...newSource, type: val as string })
+                    }
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RSS">RSS Feed</SelectItem>
+                      <SelectItem value="WEB">Web Page</SelectItem>
+                      <SelectItem value="SITEMAP">Sitemap</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Category</Label>
+                  <Select
+                    value={newSource.category}
+                    onValueChange={(val) =>
+                      setNewSource({ ...newSource, category: val as string })
+                    }
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RESEARCH">Research</SelectItem>
+                      <SelectItem value="NEWS">News</SelectItem>
+                      <SelectItem value="COMPANY_BLOG">Company Blog</SelectItem>
+                      <SelectItem value="GOVERNMENT">Government</SelectItem>
+                      <SelectItem value="EVENT">Event</SelectItem>
+                      <SelectItem value="SOCIAL">Social</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={addLoading}>
+                  {addLoading ? "Adding..." : "Add Source"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex gap-4 items-center">
