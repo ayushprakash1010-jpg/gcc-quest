@@ -60,6 +60,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (account && account.provider === "linkedin") {
         try {
+          // FIX: NextAuth v5 clears the JWT when starting a new OAuth flow without a database.
+          // We must manually extract our existing NestJS accessToken from the previous cookie!
+          let existingAccessToken = token.accessToken;
+          let existingRole = token.role;
+
+          if (!existingAccessToken) {
+            const { cookies } = await import("next/headers");
+            const { decode } = await import("next-auth/jwt");
+            const cookieStore = await cookies();
+            const sessionToken =
+              cookieStore.get("next-auth.session-token")?.value ||
+              cookieStore.get("__Secure-next-auth.session-token")?.value;
+
+            if (sessionToken && process.env.AUTH_SECRET) {
+              const decoded = await decode({
+                token: sessionToken,
+                secret: process.env.AUTH_SECRET,
+                salt: cookieStore.has("__Secure-next-auth.session-token")
+                  ? "__Secure-next-auth.session-token"
+                  : "next-auth.session-token",
+              });
+              if (decoded?.accessToken) {
+                existingAccessToken = decoded.accessToken;
+                existingRole = decoded.role;
+
+                // Preserve them in the NEW token NextAuth is creating
+                token.accessToken = existingAccessToken;
+                token.role = existingRole;
+              }
+            }
+          }
+
           // Sync the LinkedIn token with our NestJS backend
           await apiClient.post(
             "/auth/oauth-connect",
@@ -70,7 +102,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               expiresAt: account.expires_at,
             },
             {
-              headers: { Authorization: `Bearer ${token.accessToken}` },
+              headers: { Authorization: `Bearer ${existingAccessToken}` },
             },
           );
         } catch (e) {
