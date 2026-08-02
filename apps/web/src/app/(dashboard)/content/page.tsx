@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import apiClient from "@/lib/api/api-client";
-import { FileText, Clock, ArrowRight, Trash2 } from "lucide-react";
+import { FileText, Clock, ArrowRight, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 // LOW-05: Strict TypeScript interface
@@ -65,6 +65,19 @@ export default function ContentQueuePage() {
     }
     fetchDrafts();
   }, [statusFilter]);
+
+  const handleRejectOne = async (id: string) => {
+    try {
+      await apiClient.put(`/content/drafts/${id}/status`, {
+        status: "REJECTED",
+      });
+      setDrafts((prev) => prev.filter((d) => d.id !== id));
+      toast.success("Draft rejected.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to reject draft.");
+    }
+  };
 
   const handleRejectAll = async () => {
     if (
@@ -171,10 +184,22 @@ export default function ContentQueuePage() {
               {drafts.map((draft) => (
                 <Card
                   key={draft.id}
-                  className="flex flex-col hover:border-primary/50 transition-colors"
+                  className="relative flex flex-col hover:border-primary/50 transition-colors"
                 >
+                  {/* Quick reject button — only visible on Pending Review tab */}
+                  {statusFilter === "DRAFT" && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 w-7 h-7 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 z-10"
+                      onClick={() => handleRejectOne(draft.id)}
+                      title="Reject draft"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold leading-tight line-clamp-2 pr-2">
+                    <CardTitle className="text-sm font-semibold leading-tight line-clamp-2 pr-8">
                       {draft.article?.title ||
                         draft.cluster?.theme ||
                         draft.trend?.name ||
