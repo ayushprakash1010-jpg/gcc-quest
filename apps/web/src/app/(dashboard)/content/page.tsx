@@ -184,33 +184,36 @@ export default function ContentQueuePage() {
               {drafts.map((draft) => (
                 <Card
                   key={draft.id}
-                  className="relative flex flex-col hover:border-primary/50 transition-colors"
+                  className="flex flex-col hover:border-primary/50 transition-colors"
                 >
-                  {/* Quick reject button — only visible on Pending Review tab */}
-                  {statusFilter === "DRAFT" && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-2 right-2 w-7 h-7 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 z-10"
-                      onClick={() => handleRejectOne(draft.id)}
-                      title="Reject draft"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  )}
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold leading-tight line-clamp-2 pr-8">
+                    <CardTitle className="text-sm font-semibold leading-tight line-clamp-2 pr-2 flex-1">
                       {draft.article?.title ||
                         draft.cluster?.theme ||
                         draft.trend?.name ||
                         "Unknown Article"}
                     </CardTitle>
-                    <Badge
-                      variant={statusFilter === "DRAFT" ? "default" : "outline"}
-                      className="shrink-0 text-xs"
-                    >
-                      {draft.targetPlatform}
-                    </Badge>
+                    <div className="flex items-center gap-1 shrink-0 ml-2">
+                      <Badge
+                        variant={
+                          statusFilter === "DRAFT" ? "default" : "outline"
+                        }
+                        className="text-xs"
+                      >
+                        {draft.targetPlatform}
+                      </Badge>
+                      {statusFilter === "DRAFT" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="w-6 h-6 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                          onClick={() => handleRejectOne(draft.id)}
+                          title="Reject draft"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent className="flex-1">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
