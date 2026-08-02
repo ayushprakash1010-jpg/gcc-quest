@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import apiClient from "@/lib/api/api-client";
-import { FileText, Clock, ArrowRight } from "lucide-react";
+import { FileText, Clock, ArrowRight, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 // LOW-05: Strict TypeScript interface
 interface DraftPreview {
@@ -65,6 +66,34 @@ export default function ContentQueuePage() {
     fetchDrafts();
   }, [statusFilter]);
 
+  const handleRejectAll = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to reject ALL pending drafts? This cannot be undone.",
+      )
+    )
+      return;
+
+    setLoading(true);
+    let count = 0;
+    try {
+      // Process in batches so we don't overwhelm the backend
+      for (const draft of drafts) {
+        await apiClient.put(`/content/drafts/${draft.id}/status`, {
+          status: "REJECTED",
+        });
+        count++;
+      }
+      toast.success(`Successfully rejected ${count} drafts.`);
+      setDrafts([]); // Clear UI immediately
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while rejecting drafts.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between">
@@ -77,11 +106,21 @@ export default function ContentQueuePage() {
           </p>
         </div>
         {!loading && drafts.length > 0 && statusFilter === "DRAFT" && (
-          <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg px-4 py-2">
-            <Clock className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold text-primary">
-              {drafts.length} pending review
-            </span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg px-4 py-2">
+              <Clock className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">
+                {drafts.length} pending review
+              </span>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleRejectAll}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" /> Reject All
+            </Button>
           </div>
         )}
       </div>
