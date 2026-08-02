@@ -79,18 +79,19 @@ export class PublisherCron {
             }
           }
 
-          const orgId = process.env.LINKEDIN_ORGANIZATION_ID;
+          // FALLBACK TO PERSONAL PROFILE: Since LinkedIn blocked the organization scope,
+          // we will post to the personal profile of the connected user for this test!
+          const urn = `urn:li:person:${connection.providerAccountId}`;
 
-          if (connection && connection.accessToken && orgId) {
+          if (connection && connection.accessToken) {
             this.logger.log(
-              `Found LinkedIn connection and Organization ID. Publishing to LinkedIn API...`,
+              `Found LinkedIn connection. Publishing to LinkedIn API...`,
             );
 
             // CRIT-01: Decrypt the stored token before use — it is stored encrypted at rest
             const bearerToken = this.encryption.decrypt(connection.accessToken);
 
             const postContent = post.draft.versions[0]?.content || '';
-            const urn = `urn:li:organization:${orgId}`;
 
             const payload = {
               author: urn,
