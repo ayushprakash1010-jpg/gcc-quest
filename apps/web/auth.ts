@@ -68,7 +68,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!existingAccessToken) {
             const { cookies } = await import("next/headers");
             const { decode } = await import("next-auth/jwt");
-            const cookieStore = cookies();
+            const cookieStore = await cookies();
             const sessionToken =
               cookieStore.get("next-auth.session-token")?.value ||
               cookieStore.get("__Secure-next-auth.session-token")?.value;
@@ -77,6 +77,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               const decoded = await decode({
                 token: sessionToken,
                 secret: process.env.AUTH_SECRET,
+                salt: cookieStore.has("__Secure-next-auth.session-token")
+                  ? "__Secure-next-auth.session-token"
+                  : "next-auth.session-token",
               });
               if (decoded?.accessToken) {
                 existingAccessToken = decoded.accessToken;
