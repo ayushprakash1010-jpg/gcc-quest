@@ -126,7 +126,7 @@ export default function CalendarPage() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {calendar[date].map((post: any) => (
-                  <Card key={post.id} className="relative">
+                  <Card key={post.id}>
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start mb-2">
                         <Badge
@@ -138,11 +138,35 @@ export default function CalendarPage() {
                         >
                           {post.status}
                         </Badge>
-                        <Badge variant="outline">
-                          {post.draft?.targetPlatform}
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <Badge variant="outline">
+                            {post.draft?.targetPlatform}
+                          </Badge>
+                          {post.status === "QUEUED" && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-7 h-7 text-muted-foreground hover:text-blue-500"
+                                onClick={() => startReschedule(post)}
+                                title="Reschedule"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-7 h-7 text-muted-foreground hover:text-red-500"
+                                onClick={() => handleCancel(post.id)}
+                                title="Cancel Schedule"
+                              >
+                                <Trash className="w-3.5 h-3.5" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <CardTitle className="text-lg leading-tight line-clamp-2 pr-16">
+                      <CardTitle className="text-base leading-tight line-clamp-2">
                         {post.draft?.versions?.[0]?.content?.substring(0, 100)}
                         ...
                       </CardTitle>
@@ -217,30 +241,6 @@ export default function CalendarPage() {
                         </a>
                       )}
                     </CardContent>
-
-                    {/* Action buttons — only for QUEUED posts */}
-                    {post.status === "QUEUED" && (
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="w-8 h-8 text-muted-foreground hover:text-blue-500"
-                          onClick={() => startReschedule(post)}
-                          title="Reschedule"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="w-8 h-8 text-muted-foreground hover:text-red-500"
-                          onClick={() => handleCancel(post.id)}
-                          title="Cancel Schedule"
-                        >
-                          <Trash className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    )}
                   </Card>
                 ))}
               </div>
