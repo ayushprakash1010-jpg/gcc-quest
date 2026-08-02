@@ -59,6 +59,18 @@ export default function SourcesPage() {
     }
   };
 
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      await apiClient.put(`/sources/${id}`, { status: newStatus });
+      toast.success(`Source marked as ${newStatus}`);
+      fetchSources();
+    } catch (error) {
+      console.error("Failed to update status", error);
+      toast.error("Failed to update status.");
+    }
+  };
+
   // MED-02: Filter logic
   const filteredSources = sources.filter(
     (source) =>
@@ -124,14 +136,15 @@ export default function SourcesPage() {
                     </CardDescription>
                   </div>
                   <Badge
+                    onClick={() => handleToggleStatus(source.id, source.status)}
                     variant={
                       source.status === "ACTIVE" ? "default" : "destructive"
                     }
-                    className={
+                    className={`cursor-pointer transition-colors ${
                       source.status === "ACTIVE"
                         ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                        : ""
-                    }
+                        : "hover:bg-destructive/80"
+                    }`}
                   >
                     {source.status}
                   </Badge>
