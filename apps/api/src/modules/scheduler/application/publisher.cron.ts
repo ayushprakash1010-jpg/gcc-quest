@@ -123,8 +123,7 @@ export class PublisherCron {
               );
             }
 
-            const data = await response.json();
-            const postId = data.id || response.headers.get('x-restli-id');
+            const postId = response.headers.get('x-restli-id');
             if (postId) {
               publishedUrl = `https://www.linkedin.com/feed/update/${postId}`;
             }
