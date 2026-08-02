@@ -94,32 +94,27 @@ export class PublisherCron {
 
             const payload = {
               author: urn,
+              commentary: postContent,
+              visibility: 'PUBLIC',
+              distribution: {
+                feedDistribution: 'MAIN_FEED',
+                targetEntities: [],
+                thirdPartyDistributionChannels: [],
+              },
               lifecycleState: 'PUBLISHED',
-              specificContent: {
-                'com.linkedin.ugc.ShareContent': {
-                  shareCommentary: {
-                    text: postContent,
-                  },
-                  shareMediaCategory: 'NONE',
-                },
-              },
-              visibility: {
-                'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
-              },
+              isReshareDisabledByAuthor: false,
             };
 
-            const response = await fetch(
-              'https://api.linkedin.com/v2/ugcPosts',
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${bearerToken}`,
-                  'Content-Type': 'application/json',
-                  'X-Restli-Protocol-Version': '2.0.0',
-                },
-                body: JSON.stringify(payload),
+            const response = await fetch('https://api.linkedin.com/v2/posts', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${bearerToken}`,
+                'Content-Type': 'application/json',
+                'LinkedIn-Version': '202401',
+                'X-Restli-Protocol-Version': '2.0.0',
               },
-            );
+              body: JSON.stringify(payload),
+            });
 
             if (!response.ok) {
               const errorData = await response.text();
