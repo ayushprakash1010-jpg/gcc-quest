@@ -32,80 +32,85 @@ export class CalendarIntelligenceService {
       }
     });
 
-    // Load upcoming scheduled posts
+    // Load upcoming scheduled posts for the next 14 days
     const now = new Date();
-    const nextWeek = new Date(now.getTime() + 7 * 24 * 3600 * 1000);
+    const twoWeeks = new Date(now.getTime() + 14 * 24 * 3600 * 1000);
     const upcoming = await this.prisma.scheduledPost.findMany({
       where: {
-        scheduledFor: { gte: now, lte: nextWeek },
+        scheduledFor: { gte: now, lte: twoWeeks },
         status: { in: ['QUEUED', 'PUBLISHED'] },
       },
       orderBy: { scheduledFor: 'asc' },
     });
 
-    // Start looking for a slot tomorrow at startHour
-    const candidate = new Date(now);
-    candidate.setDate(candidate.getDate() + 1);
-    candidate.setHours(startHour, 0, 0, 0);
+    // Preferred posting hours spread across the day (e.g. 9am, 1pm, 5pm)
+    // These are dynamically generated between startHour and endHour
+    const windowSize = endHour - startHour;
+    const preferredHours: number[] = [];
+    // Divide window into 3 slots (morning, midday, afternoon)
+    const numSlots = Math.min(maxPerDay, 3);
+    for (let i = 0; i < numSlots; i++) {
+      preferredHours.push(
+        Math.round(
+          startHour + (windowSize / numSlots) * i + windowSize / numSlots / 2,
+        ),
+      );
+    }
+    this.logger.log(`Preferred hours: ${preferredHours.join(', ')}`);
 
-    // Iteratively try slots (every hour)
-    let foundSlot = null;
-    let attempts = 0;
-    while (!foundSlot && attempts < 100) {
-      attempts++;
-      const hour = candidate.getHours();
+    const minSpacingMs = minHours * 3600 * 1000;
 
-      // Check allowed times
-      if (hour < startHour || hour >= endHour) {
-        candidate.setHours(candidate.getHours() + 1);
-        continue;
-      }
+    // Try each day starting from tomorrow, for up to 14 days
+    for (let dayOffset = 1; dayOffset <= 14; dayOffset++) {
+      const dayCandidate = new Date(now);
+      dayCandidate.setDate(dayCandidate.getDate() + dayOffset);
 
-      // Check max per day
-      const candidateDateString = candidate.toISOString().split('T')[0];
+      const candidateDateString = dayCandidate.toISOString().split('T')[0];
+
+      // Count how many posts are already on this day
       const postsOnDay = upcoming.filter(
         (p: any) =>
           p.scheduledFor.toISOString().split('T')[0] === candidateDateString,
       );
-      if (postsOnDay.length >= maxPerDay) {
-        // Skip to next day
-        candidate.setDate(candidate.getDate() + 1);
-        candidate.setHours(startHour, 0, 0, 0);
-        continue;
-      }
 
-      // Check spacing
-      const minSpacingMs = minHours * 3600 * 1000;
-      let hasConflict = false;
-      for (const p of upcoming) {
-        const diffMs = Math.abs(p.scheduledFor.getTime() - candidate.getTime());
-        if (diffMs < minSpacingMs) {
-          hasConflict = true;
-          break;
+      if (postsOnDay.length >= maxPerDay) continue; // Day is full, try next
+
+      // Try each preferred hour slot for this day
+      for (const hour of preferredHours) {
+        const candidate = new Date(dayCandidate);
+        candidate.setHours(hour, 0, 0, 0);
+
+        // Ensure the slot is in the future
+        if (candidate <= now) continue;
+
+        // Check spacing against all existing scheduled posts
+        let hasConflict = false;
+        for (const p of upcoming) {
+          const diffMs = Math.abs(
+            p.scheduledFor.getTime() - candidate.getTime(),
+          );
+          if (diffMs < minSpacingMs) {
+            hasConflict = true;
+            break;
+          }
+        }
+
+        if (!hasConflict) {
+          return {
+            slot: candidate,
+            rationale: `Chosen slot complies with ${minHours}h spacing and falls within ${startHour}:00–${endHour}:00 optimal windows.`,
+          };
         }
       }
-
-      if (hasConflict) {
-        candidate.setHours(candidate.getHours() + 1);
-        continue;
-      }
-
-      // Found!
-      foundSlot = new Date(candidate);
     }
 
-    if (!foundSlot) {
-      foundSlot = new Date(now);
-      foundSlot.setDate(foundSlot.getDate() + 3); // arbitrary fallback
-      return {
-        slot: foundSlot,
-        rationale: 'Fallback slot chosen due to high calendar density.',
-      };
-    }
-
+    // Ultimate fallback: 3 days out at midday
+    const fallback = new Date(now);
+    fallback.setDate(fallback.getDate() + 3);
+    fallback.setHours(Math.round((startHour + endHour) / 2), 0, 0, 0);
     return {
-      slot: foundSlot,
-      rationale: `Chosen slot complies with ${minHours}h spacing and falls within ${startHour}:00-${endHour}:00 optimal windows.`,
+      slot: fallback,
+      rationale: 'Fallback slot chosen due to high calendar density.',
     };
   }
 }
