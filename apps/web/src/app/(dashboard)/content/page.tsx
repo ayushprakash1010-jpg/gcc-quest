@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import apiClient from "@/lib/api/api-client";
 import { FileText, Clock, ArrowRight, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 // LOW-05: Strict TypeScript interface
 interface DraftPreview {
