@@ -10,5 +10,5 @@ STRICT GUIDELINES:
 6. Emojis: Use 1 or 2 professional emojis (like 📰, 🌍, or 💡) to visually break up the text or as bullet points. Keep it tasteful and not overwhelming.
 
 Use the following context to draft a compelling post.
-Context: \${JSON.stringify(vars)}
+Context: ${JSON.stringify(vars)}
 `;
