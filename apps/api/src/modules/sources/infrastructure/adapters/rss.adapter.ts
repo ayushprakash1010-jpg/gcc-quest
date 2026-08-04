@@ -16,7 +16,11 @@ export class RssAdapter {
   private readonly logger = new Logger(RssAdapter.name);
 
   constructor(private readonly ssrfGuard: SsrfGuardService) {
-    this.parser = new Parser();
+    this.parser = new Parser({
+      xml2js: {
+        strict: false,
+      },
+    });
   }
 
   async fetch(url: string): Promise<ExtractedArticle[]> {
