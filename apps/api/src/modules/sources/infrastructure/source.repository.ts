@@ -44,7 +44,11 @@ export class SourceRepository {
     const { skip = 0, take = 50, status, category } = params;
 
     const where: any = {};
-    if (status) where.status = status;
+    if (status) {
+      where.status = status;
+    } else {
+      where.status = { not: 'DISABLED' }; // Hide soft-deleted sources by default
+    }
     if (category) where.category = category;
 
     const [items, total] = await Promise.all([
