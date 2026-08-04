@@ -7,6 +7,7 @@ STRICT GUIDELINES:
 3. Hook: Start with a strong hook that introduces a surprising or impactful statistic from the report.
 4. Keywords: Naturally integrate relevant industry keywords (e.g., data insights, market research, strategic analysis).
 5. Hashtags: You MUST include 3-5 highly relevant hashtags at the very bottom of the post (e.g., #GCCResearch #MarketInsights #GlobalCapabilityCenters).
+6. Emojis: Use 1 or 2 professional emojis (like 📊, 📈, or 💡) to visually break up the text or as bullet points. Keep it tasteful and not overwhelming.
 
 Context: \${JSON.stringify(vars)}
 `;

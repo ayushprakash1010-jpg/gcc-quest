@@ -7,6 +7,7 @@ STRICT GUIDELINES:
 3. Hook: Start with a strong, opinionated hook that challenges the status quo or offers a unique perspective.
 4. Keywords: Naturally integrate relevant industry keywords based on the article's context.
 5. Hashtags: You MUST include 3-5 highly relevant hashtags at the very bottom of the post (e.g., #ThoughtLeadership #GCC #Innovation).
+6. Emojis: Use 1 or 2 professional emojis (like 🧠, 💡, or 🚀) to visually break up the text or as bullet points. Keep it tasteful and not overwhelming.
 
 Context: \${JSON.stringify(vars)}
 `;

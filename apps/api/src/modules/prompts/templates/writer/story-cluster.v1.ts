@@ -7,6 +7,7 @@ STRICT GUIDELINES:
 3. Hook: Start with a strong hook that identifies the macro trend connecting these stories.
 4. Keywords: Naturally integrate high-value keywords related to the overarching theme.
 5. Hashtags: You MUST include 3-5 highly relevant hashtags at the very bottom of the post (e.g., #MacroTrends #GCC #GlobalCapabilityCenters).
+6. Emojis: Use 1 or 2 professional emojis (like 🌐, 🚀, or 💡) to visually break up the text or as bullet points. Keep it tasteful and not overwhelming.
 
 Context: \${JSON.stringify(vars)}
 `;
