@@ -1,20 +1,19 @@
 const Parser = require('rss-parser');
-const parser = new Parser({
-  xml2js: { strict: false },
-  headers: {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    Accept:
-      'application/rss+xml, application/xml, application/atom+xml, text/xml, text/html, */*',
-  },
-});
+const parser = new Parser(); // no strict: false
 
 async function run() {
   try {
-    const feed = await parser.parseURL('https://analyticsindiamag.com/feed/');
-    console.log('Success:', feed.items.length);
+    const res = await fetch('https://rss.app/feeds/I9Q7q4d1xiQV8zag.xml', {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    });
+    const xml = await res.text();
+    const feed = await parser.parseString(xml);
+    console.log('Success default parser:', feed.items.length);
   } catch (e) {
-    console.error('Error with rss-parser:', e.message);
+    console.error('Error with default parser:', e.message);
   }
 }
 
