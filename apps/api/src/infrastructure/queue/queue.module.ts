@@ -33,16 +33,7 @@ import { MiddlewareConsumer, NestModule } from '@nestjs/common';
         };
       },
     }),
-    BullModule.registerQueue(
-      { name: QUEUES.CRAWL },
-      { name: QUEUES.ANALYSIS },
-      { name: QUEUES.EMBEDDING },
-      { name: QUEUES.GENERATION },
-      { name: QUEUES.CLUSTER },
-      { name: QUEUES.TREND },
-      { name: QUEUES.FEEDBACK },
-      { name: QUEUES.NOTIFICATION },
-    ),
+    BullModule.registerQueue({ name: QUEUES.CRAWL }, { name: QUEUES.ANALYSIS }),
     BullBoardModule.forRoot({
       route: '/admin/queues',
       adapter: ExpressAdapter,
@@ -50,12 +41,6 @@ import { MiddlewareConsumer, NestModule } from '@nestjs/common';
     BullBoardModule.forFeature(
       { name: QUEUES.CRAWL, adapter: BullMQAdapter },
       { name: QUEUES.ANALYSIS, adapter: BullMQAdapter },
-      { name: QUEUES.EMBEDDING, adapter: BullMQAdapter },
-      { name: QUEUES.GENERATION, adapter: BullMQAdapter },
-      { name: QUEUES.CLUSTER, adapter: BullMQAdapter },
-      { name: QUEUES.TREND, adapter: BullMQAdapter },
-      { name: QUEUES.FEEDBACK, adapter: BullMQAdapter },
-      { name: QUEUES.NOTIFICATION, adapter: BullMQAdapter },
     ),
   ],
   exports: [BullModule],
