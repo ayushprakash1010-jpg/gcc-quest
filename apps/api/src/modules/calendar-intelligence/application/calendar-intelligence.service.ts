@@ -60,8 +60,8 @@ export class CalendarIntelligenceService {
 
     const minSpacingMs = minHours * 3600 * 1000;
 
-    // Try each day starting from tomorrow, for up to 14 days
-    for (let dayOffset = 1; dayOffset <= 14; dayOffset++) {
+    // Try each day starting from today, for up to 14 days
+    for (let dayOffset = 0; dayOffset <= 14; dayOffset++) {
       const dayCandidate = new Date(now);
       dayCandidate.setDate(dayCandidate.getDate() + dayOffset);
 
