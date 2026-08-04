@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import apiClient from "@/lib/api/api-client";
-import { Plus, Search, RefreshCw, Activity, AlertCircle } from "lucide-react";
+import {
+  Plus,
+  Search,
+  RefreshCw,
+  Activity,
+  AlertCircle,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -55,6 +62,7 @@ export default function SourcesPage() {
     type: "RSS",
     category: "RESEARCH",
   });
+  const [sourceToDelete, setSourceToDelete] = useState<string | null>(null);
 
   const fetchSources = async () => {
     try {
@@ -92,6 +100,19 @@ export default function SourcesPage() {
     } catch (error) {
       console.error("Failed to update status", error);
       toast.error("Failed to update status.");
+    }
+  };
+
+  const handleDeleteSource = async () => {
+    if (!sourceToDelete) return;
+    try {
+      await apiClient.delete(`/sources/${sourceToDelete}`);
+      toast.success("Source deleted successfully.");
+      setSourceToDelete(null);
+      fetchSources();
+    } catch (error) {
+      console.error("Failed to delete source", error);
+      toast.error("Failed to delete source.");
     }
   };
 
@@ -266,19 +287,31 @@ export default function SourcesPage() {
                       {source.url}
                     </CardDescription>
                   </div>
-                  <Badge
-                    onClick={() => handleToggleStatus(source.id, source.status)}
-                    variant={
-                      source.status === "ACTIVE" ? "default" : "destructive"
-                    }
-                    className={`cursor-pointer transition-colors ${
-                      source.status === "ACTIVE"
-                        ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                        : "hover:bg-destructive/80"
-                    }`}
-                  >
-                    {source.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      onClick={() =>
+                        handleToggleStatus(source.id, source.status)
+                      }
+                      variant={
+                        source.status === "ACTIVE" ? "default" : "destructive"
+                      }
+                      className={`cursor-pointer transition-colors ${
+                        source.status === "ACTIVE"
+                          ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                          : "hover:bg-destructive/80"
+                      }`}
+                    >
+                      {source.status}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive h-6 w-6"
+                      onClick={() => setSourceToDelete(source.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -316,6 +349,30 @@ export default function SourcesPage() {
           ))
         )}
       </div>
+
+      <Dialog
+        open={!!sourceToDelete}
+        onOpenChange={(open) => !open && setSourceToDelete(null)}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Source</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this source? This action cannot be
+              undone and will permanently remove this source and all its related
+              analytics data.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="secondary" onClick={() => setSourceToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteSource}>
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
