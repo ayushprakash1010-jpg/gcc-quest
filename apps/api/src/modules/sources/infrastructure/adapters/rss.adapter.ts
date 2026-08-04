@@ -38,7 +38,7 @@ export class RssAdapter {
           url: item.link || '',
           author: item.creator || item.author,
           publishedAt: item.pubDate ? new Date(item.pubDate) : undefined,
-          rawText: item.contentSnippet || item.content,
+          rawText: item.contentSnippet || item.content || item.title,
         }))
         .filter((a) => a.url); // Must have a URL
 

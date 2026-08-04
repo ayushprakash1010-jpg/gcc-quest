@@ -1,19 +1,24 @@
 const Parser = require('rss-parser');
-const parser = new Parser(); // no strict: false
+const parser = new Parser({
+  headers: {
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  },
+});
 
 async function run() {
   try {
-    const res = await fetch('https://rss.app/feeds/I9Q7q4d1xiQV8zag.xml', {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-    });
-    const xml = await res.text();
-    const feed = await parser.parseString(xml);
-    console.log('Success default parser:', feed.items.length);
+    const feed = await parser.parseURL(
+      'https://morss.it/https://analyticsindiamag.com/feed/',
+    );
+    console.log('Success Morss:', feed.items.length);
+    if (feed.items.length > 0) {
+      console.log(Object.keys(feed.items[0]));
+      console.log('Has content?', !!feed.items[0].content);
+      console.log('Has snippet?', !!feed.items[0].contentSnippet);
+    }
   } catch (e) {
-    console.error('Error with default parser:', e.message);
+    console.error('Error with morss:', e.message);
   }
 }
 
