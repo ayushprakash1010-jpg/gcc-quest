@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { SessionProvider } from "next-auth/react";
-
+import { Toaster } from "sonner";
 export function Providers({ children }: { children: React.ReactNode }) {
   // Ensure a single QueryClient instance is created per request lifecycle
   // by using useState with an initializer function.
@@ -22,7 +22,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {children}
+        <Toaster richColors position="top-right" />
+      </QueryClientProvider>
     </SessionProvider>
   );
 }
