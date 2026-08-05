@@ -55,8 +55,8 @@ async function main() {
     },
     {
       key: 'config.cluster_window_hours',
-      value: '72',
-      description: 'Hours window for cluster formation',
+      value: '24',
+      description: 'Hours to wait before finalizing a story cluster',
     },
     {
       key: 'config.trend_score_threshold',

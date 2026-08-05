@@ -19,7 +19,7 @@ const analysisSchema = z.object({
   gccCategory: z
     .string()
     .describe(
-      'Category of GCC news (e.g. Expansion, Hiring, Tech Innovation, Policy)',
+      'Category of GCC news (e.g. Expansion, Hiring, Tech Innovation, Policy, M&A, Leadership, Regulatory)',
     ),
   entities: z.object({
     companies: z.array(z.string()),
@@ -84,7 +84,7 @@ export class AnalysisProcessor extends WorkerHost {
         articleText: safeText,
         trustScore: article.source.trustScore,
         gccTaxonomy:
-          'Expansion, Hiring, Strategy, Technology, Real Estate, Policy',
+          'Expansion, Hiring, Strategy, Technology, Real Estate, Policy, M&A, Leadership, Regulatory',
       });
 
       // 3. Analyze via LLM with Observability
