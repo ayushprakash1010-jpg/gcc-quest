@@ -44,7 +44,7 @@ export class DiscoveryWorker extends WorkerHost {
     let errors = 0;
 
     try {
-      const fetchedArticles = await adapter.fetch(source.url);
+      const fetchedArticles = await adapter.fetch(source);
       articlesFound = fetchedArticles.length;
 
       for (const article of fetchedArticles) {

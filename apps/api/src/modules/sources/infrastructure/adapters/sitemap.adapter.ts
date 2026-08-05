@@ -13,7 +13,11 @@ export class SitemapAdapter {
     private readonly webAdapter: WebAdapter,
   ) {}
 
-  async fetch(url: string): Promise<ExtractedArticle[]> {
+  async fetch(source: {
+    url: string;
+    config?: any;
+  }): Promise<ExtractedArticle[]> {
+    const url = source.url;
     this.ssrfGuard.assertSafeUrl(url);
 
     try {
@@ -63,7 +67,7 @@ export class SitemapAdapter {
       const articles: ExtractedArticle[] = [];
       for (const locUrl of topUrls) {
         try {
-          const fetched = await this.webAdapter.fetch(locUrl);
+          const fetched = await this.webAdapter.fetchUrl(locUrl);
           if (fetched && fetched.length > 0) {
             articles.push(...fetched);
           }
