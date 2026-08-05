@@ -59,12 +59,19 @@ export class ObservabilityService {
 
       const durationMs = Date.now() - startTime;
 
-      // For MVP, we will mock token usage since extracting exact tokens from `@google/generative-ai`
-      // simple responses requires separate calls or checking usage metadata if available.
-      // Assuming average 1500 in, 500 out for generation, 500 in for embedding.
-      const isEmbedding = context.runType === 'embedding';
-      const tokensInput = isEmbedding ? 500 : 1500;
-      const tokensOutput = isEmbedding ? 0 : 500;
+      let tokensInput = 0;
+      let tokensOutput = 0;
+
+      // Extract real token usage from Gemini response if available
+      if (result && (result as any).usageMetadata) {
+        tokensInput = (result as any).usageMetadata.promptTokenCount || 0;
+        tokensOutput = (result as any).usageMetadata.candidatesTokenCount || 0;
+      } else {
+        // Fallback for mock or older responses
+        const isEmbedding = context.runType === 'embedding';
+        tokensInput = isEmbedding ? 500 : 1500;
+        tokensOutput = isEmbedding ? 0 : 500;
+      }
 
       const rates = COST_PER_TOKEN[context.model] || { input: 0, output: 0 };
       const costUsd = tokensInput * rates.input + tokensOutput * rates.output;

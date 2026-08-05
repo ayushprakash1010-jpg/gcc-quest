@@ -34,7 +34,7 @@ async function bootstrap() {
   const frontendUrl =
     configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
   app.enableCors({
-    origin: [frontendUrl, /\.vercel\.app$/, 'http://localhost:3000'],
+    origin: [frontendUrl, 'http://localhost:3000'],
     credentials: true,
   });
 

@@ -91,7 +91,9 @@ async function main() {
   });
 
   if (!existingAdmin) {
-    const passwordHash = await bcrypt.hash('admin123', 10);
+    const crypto = require('crypto');
+    const randomPassword = crypto.randomBytes(8).toString('hex');
+    const passwordHash = await bcrypt.hash(randomPassword, 10);
     await prisma.user.create({
       data: {
         email: adminEmail,
@@ -100,7 +102,9 @@ async function main() {
         passwordHash,
       },
     });
-    console.log('Admin user seeded (admin@gccquest.com / admin123).');
+    console.log(
+      `Admin user seeded (Email: ${adminEmail} / Password: ${randomPassword}). IMPORTANT: Save this password or change it immediately.`,
+    );
   } else {
     console.log('Admin user already exists.');
   }
