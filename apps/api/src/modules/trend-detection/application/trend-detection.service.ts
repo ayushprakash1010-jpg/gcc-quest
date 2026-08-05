@@ -98,7 +98,7 @@ export class TrendDetectionService {
     });
     const threshold = thresholdSetting
       ? parseFloat(thresholdSetting.value)
-      : 15;
+      : 150;
 
     await this.processMap(techMap, 'TECHNOLOGY', threshold);
     await this.processMap(locMap, 'LOCATION', threshold);
@@ -111,7 +111,7 @@ export class TrendDetectionService {
     threshold: number,
   ) {
     for (const [name, data] of map.entries()) {
-      if (data.score >= threshold) {
+      if (data.score >= threshold && data.articles.length >= 3) {
         // Trend detected!
         // Check if already exists in active/DETECTED state
         let trend = await this.prisma.trend.findFirst({
