@@ -26,7 +26,11 @@ export class RssAdapter {
     });
   }
 
-  async fetch(url: string): Promise<ExtractedArticle[]> {
+  async fetch(source: {
+    url: string;
+    config?: any;
+  }): Promise<ExtractedArticle[]> {
+    const url = source.url;
     this.ssrfGuard.assertSafeUrl(url);
 
     try {
