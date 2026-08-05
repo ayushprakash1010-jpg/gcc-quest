@@ -12,6 +12,16 @@ export class TrendDetectionService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
+  private normalizeEntity(entity: string): string {
+    let normalized = entity.toLowerCase().trim();
+    // Basic synonym mapping
+    if (normalized === 'artificial intelligence') normalized = 'ai';
+    if (normalized === 'gen ai' || normalized === 'genai')
+      normalized = 'generative ai';
+    if (normalized === 'machine learning') normalized = 'ml';
+    return normalized;
+  }
+
   async detectTrends(windowDays = 7) {
     this.logger.log(`Starting trend detection for window: ${windowDays} days`);
     const dateLimit = new Date();
@@ -73,7 +83,8 @@ export class TrendDetectionService {
 
       // Tech
       if (entities?.technologies && Array.isArray(entities.technologies)) {
-        entities.technologies.forEach((tech: string) => {
+        entities.technologies.forEach((rawTech: string) => {
+          const tech = this.normalizeEntity(rawTech);
           if (!techMap.has(tech)) techMap.set(tech, { score: 0, articles: [] });
           const val = techMap.get(tech)!;
           val.score += score;
@@ -83,7 +94,8 @@ export class TrendDetectionService {
 
       // Location
       if (entities?.locations && Array.isArray(entities.locations)) {
-        entities.locations.forEach((loc: string) => {
+        entities.locations.forEach((rawLoc: string) => {
+          const loc = this.normalizeEntity(rawLoc);
           if (!locMap.has(loc)) locMap.set(loc, { score: 0, articles: [] });
           const val = locMap.get(loc)!;
           val.score += score;

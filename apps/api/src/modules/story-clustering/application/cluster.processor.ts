@@ -36,7 +36,7 @@ export class ClusterProcessor {
       if (!article || article.clusterId) return; // Already clustered somehow
 
       const similarityThreshold = parseFloat(
-        await this.settingsCache.get('config.cluster_similarity', '0.85'),
+        await this.settingsCache.get('config.cluster_similarity', '0.80'),
       );
 
       const windowHours = parseInt(
