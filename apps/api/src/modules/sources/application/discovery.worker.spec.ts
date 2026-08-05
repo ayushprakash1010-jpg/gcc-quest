@@ -27,6 +27,7 @@ describe('DiscoveryWorker', () => {
     deduplicationEngine = {
       generateHash: jest.fn().mockReturnValue('testhash'),
       isDuplicate: jest.fn(),
+      isSyntacticDuplicate: jest.fn(),
     };
 
     sourceRepository = {
@@ -76,6 +77,7 @@ describe('DiscoveryWorker', () => {
       { title: 'A1', url: 'http://test.com/1' },
     ]);
     deduplicationEngine.isDuplicate.mockResolvedValue(false); // not a duplicate
+    deduplicationEngine.isSyntacticDuplicate.mockResolvedValue(false); // not a syntactic duplicate
 
     await worker.process({ data: { sourceId: 's1' } } as any);
 
