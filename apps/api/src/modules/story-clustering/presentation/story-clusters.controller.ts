@@ -1,6 +1,19 @@
-import { Controller, Get, Param, Query, Patch, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Patch,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { StoryClusterRepository } from '../infrastructure/story-cluster.repository';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { UserRole } from '@gcc-quest/shared-types';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('clusters')
 export class StoryClustersController {
   constructor(private readonly repository: StoryClusterRepository) {}
@@ -26,6 +39,7 @@ export class StoryClustersController {
   }
 
   @Patch(':id/finalize')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
   async finalizeCluster(
     @Param('id') id: string,
     @Body('theme') theme: string,

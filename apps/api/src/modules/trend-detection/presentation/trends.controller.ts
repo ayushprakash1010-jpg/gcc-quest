@@ -5,12 +5,17 @@ import {
   Query,
   Post,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { TrendDetectionService } from '../application/trend-detection.service';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { DomainEvents } from '@gcc-quest/shared-types';
+import { DomainEvents, UserRole } from '@gcc-quest/shared-types';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('trends')
 export class TrendsController {
   constructor(
@@ -57,6 +62,7 @@ export class TrendsController {
   }
 
   @Post('run-detection')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
   async runDetection(@Query('window') window?: string) {
     const days = window ? parseInt(window, 10) : 7;
     await this.trendService.detectTrends(days);
@@ -64,6 +70,7 @@ export class TrendsController {
   }
 
   @Post(':id/generate')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
   async generateTrendPost(@Param('id') id: string) {
     const trend = await this.prisma.trend.findUnique({ where: { id } });
     if (!trend) {

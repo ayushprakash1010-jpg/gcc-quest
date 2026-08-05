@@ -144,7 +144,27 @@ export class AuthService {
     };
   }
 
-  async updatePassword(userId: string, newPassword: string) {
+  async updatePassword(
+    userId: string,
+    newPassword: string,
+    currentPassword?: string,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user || !user.passwordHash) {
+      throw new Error('User not found or password not set');
+    }
+
+    if (!currentPassword) {
+      throw new Error('Current password is required');
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      throw new Error('Current password is incorrect');
+    }
+
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await this.prisma.user.update({
       where: { id: userId },

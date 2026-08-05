@@ -4,31 +4,39 @@ import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { ObservabilityService } from '../../observability/observability.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TokenEncryptionService } from '../../../common/encryption/token-encryption.service';
+import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
 
 @Injectable()
 export class PublisherCron {
   private readonly logger = new Logger(PublisherCron.name);
 
-  // MED-11: Concurrency guard to prevent double-publishing if API takes >60s
-  private isPublishing = false;
+  private redis: Redis;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly observability: ObservabilityService,
     private readonly eventEmitter: EventEmitter2,
     private readonly encryption: TokenEncryptionService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.redis = new Redis(
+      this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379',
+    );
+  }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleCron() {
-    if (this.isPublishing) {
+    const lockKey = 'cron:publisher:lock';
+    // Acquire a distributed lock for 55 seconds (since cron runs every 60s)
+    const acquired = await this.redis.set(lockKey, 'locked', 'PX', 55000, 'NX');
+
+    if (!acquired) {
       this.logger.warn(
-        'Previous publish job is still running. Skipping this tick to prevent double-publishing.',
+        'Previous publish job is still running (or locked by another replica). Skipping this tick to prevent double-publishing.',
       );
       return;
     }
-
-    this.isPublishing = true;
     this.logger.debug('Checking for posts to publish...');
 
     const now = new Date();
@@ -164,7 +172,5 @@ export class PublisherCron {
         });
       }
     }
-
-    this.isPublishing = false;
   }
 }

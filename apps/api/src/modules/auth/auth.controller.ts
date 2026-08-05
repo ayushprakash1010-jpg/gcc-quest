@@ -6,6 +6,7 @@ import {
   Get,
   Res,
   Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -112,12 +113,17 @@ export class AuthController {
   @Post('password')
   async updatePassword(
     @CurrentUser() user: User,
-    @Body() body: { newPassword: string },
+    @Body() body: { currentPassword?: string; newPassword: string },
   ) {
     if (!body.newPassword || body.newPassword.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+      throw new BadRequestException('Password must be at least 6 characters');
     }
-    await this.authService.updatePassword(user.id, body.newPassword);
+
+    await this.authService.updatePassword(
+      user.id,
+      body.newPassword,
+      body.currentPassword,
+    );
     return { success: true };
   }
 }

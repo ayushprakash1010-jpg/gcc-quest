@@ -30,7 +30,26 @@ export class RssAdapter {
     this.ssrfGuard.assertSafeUrl(url);
 
     try {
-      const feed = await this.parser.parseURL(url);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+      const response = await fetch(url, {
+        signal: controller.signal as any,
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          Accept:
+            'application/rss+xml, application/xml, application/atom+xml, text/xml, text/html, */*',
+        },
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const xml = await response.text();
+      const feed = await this.parser.parseString(xml);
 
       const articles: ExtractedArticle[] = feed.items
         .map((item) => ({

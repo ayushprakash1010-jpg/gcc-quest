@@ -7,7 +7,7 @@ import { UserRole } from '@gcc-quest/shared-types';
 
 @Controller('analytics')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.VIEWER)
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
