@@ -40,7 +40,7 @@ export class ClusterProcessor {
       );
 
       const windowHours = parseInt(
-        await this.settingsCache.get('config.cluster_window_hours', '72'),
+        await this.settingsCache.get('config.cluster_window_hours', '24'),
         10,
       );
 

@@ -55,10 +55,13 @@ export class TrendDetectionService {
         0,
         (windowDays - daysOld) / windowDays,
       );
+
+      const impactScore = article.analysis?.impactScore || 0;
+      // Exponential bonus for high impact to prioritize quality over volume
+      const weightedImpact = Math.pow(impactScore, 1.5);
+
       const score =
-        article.source.compositeScore *
-        (article.analysis?.impactScore || 0) *
-        recencyDecayFactor;
+        article.source.compositeScore * weightedImpact * recencyDecayFactor;
 
       return { ...article, trendScore: score };
     });
@@ -123,7 +126,16 @@ export class TrendDetectionService {
     threshold: number,
   ) {
     for (const [name, data] of map.entries()) {
-      if (data.score >= threshold && data.articles.length >= 3) {
+      // Sort articles by score descending and take top 10 to cap volume impact
+      const topArticles = data.articles
+        .sort((a, b) => b.trendScore - a.trendScore)
+        .slice(0, 10);
+      const cappedScore = topArticles.reduce(
+        (sum, art) => sum + art.trendScore,
+        0,
+      );
+
+      if (cappedScore >= threshold && data.articles.length >= 3) {
         // Trend detected!
         // Check if already exists in active/DETECTED state
         let trend = await this.prisma.trend.findFirst({
@@ -135,19 +147,19 @@ export class TrendDetectionService {
             data: {
               name,
               type,
-              score: data.score,
+              score: cappedScore,
               articleCount: data.articles.length,
             },
           });
           this.logger.log(
-            `New ${type} trend detected: ${name} (Score: ${data.score})`,
+            `New ${type} trend detected: ${name} (Score: ${cappedScore})`,
           );
         } else {
           // Update score and count
           trend = await this.prisma.trend.update({
             where: { id: trend.id },
             data: {
-              score: data.score,
+              score: cappedScore,
               articleCount: data.articles.length,
             },
           });
