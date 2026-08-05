@@ -27,14 +27,14 @@ describe('WebAdapter', () => {
         throw new BadRequestException('SSRF');
       });
 
-    await expect(adapter.fetch('http://169.254.169.254/')).rejects.toThrow(
-      BadRequestException,
-    );
+    await expect(
+      adapter.fetch({ url: 'http://169.254.169.254/' }),
+    ).rejects.toThrow(BadRequestException);
     expect(spy).toHaveBeenCalledWith('http://169.254.169.254/');
   });
 
   it('should return non-empty text for a real static URL', async () => {
-    const result = await adapter.fetch('https://example.com/');
+    const result = await adapter.fetch({ url: 'https://example.com/' });
     expect(Array.isArray(result)).toBe(true);
     if (result.length > 0) {
       expect(result[0]).toHaveProperty('title');

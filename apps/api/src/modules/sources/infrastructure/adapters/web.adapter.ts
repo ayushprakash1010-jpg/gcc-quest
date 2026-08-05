@@ -64,7 +64,7 @@ export class WebAdapter {
             if (absoluteUrl.startsWith('http')) {
               links.push(absoluteUrl);
             }
-          } catch (e) {
+          } catch {
             // ignore invalid urls
           }
         }

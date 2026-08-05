@@ -82,7 +82,9 @@ describe('DiscoveryWorker', () => {
     await worker.process({ data: { sourceId: 's1' } } as any);
 
     expect(adapterFactory.getAdapter).toHaveBeenCalledWith('RSS');
-    expect(mockAdapter.fetch).toHaveBeenCalledWith('http://test.com/rss');
+    expect(mockAdapter.fetch).toHaveBeenCalledWith(
+      expect.objectContaining({ url: 'http://test.com/rss' }),
+    );
     expect(sourceRepository.recordCrawlHistory).toHaveBeenCalledWith(
       expect.objectContaining({
         articlesFound: 1,

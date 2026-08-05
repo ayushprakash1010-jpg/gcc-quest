@@ -27,17 +27,17 @@ describe('RssAdapter', () => {
         throw new BadRequestException('SSRF');
       });
 
-    await expect(adapter.fetch('http://169.254.169.254/feed')).rejects.toThrow(
-      BadRequestException,
-    );
+    await expect(
+      adapter.fetch({ url: 'http://169.254.169.254/feed' }),
+    ).rejects.toThrow(BadRequestException);
     expect(spy).toHaveBeenCalledWith('http://169.254.169.254/feed');
   });
 
   it('should return at least 1 article for a real RSS feed', async () => {
     // using a highly reliable public RSS feed for testing (e.g., TechCrunch or Reddit)
-    const result = await adapter.fetch(
-      'https://www.reddit.com/r/technology/.rss',
-    );
+    const result = await adapter.fetch({
+      url: 'https://www.reddit.com/r/technology/.rss',
+    });
     expect(Array.isArray(result)).toBe(true);
     // Might be empty if network error, but in a successful fetch it should have items
     if (result.length > 0) {
