@@ -88,11 +88,14 @@ export class PublisherCron {
           }
 
           if (connection && connection.accessToken) {
-            // FALLBACK TO PERSONAL PROFILE: Since LinkedIn blocked the organization scope,
-            // we will post to the personal profile of the connected user for this test!
-            const urn = `urn:li:person:${connection.providerAccountId}`;
+            // Post to Company Page if an ID is provided in ENV, otherwise fallback to Personal Profile
+            const orgId = process.env.LINKEDIN_ORGANIZATION_ID;
+            const urn = orgId
+              ? `urn:li:organization:${orgId}`
+              : `urn:li:person:${connection.providerAccountId}`;
+
             this.logger.log(
-              `Found LinkedIn connection. Publishing to LinkedIn API...`,
+              `Found LinkedIn connection. Publishing to LinkedIn API as ${urn}...`,
             );
 
             // CRIT-01: Decrypt the stored token before use — it is stored encrypted at rest
