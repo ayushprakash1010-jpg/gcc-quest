@@ -124,7 +124,7 @@ async function main() {
     },
     {
       name: 'Economic Times — GCC/Corporate',
-      url: 'https://economictimes.indiatimes.com/tech/rssfeeds',
+      url: 'https://economictimes.indiatimes.com/tech/rssfeeds.cms',
       type: 'RSS',
       category: 'NEWS',
       crawlFrequency: 'HOURLY',
@@ -212,8 +212,8 @@ async function main() {
     },
     {
       name: 'Walmart Global Tech (India GCC)',
-      url: 'https://tech.walmart.com/rss',
-      type: 'RSS',
+      url: 'https://tech.walmart.com/',
+      type: 'WEB',
       category: 'RESEARCH',
       crawlFrequency: 'DAILY',
       trustScore: 9.5,
