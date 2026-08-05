@@ -61,6 +61,14 @@ export class DiscoveryWorker extends WorkerHost {
             continue;
           }
 
+          const isSyntacticDuplicate =
+            await this.deduplicationEngine.isSyntacticDuplicate(article.title);
+
+          if (isSyntacticDuplicate) {
+            articlesDedup++;
+            continue;
+          }
+
           // It's a new article, save it
           const savedArticle = await this.prisma.article.create({
             data: {

@@ -2,12 +2,14 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { SourceType } from '@prisma/client';
 import { RssAdapter } from './rss.adapter';
 import { WebAdapter } from './web.adapter';
+import { SitemapAdapter } from './sitemap.adapter';
 
 @Injectable()
 export class AdapterFactory {
   constructor(
     private readonly rssAdapter: RssAdapter,
     private readonly webAdapter: WebAdapter,
+    private readonly sitemapAdapter: SitemapAdapter,
   ) {}
 
   getAdapter(type: SourceType) {
@@ -15,8 +17,9 @@ export class AdapterFactory {
       case SourceType.RSS:
         return this.rssAdapter;
       case SourceType.WEB:
-      case SourceType.SITEMAP: // For MVP, treating sitemap similar to WEB/RSS depending on implementation, but let's default to WEB or we can implement a separate Sitemap adapter later. For now, WEB acts as fallback.
         return this.webAdapter;
+      case SourceType.SITEMAP:
+        return this.sitemapAdapter;
       default:
         throw new InternalServerErrorException(
           `No adapter found for source type: ${type}`,

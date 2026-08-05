@@ -14,6 +14,7 @@ import { DeduplicationEngine } from './application/deduplication.engine';
 import { AdapterFactory } from './infrastructure/adapters/adapter.factory';
 import { RssAdapter } from './infrastructure/adapters/rss.adapter';
 import { WebAdapter } from './infrastructure/adapters/web.adapter';
+import { SitemapAdapter } from './infrastructure/adapters/sitemap.adapter';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { WebAdapter } from './infrastructure/adapters/web.adapter';
     AdapterFactory,
     RssAdapter,
     WebAdapter,
+    SitemapAdapter,
   ],
   exports: [SourceRepository],
 })
