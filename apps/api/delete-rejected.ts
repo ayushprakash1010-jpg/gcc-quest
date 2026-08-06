@@ -12,11 +12,11 @@ async function main() {
   console.log(`Deleted ${result.count} rejected drafts.`);
 
   console.log(
-    'Cleaning up invalid trends (score < 150 or articleCount < 3)...',
+    'Cleaning up invalid trends (score < 300 or articleCount < 5)...',
   );
   const trendsResult = await prisma.trend.deleteMany({
     where: {
-      OR: [{ score: { lt: 150 } }, { articleCount: { lt: 3 } }],
+      OR: [{ score: { lt: 300 } }, { articleCount: { lt: 5 } }],
     },
   });
   console.log(`Deleted ${trendsResult.count} invalid trends.`);
