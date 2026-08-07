@@ -91,7 +91,7 @@ export default function ClustersPage() {
               <CardFooter className="pt-4 border-t">
                 {/* Normally we'd link to a cluster detail page, but for now we just link to the content queue if it's ready */}
                 {cluster.status === "READY" ? (
-                  <Link href="/content" className="w-full">
+                  <Link href="/dashboard/content" className="w-full">
                     <Button className="w-full" variant="outline">
                       View Generated Post
                     </Button>

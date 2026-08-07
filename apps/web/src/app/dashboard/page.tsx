@@ -89,19 +89,19 @@ export default function DashboardPage() {
         </div>
         <div className="flex space-x-3">
           <Link
-            href="/sources"
+            href="/dashboard/sources"
             className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground h-10 px-4 py-2 hover:bg-primary/90 transition-colors"
           >
             <RefreshCw className="mr-2 h-4 w-4" /> Crawl All Sources
           </Link>
           <Link
-            href="/content?tab=pending"
+            href="/dashboard/content?tab=pending"
             className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-gray-800 bg-gray-900 text-white h-10 px-4 py-2 hover:bg-gray-800 transition-colors"
           >
             <Eye className="mr-2 h-4 w-4" /> View Pending
           </Link>
           <Link
-            href="/calendar"
+            href="/dashboard/calendar"
             className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-gray-800 bg-gray-900 text-white h-10 px-4 py-2 hover:bg-gray-800 transition-colors"
           >
             <Calendar className="mr-2 h-4 w-4" /> Go to Calendar
@@ -169,7 +169,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <Link
-                  href="/trends"
+                  href="/dashboard/trends"
                   className="text-sm text-indigo-500 hover:text-indigo-400 flex items-center"
                 >
                   View full trend analysis{" "}
