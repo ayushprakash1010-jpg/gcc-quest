@@ -142,7 +142,7 @@ export default function TrendsPage() {
                     Generate Trend Report
                   </Button>
                 ) : (
-                  <Link href="/content" className="w-full">
+                  <Link href="/dashboard/content" className="w-full">
                     <Button variant="outline" className="w-full">
                       View Generated Post
                     </Button>

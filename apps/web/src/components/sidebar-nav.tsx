@@ -4,16 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/", label: "Dashboard" },
-  { href: "/analytics", label: "Analytics" },
-  { href: "/sources", label: "Sources" },
-  { href: "/articles", label: "Articles" },
-  { href: "/content", label: "Content Review" },
-  { href: "/clusters", label: "Story Clusters" },
-  { href: "/trends", label: "Macro Trends" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/settings/feedback", label: "AI Feedback" },
-  { href: "/settings", label: "Settings" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard/analytics", label: "Analytics" },
+  { href: "/dashboard/sources", label: "Sources" },
+  { href: "/dashboard/articles", label: "Articles" },
+  { href: "/dashboard/content", label: "Content Review" },
+  { href: "/dashboard/clusters", label: "Story Clusters" },
+  { href: "/dashboard/trends", label: "Macro Trends" },
+  { href: "/dashboard/calendar", label: "Calendar" },
+  { href: "/dashboard/settings/feedback", label: "AI Feedback" },
+  { href: "/dashboard/settings", label: "Settings" },
 ];
 
 export function SidebarNav() {
@@ -24,7 +24,7 @@ export function SidebarNav() {
       {navItems.map((item) => {
         const isActive =
           pathname === item.href ||
-          (item.href !== "/" && pathname?.startsWith(item.href));
+          (item.href !== "/dashboard" && pathname?.startsWith(item.href));
 
         return (
           <Link
