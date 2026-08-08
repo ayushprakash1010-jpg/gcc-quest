@@ -207,7 +207,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <Link
-                  href={`/content/${drafts[0].id}`}
+                  href={`/dashboard/content/${drafts[0].id}`}
                   className="text-sm text-emerald-500 hover:text-emerald-400 flex items-center"
                 >
                   Review or schedule post{" "}

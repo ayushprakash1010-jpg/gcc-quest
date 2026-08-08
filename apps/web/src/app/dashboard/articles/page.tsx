@@ -121,7 +121,7 @@ export default function ArticlesPage() {
               <div className="space-y-2 flex-1">
                 <div className="flex items-start justify-between">
                   <Link
-                    href={`/articles/${article.id}`}
+                    href={`/dashboard/articles/${article.id}`}
                     className="hover:underline"
                   >
                     <h3 className="font-semibold text-lg text-white">
@@ -162,7 +162,7 @@ export default function ArticlesPage() {
               </div>
 
               <div className="flex md:flex-col gap-2 min-w-[120px]">
-                <Link href={`/articles/${article.id}`}>
+                <Link href={`/dashboard/articles/${article.id}`}>
                   <Button size="sm">View Details</Button>
                 </Link>
                 <Button
