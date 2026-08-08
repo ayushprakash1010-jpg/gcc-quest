@@ -248,7 +248,10 @@ export default function ContentQueuePage() {
                     </div>
                   </CardContent>
                   <CardFooter className="pt-0">
-                    <Link href={`/content/${draft.id}`} className="w-full">
+                    <Link
+                      href={`/dashboard/content/${draft.id}`}
+                      className="w-full"
+                    >
                       <Button className="w-full group" variant="outline">
                         Review Draft
                         <ArrowRight className="ml-2 h-3 w-3 group-hover:translate-x-1 transition-transform" />
