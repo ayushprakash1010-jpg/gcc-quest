@@ -234,7 +234,7 @@ export default function CalendarPage() {
                       )}
                       {post.status === "QUEUED" && post.draftId && (
                         <a
-                          href={`/content/${post.draftId}`}
+                          href={`/dashboard/content/${post.draftId}`}
                           className="flex items-center text-sm text-blue-500 hover:underline"
                         >
                           <LinkIcon className="w-4 h-4 mr-2" /> Review Draft

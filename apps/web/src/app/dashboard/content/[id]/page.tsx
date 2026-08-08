@@ -132,7 +132,7 @@ export default function DraftReviewPage({
         draftId: id,
         scheduledFor: recommendation?.slot,
       });
-      router.push("/calendar");
+      router.push("/dashboard/calendar");
     } catch (err) {
       console.error(err);
     }
@@ -144,7 +144,7 @@ export default function DraftReviewPage({
       await apiClient.put(`/content/drafts/${id}/status`, {
         status: "REJECTED",
       });
-      router.push("/content");
+      router.push("/dashboard/content");
     } catch (err) {
       console.error(err);
     }
@@ -297,7 +297,7 @@ export default function DraftReviewPage({
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => router.push("/calendar")}
+                  onClick={() => router.push("/dashboard/calendar")}
                 >
                   Schedule Later
                 </Button>
