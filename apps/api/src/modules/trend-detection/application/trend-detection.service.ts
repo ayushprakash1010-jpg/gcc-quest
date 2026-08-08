@@ -113,7 +113,7 @@ export class TrendDetectionService {
     });
     const threshold = thresholdSetting
       ? parseFloat(thresholdSetting.value)
-      : 300;
+      : 500;
 
     await this.processMap(techMap, 'TECHNOLOGY', threshold);
     await this.processMap(locMap, 'LOCATION', threshold);
