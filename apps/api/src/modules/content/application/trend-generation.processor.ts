@@ -60,13 +60,11 @@ export class TrendGenerationProcessor {
 
       // Gather Context
       let promptVersion;
-      let promptKey = 'trend-report';
+      let promptKey = 'writer-industry-news';
       try {
-        promptVersion = this.promptService.getActive('trend-report');
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        promptVersion = this.promptService.getActive(promptKey);
       } catch (_e) {
-        // Fallback to writer-industry-news if trend-report doesn't exist yet
-        promptKey = 'writer-industry-news';
+        // Fallback if not found (unlikely)
         promptVersion = this.promptService.getActive('writer-industry-news');
       }
 
