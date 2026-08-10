@@ -60,10 +60,10 @@ export class TrendGenerationProcessor {
 
       // Gather Context
       let promptVersion;
-      let promptKey = 'writer-industry-news';
+      const promptKey = 'writer-industry-news';
       try {
         promptVersion = this.promptService.getActive(promptKey);
-      } catch (_e) {
+      } catch {
         // Fallback if not found (unlikely)
         promptVersion = this.promptService.getActive('writer-industry-news');
       }
