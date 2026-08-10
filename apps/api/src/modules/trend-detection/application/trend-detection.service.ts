@@ -77,6 +77,7 @@ export class TrendDetectionService {
 
       // Category
       if (article.analysis.gccCategory) {
+        // Categories are generally single strings, but wrap in Set for consistency if they become arrays later
         const cat = article.analysis.gccCategory;
         if (!catMap.has(cat)) catMap.set(cat, { score: 0, articles: [] });
         const val = catMap.get(cat)!;
@@ -86,8 +87,11 @@ export class TrendDetectionService {
 
       // Tech
       if (entities?.technologies && Array.isArray(entities.technologies)) {
-        entities.technologies.forEach((rawTech: string) => {
-          const tech = this.normalizeEntity(rawTech);
+        // Use Set to deduplicate multiple synonyms from the same article
+        const uniqueTechs = new Set(
+          entities.technologies.map((t: string) => this.normalizeEntity(t)),
+        );
+        uniqueTechs.forEach((tech: string) => {
           if (!techMap.has(tech)) techMap.set(tech, { score: 0, articles: [] });
           const val = techMap.get(tech)!;
           val.score += score;
@@ -97,8 +101,11 @@ export class TrendDetectionService {
 
       // Location
       if (entities?.locations && Array.isArray(entities.locations)) {
-        entities.locations.forEach((rawLoc: string) => {
-          const loc = this.normalizeEntity(rawLoc);
+        // Use Set to deduplicate multiple synonyms from the same article
+        const uniqueLocs = new Set(
+          entities.locations.map((l: string) => this.normalizeEntity(l)),
+        );
+        uniqueLocs.forEach((loc: string) => {
           if (!locMap.has(loc)) locMap.set(loc, { score: 0, articles: [] });
           const val = locMap.get(loc)!;
           val.score += score;
@@ -142,6 +149,8 @@ export class TrendDetectionService {
           where: { name, type, status: 'DETECTED' },
         });
 
+        let isNewTrend = false;
+
         if (!trend) {
           trend = await this.prisma.trend.create({
             data: {
@@ -151,6 +160,7 @@ export class TrendDetectionService {
               articleCount: data.articles.length,
             },
           });
+          isNewTrend = true;
           this.logger.log(
             `New ${type} trend detected: ${name} (Score: ${cappedScore})`,
           );
@@ -185,10 +195,12 @@ export class TrendDetectionService {
           });
         }
 
-        // Emit Event
-        this.eventEmitter.emit(DomainEvents.TREND_DETECTED, {
-          trendId: trend.id,
-        });
+        // Emit Event ONLY on new trends to prevent infinite draft generation
+        if (isNewTrend) {
+          this.eventEmitter.emit(DomainEvents.TREND_DETECTED, {
+            trendId: trend.id,
+          });
+        }
       }
     }
   }
