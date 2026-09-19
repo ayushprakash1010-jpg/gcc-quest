@@ -142,12 +142,20 @@ export class WebAdapter {
 
       const title = $('title').text() || 'Untitled';
 
+      // Extract OG image — cheerio already parsed the full HTML, no extra request needed
+      const imageUrl =
+        $('meta[property="og:image"]').attr('content') ||
+        $('meta[name="twitter:image"]').attr('content') ||
+        $('meta[property="og:image:url"]').attr('content') ||
+        undefined;
+
       return [
         {
           title: title.trim(),
           url: url,
           rawText: mainContent.trim().replace(/\s+/g, ' '),
           publishedAt: new Date(),
+          imageUrl,
         },
       ];
     } catch (error: any) {

@@ -10,21 +10,32 @@ import { Label } from "@/components/ui/label";
 import apiClient from "@/lib/api/api-client";
 import { LinkedInPostPreview } from "@/components/linkedin-post-preview";
 import { toast } from "sonner";
+import { Copy, Check, Building2, MapPin, Cpu, Tag } from "lucide-react";
 
 // LOW-05: Strict TypeScript interfaces
+interface Entities {
+  companies?: string[];
+  locations?: string[];
+  technologies?: string[];
+  topics?: string[];
+  [key: string]: string[] | undefined;
+}
+
 interface Article {
   title: string;
+  url?: string;
+  imageUrl?: string;
   analysis?: {
     impactScore?: number;
     summary?: string;
-    entities?: unknown;
+    entities?: Entities;
   };
 }
 
 interface Cluster {
   theme: string;
   synthesisText: string;
-  articles: Array<{ analysis?: { entities?: unknown } }>;
+  articles: Array<{ analysis?: { entities?: Entities } }>;
 }
 
 interface Version {
@@ -40,6 +51,128 @@ interface Draft {
   targetPlatform: string;
   status: string;
   versions: Version[];
+}
+
+// Maps entity category keys to display labels and icons
+const ENTITY_CATEGORIES: Record<
+  string,
+  { label: string; color: string; iconKey: string }
+> = {
+  companies: {
+    label: "Companies",
+    color: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
+    iconKey: "building",
+  },
+  locations: {
+    label: "Locations",
+    color:
+      "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+    iconKey: "map",
+  },
+  technologies: {
+    label: "Technologies",
+    color:
+      "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20",
+    iconKey: "cpu",
+  },
+  topics: {
+    label: "Topics",
+    color:
+      "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
+    iconKey: "tag",
+  },
+};
+
+function EntityChips({ entities }: { entities: Entities }) {
+  const categoryOrder = ["companies", "locations", "technologies", "topics"];
+  const allKeys = [
+    ...categoryOrder.filter((k) => entities[k]?.length),
+    ...Object.keys(entities).filter(
+      (k) => !categoryOrder.includes(k) && entities[k]?.length,
+    ),
+  ];
+
+  if (!allKeys.length)
+    return (
+      <p className="text-sm text-muted-foreground">No entities extracted.</p>
+    );
+
+  return (
+    <div className="space-y-3">
+      {allKeys.map((key) => {
+        const items = entities[key];
+        if (!items?.length) return null;
+        const config = ENTITY_CATEGORIES[key] ?? {
+          label: key.charAt(0).toUpperCase() + key.slice(1),
+          color:
+            "bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/20",
+          iconKey: "tag",
+        };
+        const Icon =
+          config.iconKey === "building"
+            ? Building2
+            : config.iconKey === "map"
+              ? MapPin
+              : config.iconKey === "cpu"
+                ? Cpu
+                : Tag;
+
+        return (
+          <div key={key}>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Icon className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {config.label}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {items.map((item) => (
+                <span
+                  key={item}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                    config.color
+                  }`}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success("Copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy.");
+    }
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleCopy}
+      className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+    >
+      {copied ? (
+        <Check className="w-3.5 h-3.5 text-emerald-500" />
+      ) : (
+        <Copy className="w-3.5 h-3.5" />
+      )}
+      {copied ? "Copied!" : "Copy"}
+    </Button>
+  );
 }
 
 export default function DraftReviewPage({
@@ -234,16 +367,26 @@ export default function DraftReviewPage({
               <CardTitle>Extracted Entities</CardTitle>
             </CardHeader>
             <CardContent>
-              <pre className="text-xs bg-muted p-4 rounded-md overflow-x-auto">
-                {JSON.stringify(
-                  draft.article?.analysis?.entities ||
-                    draft.cluster?.articles
-                      ?.map((a) => a.analysis?.entities)
-                      .filter(Boolean),
-                  null,
-                  2,
-                )}
-              </pre>
+              <EntityChips
+                entities={
+                  (draft.article?.analysis?.entities ||
+                    // Merge entities from all cluster articles
+                    draft.cluster?.articles?.reduce((merged, a) => {
+                      const e = a.analysis?.entities;
+                      if (!e) return merged;
+                      Object.keys(e).forEach((k) => {
+                        const key = k as keyof Entities;
+                        merged[key] = [
+                          ...new Set([
+                            ...(merged[key] ?? []),
+                            ...(e[key] ?? []),
+                          ]),
+                        ];
+                      });
+                      return merged;
+                    }, {} as Entities)) as Entities
+                }
+              />
             </CardContent>
           </Card>
         )}
@@ -325,9 +468,10 @@ export default function DraftReviewPage({
           </TabsList>
 
           <div className="flex-1 mt-4 relative flex flex-col">
-            <Label htmlFor="editor" className="mb-2">
-              Edit Post Content
-            </Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="editor">Edit Post Content</Label>
+              <CopyButton text={editedText} />
+            </div>
             <textarea
               id="editor"
               value={editedText}
@@ -346,8 +490,11 @@ export default function DraftReviewPage({
               <h3 className="text-lg font-semibold mb-4">
                 LinkedIn Live Preview
               </h3>
-              <div className="bg-zinc-200/50 p-6 rounded-lg flex items-center justify-center">
-                <LinkedInPostPreview content={editedText} />
+              <div className="bg-[#f3f2ef] p-6 rounded-lg flex items-center justify-center">
+                <LinkedInPostPreview
+                  content={editedText}
+                  imageUrl={draft?.article?.imageUrl}
+                />
               </div>
             </div>
           </div>

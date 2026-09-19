@@ -14,8 +14,42 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import apiClient from "@/lib/api/api-client";
-import { FileText, Clock, ArrowRight, Trash2, X } from "lucide-react";
+import {
+  FileText,
+  Clock,
+  ArrowRight,
+  Trash2,
+  X,
+  Zap,
+  Building,
+} from "lucide-react";
 import { toast } from "sonner";
+
+/** Renders first N characters of content with hashtags highlighted blue */
+function PostContentPreview({
+  content,
+  maxChars = 160,
+}: {
+  content: string;
+  maxChars?: number;
+}) {
+  const truncated =
+    content.length > maxChars ? content.slice(0, maxChars) + "…" : content;
+  const parts = truncated.split(/(#\w+)/g);
+  return (
+    <span>
+      {parts.map((part, i) =>
+        part.startsWith("#") ? (
+          <span key={i} className="text-[#0a66c2] font-medium">
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </span>
+  );
+}
 
 // LOW-05: Strict TypeScript interface
 interface DraftPreview {
@@ -25,6 +59,7 @@ interface DraftPreview {
   createdAt: string;
   article?: {
     title: string;
+    imageUrl?: string;
     source?: {
       name: string;
     };
@@ -34,7 +69,7 @@ interface DraftPreview {
   };
   cluster?: {
     theme: string;
-    articles?: Array<{ id: string }>;
+    articles?: Array<{ id: string; source?: { name: string } }>;
   };
   trend?: {
     name: string;
@@ -181,85 +216,112 @@ export default function ContentQueuePage() {
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {drafts.map((draft) => (
-                <Card
-                  key={draft.id}
-                  className="flex flex-col hover:border-primary/50 transition-colors"
-                >
-                  <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold leading-tight line-clamp-2 pr-2 flex-1">
-                      {draft.article?.title ||
-                        draft.cluster?.theme ||
-                        draft.trend?.name ||
-                        "Unknown Article"}
-                    </CardTitle>
-                    <div className="flex items-center gap-1 shrink-0 ml-2">
-                      <Badge
-                        variant={
-                          statusFilter === "DRAFT" ? "default" : "outline"
-                        }
-                        className="text-xs"
-                      >
-                        {draft.targetPlatform}
-                      </Badge>
-                      {statusFilter === "DRAFT" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="w-6 h-6 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
-                          onClick={() => handleRejectOne(draft.id)}
-                          title="Reject draft"
+              {drafts.map((draft) => {
+                const sourceName =
+                  draft.article?.source?.name ||
+                  (draft.cluster?.articles
+                    ? (
+                        draft.cluster.articles as Array<{
+                          source?: { name: string };
+                        }>
+                      )
+                        .map((a) => a.source?.name)
+                        .filter(Boolean)
+                        .join(", ")
+                    : draft.trend
+                      ? "Macro Trend"
+                      : "GCC Intelligence");
+                const impactScore = draft.article?.analysis?.impactScore;
+
+                return (
+                  <Card
+                    key={draft.id}
+                    className="flex flex-col hover:border-primary/50 hover:shadow-md transition-all duration-200"
+                  >
+                    <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-semibold leading-snug line-clamp-2 pr-2 flex-1">
+                        {draft.article?.title ||
+                          draft.cluster?.theme ||
+                          draft.trend?.name ||
+                          "Unknown Article"}
+                      </CardTitle>
+                      <div className="flex items-center gap-1 shrink-0 ml-2">
+                        <Badge
+                          variant={
+                            statusFilter === "DRAFT" ? "default" : "outline"
+                          }
+                          className="text-xs"
                         >
-                          <X className="w-3.5 h-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                      <span className="truncate">
-                        {draft.article?.source?.name ||
-                          (draft.cluster?.articles
-                            ? draft.cluster.articles
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                .map((a: any) => a.source?.name)
-                                .filter(Boolean)
-                                .join(", ")
-                            : draft.trend
-                              ? "Macro Trend"
-                              : "Unknown")}
-                      </span>
-                      {draft.article?.analysis?.impactScore && (
-                        <Badge variant="secondary" className="text-xs shrink-0">
-                          Impact: {draft.article.analysis.impactScore}
+                          {draft.targetPlatform}
                         </Badge>
-                      )}
-                    </div>
-                    <div className="text-sm line-clamp-3 text-muted-foreground mb-3 leading-relaxed">
-                      {draft.versions[0]?.content || "No content generated"}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Generated:{" "}
-                      {new Date(draft.createdAt).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    <Link
-                      href={`/dashboard/content/${draft.id}`}
-                      className="w-full"
-                    >
-                      <Button className="w-full group" variant="outline">
-                        Review Draft
-                        <ArrowRight className="ml-2 h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              ))}
+                        {statusFilter === "DRAFT" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-6 h-6 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                            onClick={() => handleRejectOne(draft.id)}
+                            title="Reject draft"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="flex-1 space-y-3">
+                      {/* Source + Impact row */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+                          <Building className="w-3 h-3 shrink-0" />
+                          <span className="truncate">{sourceName}</span>
+                        </div>
+                        {impactScore && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                            <Zap className="w-3 h-3" />
+                            {impactScore}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Post content preview with hashtag highlighting */}
+                      <div className="text-sm text-foreground/80 leading-relaxed line-clamp-4">
+                        <PostContentPreview
+                          content={
+                            draft.versions[0]?.content || "No content generated"
+                          }
+                        />
+                      </div>
+
+                      {/* Generated date */}
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Clock className="w-3 h-3" />
+                        <span>
+                          {new Date(draft.createdAt).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
+                        </span>
+                      </div>
+                    </CardContent>
+
+                    <CardFooter className="pt-0">
+                      <Link
+                        href={`/dashboard/content/${draft.id}`}
+                        className="w-full"
+                      >
+                        <Button className="w-full group" variant="outline">
+                          Review Draft
+                          <ArrowRight className="ml-2 h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>

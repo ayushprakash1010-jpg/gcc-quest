@@ -70,6 +70,16 @@ export class DiscoveryWorker extends WorkerHost {
           }
 
           // It's a new article, save it
+          // Resolve imageUrl: use extracted OG image or fallback to Unsplash stock photo
+          let imageUrl = article.imageUrl || null;
+          if (!imageUrl && process.env.UNSPLASH_ACCESS_KEY) {
+            try {
+              imageUrl = await this.fetchUnsplashImage(article.title);
+            } catch {
+              // Unsplash failure is non-fatal — article saves without image
+            }
+          }
+
           const savedArticle = await this.prisma.article.create({
             data: {
               sourceId: source.id,
@@ -82,6 +92,7 @@ export class DiscoveryWorker extends WorkerHost {
               wordCount: article.rawText
                 ? article.rawText.split(/\s+/).length
                 : 0,
+              imageUrl,
             },
           });
 
@@ -149,6 +160,89 @@ export class DiscoveryWorker extends WorkerHost {
       });
 
       throw e;
+    }
+  }
+
+  /**
+   * Phase 2 fallback: fetch a relevant stock photo from Unsplash.
+   * Only called when no OG image was found in the article/RSS feed.
+   * Uses the UNSPLASH_ACCESS_KEY env variable — if not set, this is never called.
+   */
+  private async fetchUnsplashImage(title: string): Promise<string | null> {
+    const key = process.env.UNSPLASH_ACCESS_KEY;
+    if (!key) return null;
+
+    // Strip common stop words and take first 3 meaningful words as query
+    const stopWords = new Set([
+      'a',
+      'an',
+      'the',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'its',
+      'it',
+      'this',
+      'that',
+      'as',
+      'from',
+    ]);
+    const keywords = title
+      .toLowerCase()
+      .replace(/[^a-z\s]/g, '')
+      .split(/\s+/)
+      .filter((w) => w.length > 3 && !stopWords.has(w))
+      .slice(0, 3)
+      .join(' ');
+
+    if (!keywords) return null;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    try {
+      const res = await fetch(
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(keywords)}&per_page=1&orientation=landscape`,
+        {
+          signal: controller.signal as any,
+          headers: { Authorization: `Client-ID ${key}` },
+        },
+      );
+      clearTimeout(timeoutId);
+
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data?.results?.[0]?.urls?.regular ?? null;
+    } catch {
+      clearTimeout(timeoutId);
+      return null;
     }
   }
 }

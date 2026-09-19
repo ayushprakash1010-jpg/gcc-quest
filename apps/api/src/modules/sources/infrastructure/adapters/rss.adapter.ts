@@ -8,6 +8,7 @@ export interface ExtractedArticle {
   author?: string;
   publishedAt?: Date;
   rawText?: string;
+  imageUrl?: string; // OG image or RSS media thumbnail
 }
 
 @Injectable()
@@ -23,7 +24,32 @@ export class RssAdapter {
         Accept:
           'application/rss+xml, application/xml, application/atom+xml, text/xml, text/html, */*',
       },
+      // Capture common image fields from RSS feeds
+      customFields: {
+        item: [
+          ['media:content', 'mediaContent', { keepArray: false }],
+          ['media:thumbnail', 'mediaThumbnail', { keepArray: false }],
+          ['enclosure', 'enclosure', { keepArray: false }],
+        ],
+      },
     });
+  }
+
+  /** Extracts the best available image URL from an RSS feed item */
+  private extractImageFromItem(item: any): string | undefined {
+    // 1. media:content (most common in news RSS feeds like Hindu BusinessLine, ET)
+    if (item.mediaContent?.$.url) return item.mediaContent.$.url;
+    // 2. media:thumbnail
+    if (item.mediaThumbnail?.$.url) return item.mediaThumbnail.$.url;
+    // 3. enclosure (used by some feeds for attachments)
+    if (item.enclosure?.url && item.enclosure?.type?.startsWith('image/')) {
+      return item.enclosure.url;
+    }
+    // 4. itunes:image (podcasts/some feeds)
+    if ((item as any)['itunes:image']?.href) {
+      return (item as any)['itunes:image'].href;
+    }
+    return undefined;
   }
 
   async fetch(source: {
@@ -62,6 +88,7 @@ export class RssAdapter {
           author: item.creator || item.author,
           publishedAt: item.pubDate ? new Date(item.pubDate) : undefined,
           rawText: item.contentSnippet || item.content || item.title,
+          imageUrl: this.extractImageFromItem(item),
         }))
         .filter((a) => a.url); // Must have a URL
 
