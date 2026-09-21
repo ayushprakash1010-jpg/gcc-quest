@@ -64,7 +64,12 @@ export class ContentRepository {
       orderBy: { createdAt: 'desc' },
       include: {
         article: {
-          select: { title: true, source: { select: { name: true } } },
+          select: {
+            title: true,
+            imageUrl: true,
+            source: { select: { name: true } },
+            analysis: { select: { impactScore: true } },
+          },
         },
         cluster: {
           select: {

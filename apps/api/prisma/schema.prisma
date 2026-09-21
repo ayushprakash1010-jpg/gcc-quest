@@ -136,6 +136,7 @@ model Article {
   rawText       String?          @map("raw_text")
   contentHash   String           @unique @map("content_hash") @db.VarChar(64)
   wordCount     Int?             @map("word_count")
+  imageUrl      String?          @map("image_url")
   language      String?          @default("en") @db.VarChar(10)
   status        ArticleStatus    @default(DISCOVERED)
   clusterId     String?          @map("cluster_id") @db.Uuid
