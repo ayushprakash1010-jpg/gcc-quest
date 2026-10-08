@@ -16,7 +16,7 @@ export class CalendarIntelligenceService {
     const rules = await this.prisma.calendarRule.findMany({
       where: { isActive: true },
     });
-    let maxPerDay = 3;
+    let maxPerDay = 1;
     let minHours = 4;
     let startHour = 8;
     let endHour = 20;
