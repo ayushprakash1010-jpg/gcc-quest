@@ -25,7 +25,7 @@ export class OpenAiProvider {
 
     const execute = async () => {
       try {
-        const response = await this.openai.beta.chat.completions.parse({
+        const response = await this.openai.chat.completions.parse({
           model: modelName,
           messages: [{ role: 'user', content: prompt }],
           response_format: zodResponseFormat(zodSchema as any, 'result'),

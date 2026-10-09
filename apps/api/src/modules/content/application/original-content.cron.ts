@@ -3,8 +3,14 @@ import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { LlmService } from '../../llm/llm.service';
 import { thoughtLeadershipV2 } from '../../prompts/templates/writer/thought-leadership.v2';
-import { draftsSchema } from '../../prompts/schemas/content-generation.schema';
-import { ObservabilityService } from '../../agent-observability/application/observability.service';
+import { z } from 'zod';
+
+const draftsSchema = z.object({
+  drafts: z
+    .array(z.object({ content: z.string() }))
+    .describe('Array of generated post drafts'),
+});
+import { ObservabilityService } from '../../observability/observability.service';
 
 @Injectable()
 export class OriginalContentCron {
@@ -18,7 +24,7 @@ export class OriginalContentCron {
 
   // Run twice a week, Tuesday and Thursday at 10:00 AM
   @Cron('0 10 * * 2,4')
-  async generateOriginalThoughtLeadership() {
+  async generateOriginalThoughtLeadership(): Promise<void> {
     this.logger.log('Starting original thought leadership generation loop...');
 
     // 1. Pick a random active topic
