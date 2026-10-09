@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { LlmService } from '../../llm/llm.service';
 import { thoughtLeadershipV2 } from '../../prompts/templates/writer/thought-leadership.v2';
