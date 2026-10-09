@@ -4,6 +4,7 @@ import { ContentGenerationProcessor } from './application/content-generation.pro
 import { ClusterGenerationProcessor } from './application/cluster-generation.processor';
 import { TrendGenerationProcessor } from './application/trend-generation.processor';
 import { ContentController } from './presentation/content.controller';
+import { OriginalContentCron } from './application/original-content.cron';
 
 @Module({
   controllers: [ContentController],
@@ -12,6 +13,7 @@ import { ContentController } from './presentation/content.controller';
     ContentGenerationProcessor,
     ClusterGenerationProcessor,
     TrendGenerationProcessor,
+    OriginalContentCron,
   ],
   exports: [ContentRepository],
 })
