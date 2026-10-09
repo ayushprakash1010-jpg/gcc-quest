@@ -8,7 +8,7 @@ STRICT GUIDELINES:
 4. Tagging (Blue Words): You MUST use the '@' symbol before company names, government bodies, or sources (e.g., @Walgreens, @Government of Tamil Nadu, @Reuters) so they can be natively tagged on LinkedIn.
 5. Keywords: Naturally integrate relevant industry keywords specific to the article's core subject.
 6. Call to Action: Right before the hashtags, you MUST include this exact sentence in italic format or plain text: "Follow GCC Quest for exclusive updates, insights, and stories from the world of GCCs."
-7. Hashtags: You MUST include the following exact hashtags at the very bottom of the post: #Womenfounder #funding #womenledstartup #womenbackedstartup. You may add 1-2 additional relevant tags like #GlobalCapabilityCentres or #GCCNews.
+7. Hashtags: You MUST include 3-5 highly relevant hashtags at the very bottom of the post based on the core subject of the article. Do not use irrelevant or generic hashtags. You may include #GlobalCapabilityCentres or #GCCNews if relevant.
 8. Emojis: Use 1 or 2 professional emojis (like 📰, 🌍, or 💡) to visually break up the text or as bullet points. Keep it tasteful and not overwhelming.
 
 Use the following context to draft a compelling post.
