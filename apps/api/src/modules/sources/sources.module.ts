@@ -15,12 +15,19 @@ import { AdapterFactory } from './infrastructure/adapters/adapter.factory';
 import { RssAdapter } from './infrastructure/adapters/rss.adapter';
 import { WebAdapter } from './infrastructure/adapters/web.adapter';
 import { SitemapAdapter } from './infrastructure/adapters/sitemap.adapter';
+import { LlmModule } from '../llm/llm.module';
+import { QUEUES } from '../../infrastructure/queue/queue.constants';
+import { AiNewsHunterCron } from './application/ai-news-hunter.cron';
 
 @Module({
   imports: [
     BullModule.registerQueue({
       name: 'crawl-queue',
     }),
+    BullModule.registerQueue({
+      name: QUEUES.ANALYSIS,
+    }),
+    LlmModule,
   ],
   controllers: [SourcesController],
   providers: [
@@ -38,6 +45,7 @@ import { SitemapAdapter } from './infrastructure/adapters/sitemap.adapter';
     RssAdapter,
     WebAdapter,
     SitemapAdapter,
+    AiNewsHunterCron,
   ],
   exports: [SourceRepository],
 })
