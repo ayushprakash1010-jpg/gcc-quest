@@ -3,7 +3,7 @@ import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { PromptService } from '../../prompts/infrastructure/prompt.service';
 import { ObservabilityService } from '../../observability/observability.service';
-import { GeminiProvider } from '../../llm/providers/gemini.provider';
+import { LlmService } from '../../llm/llm.service';
 import { BrandVoiceService } from '../../brand-intelligence/application/brand-voice.service';
 import { ContentRepository } from '../infrastructure/content.repository';
 import { DomainEvents } from '@gcc-quest/shared-types';
@@ -23,7 +23,7 @@ export class TrendGenerationProcessor {
     private readonly prisma: PrismaService,
     private readonly promptService: PromptService,
     private readonly observability: ObservabilityService,
-    private readonly llm: GeminiProvider,
+    private readonly llm: LlmService,
     private readonly brandVoiceService: BrandVoiceService,
     private readonly contentRepository: ContentRepository,
     private readonly eventEmitter: EventEmitter2,

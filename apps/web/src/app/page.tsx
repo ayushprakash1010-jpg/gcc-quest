@@ -1,13 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  BarChart3,
-  Globe,
-  Send,
-  Network,
-  Newspaper,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Globe, Send, Network, Zap } from "lucide-react";
 
 export default function LandingPage() {
   return (

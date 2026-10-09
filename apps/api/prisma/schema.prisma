@@ -210,9 +210,21 @@ model AgentRun {
   @@map("agent_runs")
 }
 
+model ContentTopic {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String         @db.VarChar(255)
+  isActive  Boolean        @default(true) @map("is_active")
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  drafts    ContentDraft[]
+
+  @@map("content_topics")
+}
+
 model ContentDraft {
   id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   articleId      String?           @map("article_id") @db.Uuid
+  topicId        String?           @map("topic_id") @db.Uuid
   status         ContentStatus     @default(DRAFT)
   currentVersion Int               @default(1) @map("current_version")
   targetPlatform String            @default("LINKEDIN") @map("target_platform") @db.VarChar(50)
@@ -222,6 +234,7 @@ model ContentDraft {
   clusterId      String?           @map("cluster_id") @db.Uuid
   trendId        String?           @map("trend_id") @db.Uuid
   article        Article?          @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  topic          ContentTopic?     @relation(fields: [topicId], references: [id], onDelete: Cascade)
   brandVoice     BrandVoice?       @relation(fields: [brandVoiceId], references: [id])
   cluster        StoryCluster?     @relation(fields: [clusterId], references: [id], onDelete: Cascade)
   trend          Trend?            @relation(fields: [trendId], references: [id], onDelete: Cascade)
@@ -231,6 +244,7 @@ model ContentDraft {
 
   @@index([status])
   @@index([articleId])
+  @@index([topicId])
   @@map("content_drafts")
 }
 
