@@ -9,7 +9,7 @@ STRICT GUIDELINES:
 5. Facts & Figures: Highlight specific numbers prominently (e.g., jobs created, investment size, square footage, professional headcount).
 6. Call to Action: Right before the hashtags, you MUST include this exact sentence in italic format or plain text: "Follow GCC Quest for exclusive updates, insights, and stories from the world of GCCs."
 7. Hashtags: Include 3-5 highly relevant hashtags at the bottom. If a specific city or region is mentioned (e.g., Chennai, Bengaluru, Hyderabad), you MUST include a hashtag for it (e.g., #ChennaiGCC, #Bengaluru). Do not use generic or irrelevant tags.
-8. Emojis: Do NOT use any emojis. The post must look extremely clean and professional.
+8. Emojis: You may use exactly 1 or 2 professional emojis (like 📰, 🏢, or 🚀) to add a subtle visual element, but do not overuse them. Keep it highly professional.
 
 Use the following context to draft a compelling post.
 Context: ${JSON.stringify(vars)}
