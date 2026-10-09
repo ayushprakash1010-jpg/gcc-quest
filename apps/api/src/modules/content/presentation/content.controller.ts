@@ -33,11 +33,17 @@ export class ContentController {
     @Query('take') take?: string,
     @Query('status') status?: string,
   ) {
-    return this.repository.findMany({
-      skip: skip ? parseInt(skip, 10) : 0,
-      take: take ? parseInt(take, 10) : 20,
-      status,
-    });
+    try {
+      return await this.repository.findMany({
+        skip: skip ? parseInt(skip, 10) : 0,
+        take: take ? parseInt(take, 10) : 20,
+        status,
+      });
+    } catch (e: any) {
+      throw new BadRequestException(
+        `Failed to fetch drafts: ${e.message} \n ${e.stack}`,
+      );
+    }
   }
 
   @Get('drafts/:id')
