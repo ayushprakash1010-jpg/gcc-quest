@@ -64,22 +64,17 @@ export class ContentRepository {
       orderBy: { createdAt: 'desc' },
       include: {
         article: {
-          select: {
-            title: true,
-            imageUrl: true,
-            source: { select: { name: true } },
-            analysis: { select: { impactScore: true } },
+          include: {
+            source: true,
+            analysis: true,
           },
         },
         cluster: {
-          select: {
-            theme: true,
-            articles: { select: { source: { select: { name: true } } } },
+          include: {
+            articles: { include: { source: true } },
           },
         },
-        trend: {
-          select: { name: true },
-        },
+        trend: true,
         versions: { orderBy: { versionNumber: 'desc' } },
       },
     });
