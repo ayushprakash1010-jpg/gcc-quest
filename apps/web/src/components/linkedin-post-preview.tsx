@@ -14,7 +14,6 @@ interface LinkedInPostPreviewProps {
   authorName?: string;
   authorTitle?: string;
   authorAvatar?: string;
-  followerCount?: string;
   content: string;
   imageUrl?: string;
   timestamp?: string;
@@ -55,7 +54,6 @@ export function LinkedInPostPreview({
   authorName = "GCC Quest",
   authorTitle = "Technology, Information and Internet",
   authorAvatar,
-  followerCount = "12,847 followers",
   content,
   imageUrl,
   timestamp = "1w",
@@ -139,6 +137,7 @@ export function LinkedInPostPreview({
         {imageUrl ? (
           // Real image from API / article thumbnail
           <div className="w-full border-t border-[#e0dfdc]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}
               alt="Post image"
