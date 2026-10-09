@@ -221,6 +221,17 @@ async function main() {
       compositeScore: 9.25,
       status: 'ACTIVE',
     },
+    {
+      name: 'Women Founders & Funding',
+      url: 'https://news.google.com/rss/search?q="Women+founder"+OR+funding+OR+"women+led+startup"+OR+"women+backed+startup"',
+      type: 'RSS',
+      category: 'NEWS',
+      crawlFrequency: 'HOURLY',
+      trustScore: 8.5,
+      authorityScore: 8.5,
+      compositeScore: 8.5,
+      status: 'ACTIVE',
+    },
   ];
 
   for (const src of initialSources) {
