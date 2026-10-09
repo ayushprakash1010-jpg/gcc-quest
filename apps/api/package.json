@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "prisma generate && nest build",
-    "start:migrate": "prisma migrate deploy && npx prisma db seed && node dist/main",
+    "start:migrate": "npx prisma migrate resolve --rolled-back \"20261009120600_add_missing_schema_changes\" || true; prisma migrate deploy && npx prisma db seed && node dist/main",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "dev": "nest start --watch",
