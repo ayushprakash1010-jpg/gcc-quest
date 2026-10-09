@@ -7,7 +7,7 @@ import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { QUEUES } from '../../../infrastructure/queue/queue.constants';
 import * as crypto from 'crypto';
-import Parser from 'rss-parser';
+import * as Parser from 'rss-parser';
 import { z } from 'zod';
 
 const hunterResultSchema = z.object({
