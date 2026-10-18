@@ -155,7 +155,7 @@ export class AiNewsHunterCron {
           prompt,
           hunterResultSchema,
           {
-            model: 'gemini-2.0-flash', // gemini-2.0-flash: best free-tier model for structured extraction
+            model: 'gemini-3.8-flash', // gemini-3.8-flash: latest free-tier model per Google API
             temperature: 0.2,
           },
         );

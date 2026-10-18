@@ -11,7 +11,7 @@ export interface AgentRunContext {
 }
 
 const COST_PER_TOKEN: Record<string, { input: number; output: number }> = {
-  'gemini-2.0-flash': { input: 0.000000075, output: 0.0000003 },
+  'gemini-3.8-flash': { input: 0.000000075, output: 0.0000003 },
   'gemini-3.5-flash': { input: 0.000000075, output: 0.0000003 },
   'gemini-3.5-flash-lite': { input: 0.0000000375, output: 0.00000015 },
   'gemini-embedding-001': { input: 0.000000001, output: 0 },
