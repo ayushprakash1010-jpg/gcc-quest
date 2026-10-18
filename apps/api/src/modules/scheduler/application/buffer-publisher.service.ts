@@ -16,7 +16,10 @@ export class BufferPublisherService {
    *
    * Env var required: COMPANY_PAGE_WEBHOOK_URL
    */
-  async publishToLinkedInCompanyPage(content: string): Promise<string | null> {
+  async publishToLinkedInCompanyPage(
+    content: string,
+    imageUrl?: string,
+  ): Promise<string | null> {
     const webhookUrl = this.configService.get<string>(
       'COMPANY_PAGE_WEBHOOK_URL',
     );
@@ -36,6 +39,7 @@ export class BufferPublisherService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         content,
+        imageUrl: imageUrl || null,
         source: 'gcc-quest',
         timestamp: new Date().toISOString(),
       }),
