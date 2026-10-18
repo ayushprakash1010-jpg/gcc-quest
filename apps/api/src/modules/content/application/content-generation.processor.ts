@@ -45,7 +45,7 @@ export class ContentGenerationProcessor {
     try {
       const article = await this.prisma.article.findUnique({
         where: { id: payload.articleId },
-        include: { analysis: true },
+        include: { analysis: true, source: true },
       });
 
       if (!article || !article.analysis) return;
@@ -55,7 +55,11 @@ export class ContentGenerationProcessor {
         await this.settingsCache.get('config.analysis_threshold', '7'),
       );
 
-      if (article.analysis.impactScore < threshold) {
+      // AI News Hunter articles are pre-filtered by Gemini for quality,
+      // so we skip the impact score threshold to ensure they always get a draft.
+      const isAiHunted = (article as any).source?.name === 'AI News Hunter';
+
+      if (!isAiHunted && article.analysis.impactScore < threshold) {
         this.logger.log(
           `Article ${article.id} impact (${article.analysis.impactScore}) below threshold (${threshold}). Skipping generation.`,
         );
@@ -98,7 +102,7 @@ export class ContentGenerationProcessor {
           runType: 'content-generation',
           promptKey: 'writer-industry-news',
           promptVersion: promptVersion.version,
-          model: 'gemini-3.5-flash',
+          model: 'gemini-2.0-flash',
           contextId: article.id,
         },
         () => this.llm.generateStructured(renderedPrompt, draftsSchema),

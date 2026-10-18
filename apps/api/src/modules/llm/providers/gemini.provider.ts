@@ -102,7 +102,7 @@ export class GeminiProvider {
     zodSchema: z.ZodSchema<T>,
     options?: LlmOptions,
   ): Promise<T> {
-    const modelName = options?.model || 'gemini-3.5-flash-lite';
+    const modelName = options?.model || 'gemini-2.0-flash-lite';
     const schema = zodToGeminiSchema(zodSchema);
 
     const execute = async () => {
@@ -138,7 +138,7 @@ export class GeminiProvider {
   }
 
   async generateText(prompt: string, options?: LlmOptions): Promise<string> {
-    const modelName = options?.model || 'gemini-3.5-flash-lite';
+    const modelName = options?.model || 'gemini-2.0-flash-lite';
 
     const execute = async () => {
       await this.checkRateLimit();

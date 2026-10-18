@@ -6,7 +6,6 @@ import { DeduplicationEngine } from './deduplication.engine';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { QUEUES } from '../../../infrastructure/queue/queue.constants';
-import * as crypto from 'crypto';
 import * as Parser from 'rss-parser';
 import { z } from 'zod';
 
@@ -50,8 +49,8 @@ export class AiNewsHunterCron {
     @InjectQueue(QUEUES.ANALYSIS) private readonly analysisQueue: Queue,
   ) {}
 
-  // Run every day at 8:00 AM
-  @Cron('0 8 * * *')
+  // Run every day at 10:00 AM IST (04:30 UTC, since IST = UTC+5:30)
+  @Cron('30 4 * * *')
   async runNewsHunter(): Promise<void> {
     this.logger.log('Starting AI News Hunter...');
 
@@ -114,10 +113,19 @@ export class AiNewsHunterCron {
           prompt,
           hunterResultSchema,
           {
-            model: 'gemini-1.5-pro', // Use Gemini Pro for complex reasoning and extraction
+            model: 'gemini-2.0-flash', // gemini-2.0-flash: best free-tier model for structured extraction
             temperature: 0.2,
           },
         );
+
+        // Safety check: if Gemini returned an empty list (e.g. rate-limit mock),
+        // treat it as a retriable error instead of silently producing zero articles.
+        if (!result.articles || result.articles.length === 0) {
+          this.logger.warn(
+            `Gemini returned 0 articles for topic "${topic}" — skipping topic (possible rate limit or no relevant results).`,
+          );
+          continue;
+        }
 
         // 4. Save the selected articles into the database
         for (const extractedArticle of result.articles) {
