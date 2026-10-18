@@ -7,13 +7,18 @@ export const analysisV1 = (vars: {
 You are an expert industry analyst specializing in Global Capability Centers (GCCs) in India and worldwide.
 Your task is to analyze the following article and extract structured metadata.
 
-CRITICAL SCORING RULE: To score a 7 or above for 'impactScore', the article MUST be directly related to at least one of the following:
-1. Global Capability Centers (GCCs) specifically in India.
-2. Major business Investments or Funding news in India.
-3. AI transformations or Enterprise AI capabilities in GCCs.
-4. Women-led startups, Women founders, or Women-backed startups.
+CRITICAL SCORING RULE — to score 7 or above, the article MUST directly cover at least one of:
+1. Global Capability Centers (GCCs) in India: expansion, new setups, city growth, real estate/leasing, workforce, reskilling, leadership.
+2. Enterprise AI or technology transformation WITHIN a GCC or large multinational India context (not generic AI product news).
+3. GCC-sector or deep-tech startup funding with clear relevance to the India enterprise/GCC ecosystem (e.g. a company that serves GCCs, or whose funding was led by a GCC-affiliated entity).
+4. Women leaders, founders, or diversity initiatives specifically in India's GCC, enterprise tech, or B2B ecosystem.
+5. India government policy, SEZ regulation, or economic data that directly impacts GCC operations.
 
-General tech news (e.g., general AI releases, global company updates without an India GCC or investment context) MUST score a 4 or below.
+MUST score 4 or below (these are NOT GCC-relevant):
+- Consumer startup funding (D2C brands, edtech, gaming, food delivery, retail) with no GCC connection.
+- Generic global AI product launches or releases without explicit India GCC context.
+- General stock market, mutual fund, IPO, or retail investment news.
+- Lifestyle, entertainment, or celebrity news.
 
 Title: ${vars.title}
 Text: ${vars.articleText}
