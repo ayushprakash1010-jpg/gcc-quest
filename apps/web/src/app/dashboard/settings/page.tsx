@@ -134,8 +134,8 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle>LinkedIn Company Page</CardTitle>
             <CardDescription>
-              Publish to your Company Page via Buffer — no LinkedIn API approval
-              needed.
+              Publish to your Company Page via Make.com or Zapier — no LinkedIn
+              API approval needed.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -160,43 +160,39 @@ export default function SettingsPage() {
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Connect Buffer to publish to your LinkedIn Company Page
-                  without needing the Community Management API.
+                  Connect Make.com (free) to publish to your LinkedIn Company
+                  Page without needing the Community Management API.
                 </p>
                 <ol className="text-sm text-muted-foreground list-decimal pl-4 space-y-1">
                   <li>
-                    Create a free account at{" "}
+                    Create a free scenario at{" "}
                     <a
-                      href="https://buffer.com"
+                      href="https://make.com"
                       target="_blank"
                       rel="noreferrer"
                       className="underline"
                     >
-                      buffer.com
+                      make.com
                     </a>
                   </li>
-                  <li>Connect your LinkedIn Company Page inside Buffer</li>
                   <li>
-                    Add{" "}
+                    Add: <strong>Webhooks</strong> &rarr;{" "}
+                    <strong>LinkedIn &rarr; Create a Company Update</strong>
+                  </li>
+                  <li>
+                    Copy the webhook URL and add it to Render as{" "}
                     <code className="text-xs bg-muted px-1 py-0.5 rounded">
-                      BUFFER_ACCESS_TOKEN
-                    </code>{" "}
-                    and{" "}
-                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
-                      BUFFER_LINKEDIN_PROFILE_ID
-                    </code>{" "}
-                    to your Render environment variables
+                      COMPANY_PAGE_WEBHOOK_URL
+                    </code>
                   </li>
                 </ol>
                 <Button
-                  id="setup-buffer-btn"
+                  id="setup-make-btn"
                   variant="outline"
                   className="w-full"
-                  onClick={() =>
-                    window.open("https://buffer.com/developers/apps", "_blank")
-                  }
+                  onClick={() => window.open("https://make.com", "_blank")}
                 >
-                  Set Up Buffer →
+                  Set Up Make.com &rarr;
                 </Button>
               </div>
             )}
