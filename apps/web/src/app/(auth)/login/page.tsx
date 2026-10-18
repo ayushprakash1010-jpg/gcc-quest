@@ -27,7 +27,6 @@ export default function LoginPage() {
         setError("Invalid credentials");
       } else {
         router.push("/dashboard");
-        router.refresh();
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
