@@ -183,39 +183,39 @@ export default function CalendarPage() {
                       {/* Inline Reschedule UI */}
                       {post.status === "QUEUED" &&
                         reschedulingId === post.id && (
-                          <div className="space-y-2 p-3 bg-muted rounded-md border">
-                            <p className="text-xs font-semibold text-primary">
+                          <div className="space-y-2.5 p-3.5 bg-zinc-50 rounded-lg border border-zinc-200">
+                            <p className="text-xs font-semibold text-zinc-900">
                               Select new date &amp; time:
                             </p>
                             <input
                               type="datetime-local"
                               value={newTime}
                               onChange={(e) => setNewTime(e.target.value)}
-                              className="w-full text-sm rounded-md border border-input bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                              className="w-full text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                             />
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 pt-1">
                               <Button
                                 size="sm"
                                 onClick={() => handleReschedule(post.id)}
-                                className="flex-1 gap-1"
+                                className="flex-1 gap-1 bg-blue-600 hover:bg-blue-700 text-white font-medium"
                               >
-                                <Check className="w-3 h-3" /> Confirm
+                                <Check className="w-3.5 h-3.5" /> Confirm
                               </Button>
                               <Button
                                 size="sm"
-                                variant="ghost"
+                                variant="outline"
                                 onClick={() => setReschedulingId(null)}
-                                className="flex-1 gap-1"
+                                className="flex-1 gap-1 border-zinc-300 text-zinc-700 hover:bg-zinc-100"
                               >
-                                <X className="w-3 h-3" /> Cancel
+                                <X className="w-3.5 h-3.5" /> Cancel
                               </Button>
                             </div>
                           </div>
                         )}
 
                       {post.scheduleRationale && (
-                        <div className="bg-muted p-3 rounded-md text-xs">
-                          <span className="font-semibold text-primary block mb-1">
+                        <div className="bg-blue-50/70 border border-blue-100 p-3 rounded-lg text-xs text-blue-900 leading-relaxed">
+                          <span className="font-bold text-blue-950 block mb-1">
                             AI Recommendation
                           </span>
                           {post.scheduleRationale}
