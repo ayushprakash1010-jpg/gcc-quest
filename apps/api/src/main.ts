@@ -12,8 +12,11 @@ import { RequestLoggingInterceptor } from './common/interceptors/request-logging
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
 import { ConfigService } from '@nestjs/config';
 
+import { NestExpressApplication } from '@nestjs/platform-express';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.set('trust proxy', 1);
   const configService = app.get(ConfigService);
 
   // Initialize Sentry
