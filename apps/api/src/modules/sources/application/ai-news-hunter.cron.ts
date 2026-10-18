@@ -66,8 +66,8 @@ export class AiNewsHunterCron {
     @InjectQueue(QUEUES.ANALYSIS) private readonly analysisQueue: Queue,
   ) {}
 
-  // Run every day at 10:00 AM IST (04:30 UTC, since IST = UTC+5:30)
-  @Cron('30 4 * * *')
+  // Run every day at 10:30 AM IST (server timezone confirmed IST from log timestamps)
+  @Cron('30 10 * * *')
   async runNewsHunter(): Promise<void> {
     this.logger.log('Starting AI News Hunter...');
 
