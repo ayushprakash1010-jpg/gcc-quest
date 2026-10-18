@@ -93,7 +93,7 @@ export class AnalysisProcessor extends WorkerHost {
           runType: 'article-analysis',
           promptKey: 'article-analysis',
           promptVersion: promptVersion.version,
-          model: 'gemini-3.5-flash-lite',
+          model: 'gemini-2.0-flash-lite',
           contextId: article.id,
         },
         () => this.llm.generateStructured(renderedPrompt, analysisSchema),

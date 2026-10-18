@@ -114,10 +114,19 @@ export class AiNewsHunterCron {
           prompt,
           hunterResultSchema,
           {
-            model: 'gemini-1.5-pro', // Use Gemini Pro for complex reasoning and extraction
+            model: 'gemini-2.0-flash', // gemini-2.0-flash: best free-tier model for structured extraction
             temperature: 0.2,
           },
         );
+
+        // Safety check: if Gemini returned an empty list (e.g. rate-limit mock),
+        // treat it as a retriable error instead of silently producing zero articles.
+        if (!result.articles || result.articles.length === 0) {
+          this.logger.warn(
+            `Gemini returned 0 articles for topic "${topic}" — skipping topic (possible rate limit or no relevant results).`,
+          );
+          continue;
+        }
 
         // 4. Save the selected articles into the database
         for (const extractedArticle of result.articles) {

@@ -93,7 +93,7 @@ export class TrendGenerationProcessor {
           runType: 'trend-generation',
           promptKey: promptKey,
           promptVersion: promptVersion.version,
-          model: 'gemini-3.5-flash',
+          model: 'gemini-2.0-flash',
           contextId: trend.id,
         },
         () => this.llm.generateStructured(renderedPrompt, draftsSchema),
