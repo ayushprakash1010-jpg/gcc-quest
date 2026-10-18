@@ -17,6 +17,14 @@ export class PrismaService
     try {
       await this.$connect();
       this.logger.log('Successfully connected to database');
+      // Self-healing migration: Ensure publishing_channel column exists on scheduled_posts (no manual shell needed)
+      await this.$executeRawUnsafe(
+        'ALTER TABLE "scheduled_posts" ADD COLUMN IF NOT EXISTS "publishing_channel" VARCHAR(50) NOT NULL DEFAULT \'personal\';',
+      ).catch((err) => {
+        this.logger.warn(
+          `Auto-migration for publishing_channel: ${err.message}`,
+        );
+      });
     } catch (error) {
       this.logger.error('Failed to connect to database', error);
       throw error;
