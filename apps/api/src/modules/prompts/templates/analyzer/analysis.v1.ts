@@ -29,4 +29,8 @@ For the "summary" field, write a rich, substantive 2 to 3 paragraph breakdown (s
 1. The core event, key companies involved, location, and specific numbers (headcount, investment, timeline).
 2. The strategic context and why this matters to enterprise operations.
 3. The broader implications for India's GCC ecosystem.
+
+For the "headline" field, provide a punchy 2-part graphic headline for social imagery:
+- "h1": 1-3 word subject (e.g., "Hyderabad", "Starbucks", "AI is", "German companies")
+- "h2": 2-4 word action/milestone (e.g., "on a growth trajectory.", "expands in Chennai.", "reshaping GCC jobs.", "expanding in India.")
 `;

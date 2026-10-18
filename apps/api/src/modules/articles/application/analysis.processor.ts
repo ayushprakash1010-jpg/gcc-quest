@@ -35,6 +35,20 @@ const analysisSchema = z.object({
     .min(1)
     .max(10)
     .describe('Business impact score from 1 to 10'),
+  headline: z
+    .object({
+      h1: z
+        .string()
+        .describe(
+          'Short 1-3 word punchy subject, e.g. "Hyderabad", "Starbucks", "AI is", "90% of GCCs"',
+        ),
+      h2: z
+        .string()
+        .describe(
+          'Short 2-4 word action or result, e.g. "on a growth trajectory.", "expands in Chennai.", "reshaping GCC jobs."',
+        ),
+    })
+    .optional(),
 });
 
 /**
@@ -128,10 +142,25 @@ export class AnalysisProcessor extends WorkerHost {
         },
       });
 
-      // 5. Update Article Status
+      // 5. Update Article Status (and enrich imageUrl with punchy headline if available)
+      const updateData: any = { status: 'ANALYZED' };
+      if (
+        analysisResult.headline?.h1 &&
+        analysisResult.headline?.h2 &&
+        article.imageUrl &&
+        article.imageUrl.includes('/api/og')
+      ) {
+        try {
+          const ogUrl = new URL(article.imageUrl);
+          ogUrl.searchParams.set('h1', analysisResult.headline.h1);
+          ogUrl.searchParams.set('h2', analysisResult.headline.h2);
+          updateData.imageUrl = ogUrl.toString();
+        } catch {}
+      }
+
       await this.prisma.article.update({
         where: { id: article.id },
-        data: { status: 'ANALYZED' },
+        data: updateData,
       });
 
       // 6. Emit domain event for downstream processors (EmbeddingProcessor, ContentGenerationProcessor)

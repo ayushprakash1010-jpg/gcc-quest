@@ -70,11 +70,13 @@ export class DiscoveryWorker extends WorkerHost {
           }
 
           // It's a new article, save it
-          // Resolve imageUrl: use extracted OG image, or dynamically generate a custom branded OG graphic
+          // Resolve imageUrl: composite extracted RSS image with brand overlay, or generate free AI visual
+          const baseUrl =
+            process.env.FRONTEND_URL || 'https://gcc-quest-web.vercel.app';
           let imageUrl = article.imageUrl || null;
-          if (!imageUrl) {
-            const baseUrl =
-              process.env.FRONTEND_URL || 'https://gcc-quest-web.vercel.app';
+          if (imageUrl) {
+            imageUrl = `${baseUrl}/api/og?bg=${encodeURIComponent(imageUrl)}&title=${encodeURIComponent(article.title)}&source=${encodeURIComponent(source.name)}`;
+          } else {
             imageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(article.title)}&source=${encodeURIComponent(source.name)}`;
           }
 
