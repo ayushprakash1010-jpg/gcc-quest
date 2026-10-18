@@ -76,10 +76,32 @@ export class ContentGenerationProcessor {
         return;
       }
 
-      // 2. Gather Context
-      const promptVersion = this.promptService.getActive(
-        'writer-industry-news',
-      );
+      // 2. Gather Context and dynamically select prompt based on category
+      let promptKey = 'writer-industry-news';
+      const category = article.analysis.gccCategory?.toLowerCase() || '';
+      if (
+        category.includes('expansion') ||
+        category.includes('setup') ||
+        category.includes('office') ||
+        category.includes('real estate')
+      ) {
+        promptKey = 'writer-expansion';
+      } else if (
+        category.includes('hiring') ||
+        category.includes('talent') ||
+        category.includes('leadership') ||
+        category.includes('workforce')
+      ) {
+        promptKey = 'writer-hiring';
+      } else if (
+        category.includes('research') ||
+        category.includes('report') ||
+        category.includes('data')
+      ) {
+        promptKey = 'writer-research';
+      }
+
+      const promptVersion = this.promptService.getActive(promptKey);
       const defaultBrandVoice = await this.brandVoiceService.getDefault();
       const feedbackContext = await this.feedbackService.getFeedbackContext(
         'LINKEDIN',
@@ -89,9 +111,16 @@ export class ContentGenerationProcessor {
       const brandVoiceSection =
         this.brandVoiceService.buildPromptSection(defaultBrandVoice);
 
-      // 3. Render
+      // 3. Render with full strategic context
+      const sourceName = (article as any).source?.name || 'Industry Source';
       const renderedPrompt = this.promptService.render(promptVersion, {
+        title: article.title,
         summary: article.analysis.summary,
+        category: article.analysis.gccCategory,
+        entities: article.analysis.entities,
+        impactScore: article.analysis.impactScore,
+        rawText: article.rawText,
+        sourceName,
         brandVoiceConfig: brandVoiceSection,
         feedbackContext,
       });
@@ -100,7 +129,7 @@ export class ContentGenerationProcessor {
       const result = await this.observability.trackRun(
         {
           runType: 'content-generation',
-          promptKey: 'writer-industry-news',
+          promptKey,
           promptVersion: promptVersion.version,
           model: 'gemini-3.8-flash',
           contextId: article.id,
@@ -119,7 +148,7 @@ export class ContentGenerationProcessor {
         brandVoiceId: defaultBrandVoice?.id,
         targetPlatform: 'LINKEDIN',
         versions: result.variants,
-        promptKey: 'writer-industry-news',
+        promptKey,
         promptVersion: promptVersion.version,
       });
 

@@ -12,7 +12,11 @@ import { QUEUES } from '../../../infrastructure/queue/queue.constants';
 import { z } from 'zod';
 
 const analysisSchema = z.object({
-  summary: z.string().describe('A concise 3-sentence summary of the article'),
+  summary: z
+    .string()
+    .describe(
+      'A detailed 2-3 paragraph breakdown of the article covering the key event/announcement, strategic context, and implications for India’s GCC ecosystem',
+    ),
   sentiment: z
     .string()
     .describe('Overall sentiment (POSITIVE, NEGATIVE, NEUTRAL)'),

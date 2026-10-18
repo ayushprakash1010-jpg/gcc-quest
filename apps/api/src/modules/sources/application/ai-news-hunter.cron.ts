@@ -17,7 +17,9 @@ const hunterResultSchema = z.object({
         title: z.string().describe('The title of the article'),
         summary: z
           .string()
-          .describe('A summary of why this article is highly relevant'),
+          .describe(
+            'A detailed 2-3 paragraph summary explaining the announcement, strategic details, numbers (headcount, investment), and why it is highly relevant to India GCCs',
+          ),
         author: z
           .string()
           .optional()
@@ -144,7 +146,7 @@ export class AiNewsHunterCron {
 
           Select UP TO 2 articles total. If fewer than 2 articles meet the criteria,
           return only the qualifying ones. Do NOT force-select off-topic articles.
-          For each selected article, explain in the summary WHY it is relevant to GCCs.
+          For each selected article, write a detailed 2 to 3 paragraph summary explaining the core announcement, specific numbers/metrics (headcount, location, investment), the strategic business rationale, and why it is significant to India's GCC ecosystem.
         `;
 
         const result = await this.llmService.generateStructured(

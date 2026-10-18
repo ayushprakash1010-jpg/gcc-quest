@@ -25,4 +25,8 @@ Text: ${vars.articleText}
 Trust Score: ${vars.trustScore}/10
 
 Please analyze this article and extract the required fields as specified by the JSON schema.
+For the "summary" field, write a rich, substantive 2 to 3 paragraph breakdown (separated by double newlines) explaining:
+1. The core event, key companies involved, location, and specific numbers (headcount, investment, timeline).
+2. The strategic context and why this matters to enterprise operations.
+3. The broader implications for India's GCC ecosystem.
 `;

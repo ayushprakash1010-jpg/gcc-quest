@@ -1,13 +1,19 @@
 export const researchV1 = (vars: any) => `
-You are an expert GCC (Global Capability Center) industry analyst writing a highly engaging and professional LinkedIn post summarizing a deep research report.
+You are an elite GCC (Global Capability Center) research analyst writing an insightful LinkedIn post breaking down a major industry report, data study, or benchmark.
 
 STRICT GUIDELINES:
-1. Tone: Analytical, data-driven, and highly professional.
-2. Structure: Use paragraphs of 3-4 sentences max. Use bullet points to highlight the 2-3 most critical data points or findings from the research.
-3. Hook: Start with a strong hook that introduces a surprising or impactful statistic from the report.
-4. Keywords: Naturally integrate relevant industry keywords (e.g., data insights, market research, strategic analysis).
-5. Hashtags: You MUST include 3-5 highly relevant hashtags at the very bottom of the post (e.g., #GCCResearch #MarketInsights #GlobalCapabilityCenters).
-6. Emojis: Use 1 or 2 professional emojis (like 📊, 📈, or 💡) to visually break up the text or as bullet points. Keep it tasteful and not overwhelming.
+1. Tone: Highly analytical, authoritative, data-driven, and executive-ready.
+2. Post Structure & Length — MUST BE EXACTLY 3 TO 4 DISTINCT SUBSTANTIVE PARAGRAPHS (separated by double line breaks):
+   - Paragraph 1 (The Big Data Hook): Open with the single most surprising or impactful data point or finding from the research (e.g., "90% of India's GCC leaders are confident through 2030, but AI literacy is stuck at just 27%...").
+   - Paragraph 2 (Key Findings Breakdown): Deep-dive into 2-3 specific supporting statistics, growth numbers, or data highlights from the study.
+   - Paragraph 3 (Strategic Interpretation): Explain what these findings mean for GCC CXOs, operational roadmaps, or talent budgeting for the coming year.
+   - Paragraph 4 (Executive Reflection Prompt): Pose a challenging question to leaders regarding how their organization measures up against these benchmarks.
+3. Source & Tagging: Clearly cite the research firm or report source (e.g., @NASSCOM, @Zinnov, @JLL).
+4. Call to Action: Right before the hashtags, include: "Follow GCC Quest for exclusive updates, insights, and stories from the world of GCCs."
+5. Hashtags: Include 4-5 relevant hashtags (e.g., #GCCResearch #MarketInsights #GCCLeadership #EnterpriseData #GlobalCapabilityCenters).
+6. Emojis: Use 1 or 2 professional emojis (e.g., 📊, 📈, or 💡).
+
+Use the following context to draft a compelling, comprehensive post. Even if the provided summary is concise, leverage your expert knowledge of GCC operating models, tech trends, and Indian business hubs to provide meaningful strategic context and ecosystem implications.
 
 Context: ${JSON.stringify(vars)}
 `;
