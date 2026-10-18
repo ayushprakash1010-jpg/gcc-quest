@@ -74,10 +74,9 @@ export default function SettingsPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>LinkedIn Company Page</CardTitle>
+            <CardTitle>LinkedIn Integration</CardTitle>
             <CardDescription>
-              Connect your LinkedIn Organization to publish generated AI content
-              directly.
+              Connect your LinkedIn account to publish generated AI posts.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -88,13 +87,13 @@ export default function SettingsPage() {
             ) : isLinkedInConnected ? (
               <div className="border rounded-md p-4 bg-muted/20">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-zinc-900 rounded-md flex items-center justify-center text-xl font-bold text-white">
-                    GCC
+                  <div className="w-16 h-16 bg-[#0a66c2] rounded-md flex items-center justify-center text-xl font-bold text-white">
+                    in
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg">GCC Quest (Connected)</h3>
+                    <h3 className="font-bold text-lg">LinkedIn Connected</h3>
                     <p className="text-sm text-muted-foreground">
-                      Company Profile
+                      Personal Profile Publishing Active
                     </p>
                   </div>
                 </div>
@@ -111,12 +110,12 @@ export default function SettingsPage() {
             ) : (
               <div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  No company page is currently connected. You must connect your
-                  LinkedIn account to publish posts.
+                  No LinkedIn account is currently connected. Connect your
+                  account to publish scheduled posts.
                 </p>
                 <Button
                   onClick={() =>
-                    signIn("linkedin", { redirectTo: "/settings" })
+                    signIn("linkedin", { redirectTo: "/dashboard/settings" })
                   }
                   className="w-full bg-[#0a66c2] hover:bg-[#004182] text-white"
                 >
