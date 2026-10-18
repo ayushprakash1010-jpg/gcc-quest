@@ -34,29 +34,22 @@ export class AiNewsHunterCron {
   private readonly logger = new Logger(AiNewsHunterCron.name);
   private readonly rssParser = new Parser();
 
-  // The topics we want Gemini to hunt for
+  // The topics we want Gemini to hunt for — 5 core topics × 2 articles = ~10 per daily run
   private readonly targetTopics = [
-    // Core GCC — expansion, new setups, investments
+    // Core GCC expansion & new setups
     'Global Capability Center GCC expansion India 2026',
-    'GCC India new center setup multinational company',
 
-    // City-specific leasing & real estate (manager priority)
+    // City-specific leasing & real estate (manager priority: Hyderabad leasing surge)
     'Hyderabad Bangalore GCC leasing office real estate 2026',
 
-    // Cross-border GCC (European/German companies — manager priority)
+    // Cross-border GCC: European/US companies entering India (manager priority: German companies)
     'European German American company GCC India expansion',
 
-    // Workforce, reskilling, AI impact on GCC jobs (manager priority)
+    // Workforce, reskilling, AI impact on GCC jobs (manager priority: AI & future of GCC jobs)
     'GCC India workforce reskilling AI jobs hiring 2026',
 
-    // Research & data-led stories (NASSCOM, Zinnov, JLL)
+    // Research & data-led stories from NASSCOM, Zinnov, JLL, CBRE
     'NASSCOM Zinnov GCC India report data 2026',
-
-    // GCC leadership & strategy
-    'GCC India CXO leadership technology innovation strategy',
-
-    // Funding in GCC/deep-tech sector + women in GCC tech (allowed per product direction)
-    'India GCC deeptech funding women leadership startup 2026',
   ];
 
   constructor(
@@ -146,7 +139,7 @@ export class AiNewsHunterCron {
           - General stock market, mutual fund, or retail investment news
           - Celebrity, sports, or lifestyle content
 
-          Select UP TO 3 articles total. If fewer than 3 articles meet the criteria,
+          Select UP TO 2 articles total. If fewer than 2 articles meet the criteria,
           return only the qualifying ones. Do NOT force-select off-topic articles.
           For each selected article, explain in the summary WHY it is relevant to GCCs.
         `;
