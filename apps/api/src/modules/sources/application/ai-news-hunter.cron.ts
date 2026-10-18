@@ -34,7 +34,7 @@ export class AiNewsHunterCron {
   private readonly logger = new Logger(AiNewsHunterCron.name);
   private readonly rssParser = new Parser();
 
-  // The topics we want Gemini to hunt for — 5 core topics × 2 articles = ~10 per daily run
+  // The topics we want Gemini to hunt for — 6 core topics × 2 articles = ~12 per daily run
   private readonly targetTopics = [
     // Core GCC expansion & new setups
     'Global Capability Center GCC expansion India 2026',
@@ -50,6 +50,9 @@ export class AiNewsHunterCron {
 
     // Research & data-led stories from NASSCOM, Zinnov, JLL, CBRE
     'NASSCOM Zinnov GCC India report data 2026',
+
+    // GCC leadership & strategy (generates high-engagement content like Deutsche Bank, CEO strategy)
+    'GCC India CXO leadership technology innovation strategy',
   ];
 
   constructor(
@@ -59,8 +62,8 @@ export class AiNewsHunterCron {
     @InjectQueue(QUEUES.ANALYSIS) private readonly analysisQueue: Queue,
   ) {}
 
-  // Run every day at 10:50 AM IST (server timezone confirmed IST from log timestamps)
-  @Cron('50 10 * * *')
+  // Run every day at 8:00 AM IST (server timezone confirmed IST from log timestamps)
+  @Cron('0 8 * * *')
   async runNewsHunter(): Promise<void> {
     this.logger.log('Starting AI News Hunter...');
 
