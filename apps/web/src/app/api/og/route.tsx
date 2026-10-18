@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
           }}
         />
 
-        {/* 2. Top-to-Bottom Multi-Stop Vignette Overlay for High Typography Contrast */}
+        {/* 2. Top-to-Bottom Multi-Stop Vignette Overlay for Seamless Logo Blending and High Typography Contrast */}
         <div
           style={{
             position: "absolute",
@@ -90,24 +90,11 @@ export async function GET(req: NextRequest) {
             right: 0,
             height: isSquare ? "460px" : "320px",
             background:
-              "linear-gradient(180deg, rgba(7, 11, 25, 0.95) 0%, rgba(7, 11, 25, 0.88) 60%, rgba(7, 11, 25, 0.4) 85%, rgba(7, 11, 25, 0) 100%)",
+              "linear-gradient(180deg, #000000 0%, rgba(0, 0, 0, 0.95) 50%, rgba(0, 0, 0, 0.5) 80%, rgba(0, 0, 0, 0) 100%)",
           }}
         />
 
-        {/* 3. Bottom Gradient Vignette */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: "140px",
-            background:
-              "linear-gradient(0deg, rgba(7, 11, 25, 0.9) 0%, rgba(7, 11, 25, 0) 100%)",
-          }}
-        />
-
-        {/* 4. Top Header: Official GCC Quest Logo */}
+        {/* 3. Top Header: Official GCC Quest Logo */}
         <div
           style={{
             position: "absolute",
@@ -130,7 +117,7 @@ export async function GET(req: NextRequest) {
           />
         </div>
 
-        {/* 5. Dual-Tone Bold Headline in Upper Quadrant */}
+        {/* 4. Dual-Tone Bold Headline in Upper Quadrant */}
         <div
           style={{
             position: "absolute",
@@ -169,29 +156,34 @@ export async function GET(req: NextRequest) {
           </div>
         </div>
 
-        {/* 6. Bottom Bar: Category Badge & Domain */}
+        {/* 5. Sleek Solid Black Bottom Bar (Cleanly Conceals Any Background Watermarks and Grounds the Graphic) */}
         <div
           style={{
             position: "absolute",
-            bottom: isSquare ? 40 : 28,
-            left: isSquare ? 56 : 48,
-            right: isSquare ? 56 : 48,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: isSquare ? "78px" : "64px",
+            backgroundColor: "#000000",
+            borderTop: "1px solid rgba(255, 255, 255, 0.12)",
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
-            zIndex: 10,
+            justifyContent: "space-between",
+            paddingLeft: isSquare ? 56 : 48,
+            paddingRight: isSquare ? 56 : 48,
+            zIndex: 15,
           }}
         >
           <div
             style={{
               backgroundColor: "rgba(56, 189, 248, 0.15)",
-              border: "1px solid rgba(56, 189, 248, 0.35)",
-              padding: "8px 20px",
-              borderRadius: "24px",
+              border: "1px solid rgba(56, 189, 248, 0.4)",
+              padding: "6px 20px",
+              borderRadius: "20px",
               color: "#7dd3fc",
-              fontSize: isSquare ? 18 : 15,
+              fontSize: isSquare ? 17 : 14,
               fontWeight: 700,
-              letterSpacing: "0.05em",
+              letterSpacing: "0.06em",
               textTransform: "uppercase",
             }}
           >
@@ -200,9 +192,9 @@ export async function GET(req: NextRequest) {
           <div
             style={{
               color: "#94a3b8",
-              fontSize: isSquare ? 20 : 16,
+              fontSize: isSquare ? 19 : 15,
               fontWeight: 600,
-              letterSpacing: "0.03em",
+              letterSpacing: "0.04em",
               display: "flex",
               alignItems: "center",
             }}
