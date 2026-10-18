@@ -16,6 +16,7 @@ import apiClient from "@/lib/api/api-client";
 export default function SettingsPage() {
   const { data: session } = useSession();
   const [isLinkedInConnected, setIsLinkedInConnected] = useState(false);
+  const [isBufferConfigured, setIsBufferConfigured] = useState(false);
   const [loading, setLoading] = useState(true);
   const [newPassword, setNewPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -25,6 +26,7 @@ export default function SettingsPage() {
       try {
         const res = await apiClient.get("/auth/me");
         setIsLinkedInConnected(res.data.hasLinkedInConnection === true);
+        setIsBufferConfigured(res.data.isBufferConfigured === true);
       } catch (e) {
         console.error("Failed to check LinkedIn status", e);
       } finally {
@@ -72,6 +74,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        {/* ── LinkedIn Personal Profile Card ── */}
         <Card>
           <CardHeader>
             <CardTitle>LinkedIn Integration</CardTitle>
@@ -120,6 +123,80 @@ export default function SettingsPage() {
                   className="w-full bg-[#0a66c2] hover:bg-[#004182] text-white"
                 >
                   Connect LinkedIn
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* ── Buffer Company Page Card ── */}
+        <Card>
+          <CardHeader>
+            <CardTitle>LinkedIn Company Page</CardTitle>
+            <CardDescription>
+              Publish to your Company Page via Buffer — no LinkedIn API approval
+              needed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loading ? (
+              <p className="text-sm text-muted-foreground">
+                Checking status...
+              </p>
+            ) : isBufferConfigured ? (
+              <div className="border rounded-md p-4 bg-muted/20">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-[#168ee1] rounded-md flex items-center justify-center text-2xl font-bold text-white">
+                    B
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">Buffer Connected</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Company Page Publishing Active
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Connect Buffer to publish to your LinkedIn Company Page
+                  without needing the Community Management API.
+                </p>
+                <ol className="text-sm text-muted-foreground list-decimal pl-4 space-y-1">
+                  <li>
+                    Create a free account at{" "}
+                    <a
+                      href="https://buffer.com"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline"
+                    >
+                      buffer.com
+                    </a>
+                  </li>
+                  <li>Connect your LinkedIn Company Page inside Buffer</li>
+                  <li>
+                    Add{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      BUFFER_ACCESS_TOKEN
+                    </code>{" "}
+                    and{" "}
+                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                      BUFFER_LINKEDIN_PROFILE_ID
+                    </code>{" "}
+                    to your Render environment variables
+                  </li>
+                </ol>
+                <Button
+                  id="setup-buffer-btn"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() =>
+                    window.open("https://buffer.com/developers/apps", "_blank")
+                  }
+                >
+                  Set Up Buffer →
                 </Button>
               </div>
             )}

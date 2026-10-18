@@ -196,6 +196,10 @@ export default function DraftReviewPage({
     slot: string;
     rationale: string;
   } | null>(null);
+  const [publishingChannel, setPublishingChannel] = useState<
+    "personal" | "buffer"
+  >("personal");
+  const [isBufferConfigured, setIsBufferConfigured] = useState(false);
 
   useEffect(() => {
     async function fetchDraft() {
@@ -213,7 +217,14 @@ export default function DraftReviewPage({
         setLoading(false);
       }
     }
+    async function fetchSettings() {
+      try {
+        const res = await apiClient.get("/auth/me");
+        setIsBufferConfigured(res.data.isBufferConfigured === true);
+      } catch (_) {}
+    }
     fetchDraft();
+    fetchSettings();
   }, [id]);
 
   const handleApprove = async () => {
@@ -264,6 +275,7 @@ export default function DraftReviewPage({
       await apiClient.post(`/schedule`, {
         draftId: id,
         scheduledFor: recommendation?.slot,
+        publishingChannel,
       });
       router.push("/dashboard/calendar");
     } catch (err) {
@@ -434,8 +446,40 @@ export default function DraftReviewPage({
               <p className="text-sm text-muted-foreground mb-4">
                 <strong>Rationale:</strong> {recommendation.rationale}
               </p>
+
+              {/* Channel selector */}
+              <div className="mb-4 space-y-2">
+                <p className="text-sm font-medium">Publish To</p>
+                <div className="flex gap-2">
+                  <button
+                    id="channel-personal-btn"
+                    onClick={() => setPublishingChannel("personal")}
+                    className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${publishingChannel === "personal" ? "bg-primary text-primary-foreground border-primary" : "border-input bg-background hover:bg-muted"}`}
+                  >
+                    Personal Profile
+                  </button>
+                  <button
+                    id="channel-buffer-btn"
+                    onClick={() =>
+                      isBufferConfigured && setPublishingChannel("buffer")
+                    }
+                    disabled={!isBufferConfigured}
+                    className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${publishingChannel === "buffer" ? "bg-[#168ee1] text-white border-[#168ee1]" : isBufferConfigured ? "border-input bg-background hover:bg-muted" : "border-input bg-muted text-muted-foreground cursor-not-allowed opacity-50"}`}
+                  >
+                    Company Page
+                  </button>
+                </div>
+                {!isBufferConfigured && (
+                  <p className="text-xs text-amber-500">
+                    Set up Buffer in Settings to enable company page publishing
+                  </p>
+                )}
+              </div>
               <div className="flex gap-2">
-                <Button onClick={handleConfirmSchedule}>
+                <Button
+                  id="confirm-schedule-btn"
+                  onClick={handleConfirmSchedule}
+                >
                   Accept & Schedule
                 </Button>
                 <Button

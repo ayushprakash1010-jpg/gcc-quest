@@ -335,6 +335,8 @@ model ScheduledPost {
   scheduleRationale String?        @map("schedule_rationale")
   publishedUrl      String?        @map("published_url")
   errorMessage      String?        @map("error_message")
+  // "personal" = LinkedIn personal profile, "buffer" = company page via Buffer API
+  publishingChannel String         @default("personal") @map("publishing_channel") @db.VarChar(50)
   createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   draft             ContentDraft   @relation(fields: [draftId], references: [id], onDelete: Cascade)
@@ -343,6 +345,7 @@ model ScheduledPost {
   @@index([scheduledFor])
   @@map("scheduled_posts")
 }
+
 
 model CalendarRule {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

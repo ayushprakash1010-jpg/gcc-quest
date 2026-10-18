@@ -141,6 +141,10 @@ export class AuthService {
     return {
       ...user,
       hasLinkedInConnection: !!linkedInConnection,
+      isBufferConfigured: !!(
+        process.env.BUFFER_ACCESS_TOKEN &&
+        process.env.BUFFER_LINKEDIN_PROFILE_ID
+      ),
     };
   }
 

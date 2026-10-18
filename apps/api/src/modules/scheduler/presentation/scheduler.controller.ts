@@ -30,7 +30,14 @@ export class SchedulerController {
   }
 
   @Post()
-  async schedulePost(@Body() dto: { draftId: string; scheduledFor?: string }) {
+  async schedulePost(
+    @Body()
+    dto: {
+      draftId: string;
+      scheduledFor?: string;
+      publishingChannel?: 'personal' | 'buffer';
+    },
+  ) {
     const draft = await this.prisma.contentDraft.findUnique({
       where: { id: dto.draftId },
     });
@@ -58,6 +65,7 @@ export class SchedulerController {
         recommendedSlot,
         scheduleRationale: rationale,
         status: 'QUEUED',
+        publishingChannel: dto.publishingChannel ?? 'personal',
       },
     });
 
