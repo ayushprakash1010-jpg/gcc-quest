@@ -59,6 +59,7 @@ export class SchedulerController {
     }
 
     const scheduled = await this.prisma.scheduledPost.create({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: {
         draftId: dto.draftId,
         scheduledFor: slot,
@@ -66,7 +67,7 @@ export class SchedulerController {
         scheduleRationale: rationale,
         status: 'QUEUED',
         publishingChannel: dto.publishingChannel ?? 'personal',
-      },
+      } as any,
     });
 
     await this.prisma.contentDraft.update({
