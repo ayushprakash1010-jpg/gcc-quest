@@ -36,10 +36,27 @@ export class AiNewsHunterCron {
 
   // The topics we want Gemini to hunt for
   private readonly targetTopics = [
-    'GCCs in India',
-    'Global Capability Centers Bangalore',
-    'AI Startup Funding India',
-    'Technology Leadership India',
+    // Core GCC — expansion, new setups, investments
+    'Global Capability Center GCC expansion India 2026',
+    'GCC India new center setup multinational company',
+
+    // City-specific leasing & real estate (manager priority)
+    'Hyderabad Bangalore GCC leasing office real estate 2026',
+
+    // Cross-border GCC (European/German companies — manager priority)
+    'European German American company GCC India expansion',
+
+    // Workforce, reskilling, AI impact on GCC jobs (manager priority)
+    'GCC India workforce reskilling AI jobs hiring 2026',
+
+    // Research & data-led stories (NASSCOM, Zinnov, JLL)
+    'NASSCOM Zinnov GCC India report data 2026',
+
+    // GCC leadership & strategy
+    'GCC India CXO leadership technology innovation strategy',
+
+    // Funding in GCC/deep-tech sector + women in GCC tech (allowed per product direction)
+    'India GCC deeptech funding women leadership startup 2026',
   ];
 
   constructor(
@@ -97,16 +114,41 @@ export class AiNewsHunterCron {
 
         // 3. Ask Gemini to filter and select the best ones
         const prompt = `
-          You are an expert industry analyst looking for high-quality news for a B2B audience.
-          I have searched Google News for "${topic}" and found the following recent articles:
-          
+          You are an expert content analyst for GCC Quest — a platform exclusively covering
+          Global Capability Centers (GCCs) in India.
+
+          CONTEXT: A GCC (Global Capability Center) is a captive unit set up by a
+          multinational company in India to deliver technology, R&D, operations, or
+          shared services for the parent company globally.
+          Examples: Walmart Global Tech India, Goldman Sachs Bengaluru, HSBC Tech India,
+          Bosch Engineering India, JP Morgan India GCC.
+
+          I searched Google News for "${topic}" and found these recent articles:
+
           ${JSON.stringify(topResults, null, 2)}
-          
-          Your task:
-          1. Review these articles.
-          2. Discard any spam, low-quality, or irrelevant articles.
-          3. Select ONLY the most insightful, highly relevant, and impactful articles (maximum 3 per topic).
-          4. Extract their URL, title, and write a brief summary of why it's important.
+
+          YOUR TASK — be a strict editorial filter:
+
+          PRIORITY 1 — MUST SELECT if present (these are primary GCC stories):
+          - A multinational company setting up, expanding, or restructuring a GCC in India
+          - GCC workforce news: hiring surges, reskilling programs, AI impact on GCC jobs
+          - GCC real estate: office leasing data, city-wise growth, SEZ announcements
+          - Policy or government initiatives directly supporting GCCs
+          - Research/data reports on India's GCC ecosystem (NASSCOM, Zinnov, JLL, CBRE)
+
+          PRIORITY 2 — MAY SELECT a maximum of 1 per run (secondary content):
+          - India deeptech or enterprise tech startup funding with clear GCC-sector relevance
+          - Women leaders or founders in India's GCC or enterprise tech ecosystem
+
+          HARD DISCARD — never select these:
+          - Consumer startup funding (D2C, fintech, edtech, gaming) with no GCC connection
+          - Generic global AI product releases with no India GCC context
+          - General stock market, mutual fund, or retail investment news
+          - Celebrity, sports, or lifestyle content
+
+          Select UP TO 3 articles total. If fewer than 3 articles meet the criteria,
+          return only the qualifying ones. Do NOT force-select off-topic articles.
+          For each selected article, explain in the summary WHY it is relevant to GCCs.
         `;
 
         const result = await this.llmService.generateStructured(
