@@ -41,13 +41,85 @@ export async function GET(req: NextRequest) {
       const cleanKeywords = title
         .replace(/[^\w\s]/gi, " ")
         .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 100);
+        .trim();
+
+      const lowerTitle = title.toLowerCase();
+
+      // Deterministic seed based on title hash so each article gets a completely unique, distinct visual
+      const seed =
+        Math.abs(
+          title
+            .split("")
+            .reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0),
+        ) % 1000000;
+
+      let promptDesc = "";
+      if (
+        lowerTitle.includes("ai") ||
+        lowerTitle.includes("skill") ||
+        lowerTitle.includes("talent") ||
+        lowerTitle.includes("workforce") ||
+        lowerTitle.includes("hiring") ||
+        lowerTitle.includes("job") ||
+        lowerTitle.includes("reskill") ||
+        lowerTitle.includes("salary")
+      ) {
+        promptDesc =
+          "modern futuristic collaborative tech office interior, engineers collaborating on software innovation in Bangalore cyber hub, glass walls, ambient glowing blue and amber lighting, professional architectural photography, 8k";
+      } else if (
+        lowerTitle.includes("leasing") ||
+        lowerTitle.includes("real estate") ||
+        lowerTitle.includes("hyderabad") ||
+        lowerTitle.includes("bengaluru") ||
+        lowerTitle.includes("bangalore") ||
+        lowerTitle.includes("office") ||
+        lowerTitle.includes("space")
+      ) {
+        promptDesc =
+          "aerial cityscape view of modern financial cyber district in India, illuminated futuristic glass towers, bustling corporate corridor at dusk, architectural photography, dramatic sky, photorealistic 8k";
+      } else if (
+        lowerTitle.includes("cxo") ||
+        lowerTitle.includes("leader") ||
+        lowerTitle.includes("ceo") ||
+        lowerTitle.includes("appoint") ||
+        lowerTitle.includes("strategy") ||
+        lowerTitle.includes("revenue") ||
+        lowerTitle.includes("billion")
+      ) {
+        promptDesc =
+          "executive high-floor corporate boardroom in glass skyscraper, conference table, panoramic window view of modern city, sleek corporate atmosphere, architectural photography, photorealistic 8k";
+      } else {
+        promptDesc =
+          "modern grand entrance of multinational innovation hub, contemporary architecture in India, sleek glass facade, landscaped corporate park, bright daylight, architectural photography, photorealistic 8k";
+      }
+
       const prompt = encodeURIComponent(
-        `cinematic modern corporate glass headquarters, tech park in India, ${cleanKeywords}, soft sunset lighting, architectural photography, photorealistic 8k`,
+        `${promptDesc}, ${cleanKeywords.slice(0, 60)}`,
       );
-      // Use turbo for fast, reliable 2-3s rendering to prevent client/edge timeouts
-      bgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1080&height=1080&model=turbo&nologo=true`;
+      // Use turbo with unique seed for fast 2-3s diverse rendering
+      bgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1080&height=1080&model=turbo&seed=${seed}&nologo=true`;
+    }
+
+    // Pre-fetch the background image into base64 with a 4.5s timeout.
+    // This guarantees Satori renders in 20ms in memory and NEVER times out or streams 0 bytes.
+    let bgDataUri: string | null = null;
+    if (bgUrl) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4500);
+        const imgRes = await fetch(bgUrl, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (imgRes.ok) {
+          const buffer = await imgRes.arrayBuffer();
+          if (buffer.byteLength > 2000) {
+            const base64 = Buffer.from(buffer).toString("base64");
+            const mime = imgRes.headers.get("content-type") || "image/jpeg";
+            bgDataUri = `data:${mime};base64,${base64}`;
+          }
+        }
+      } catch {
+        // Fallback gracefully to high-contrast corporate tech gradient
+      }
     }
 
     const isSquare = aspect !== "landscape";
@@ -67,20 +139,34 @@ export async function GET(req: NextRequest) {
           fontFamily: "sans-serif",
         }}
       >
-        {/* 1. Photorealistic Background Image */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={bgUrl}
-          alt=""
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
+        {/* 1. Photorealistic Background Image or Ambient Tech Slate Gradient */}
+        {bgDataUri ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={bgDataUri}
+            alt=""
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              background:
+                "radial-gradient(circle at 75% 25%, #1e293b 0%, #0f172a 45%, #020617 100%)",
+            }}
+          />
+        )}
 
         {/* 2. Top-to-Bottom Multi-Stop Vignette Overlay for Seamless Logo Blending and High Typography Contrast */}
         <div

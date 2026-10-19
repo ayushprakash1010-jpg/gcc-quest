@@ -179,7 +179,11 @@ export function LinkedInPostPreview({
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 key={retryCount}
-                src={imageUrl}
+                src={
+                  retryCount > 0
+                    ? `${imageUrl}${imageUrl.includes("?") ? "&" : "?"}_r=${retryCount}`
+                    : imageUrl
+                }
                 alt="Post graphic"
                 className={`w-full object-cover max-h-[540px] transition-opacity duration-300 ${
                   imageLoading ? "opacity-0" : "opacity-100"
