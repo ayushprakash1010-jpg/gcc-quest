@@ -105,56 +105,86 @@ export class GeminiProvider {
     const modelName = options?.model || 'gemini-3.5-flash-lite';
     const schema = zodToGeminiSchema(zodSchema);
 
-    const execute = async () => {
-      try {
-        await this.checkRateLimit();
-        const model = this.genAI.getGenerativeModel({ model: modelName });
+    const callWithModel = async (targetModel: string) => {
+      const execute = async () => {
+        try {
+          await this.checkRateLimit();
+          const model = this.genAI.getGenerativeModel({ model: targetModel });
 
-        const result = await model.generateContent({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: options?.temperature ?? 0.2,
-            responseMimeType: 'application/json',
-            responseSchema: schema,
-          },
-        });
+          const result = await model.generateContent({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: options?.temperature ?? 0.2,
+              responseMimeType: 'application/json',
+              responseSchema: schema,
+            },
+          });
 
-        const text = result.response.text();
-        return zodSchema.parse(JSON.parse(text));
-      } catch (e: any) {
-        if (e?.message?.includes('429')) {
-          this.logger.warn(
-            'Gemini quota exhausted (429) — returning schema-valid mock stub. ' +
-              'This data is NOT persisted to the database; the processor will retry on next cycle.',
-          );
-          const mockData = buildMockFromSchema(zodSchema);
-          return zodSchema.parse(mockData) as T;
+          const text = result.response.text();
+          return zodSchema.parse(JSON.parse(text));
+        } catch (e: any) {
+          if (e?.message?.includes('429')) {
+            this.logger.warn(
+              'Gemini quota exhausted (429) — returning schema-valid mock stub. ' +
+                'This data is NOT persisted to the database; the processor will retry on next cycle.',
+            );
+            const mockData = buildMockFromSchema(zodSchema);
+            return zodSchema.parse(mockData) as T;
+          }
+          throw e;
         }
-        throw e;
-      }
+      };
+
+      return this.withBackoff(execute);
     };
 
-    return this.withBackoff(execute);
+    try {
+      return await callWithModel(modelName);
+    } catch (e: any) {
+      const is503 = e?.status === 503 || e?.message?.includes('503');
+      if (is503 && modelName !== 'gemini-3.5-flash-lite') {
+        this.logger.warn(
+          `Gemini model "${modelName}" hit 503 (high demand). Automatically falling back to "gemini-3.5-flash-lite"...`,
+        );
+        return await callWithModel('gemini-3.5-flash-lite');
+      }
+      throw e;
+    }
   }
 
   async generateText(prompt: string, options?: LlmOptions): Promise<string> {
     const modelName = options?.model || 'gemini-3.5-flash-lite';
 
-    const execute = async () => {
-      await this.checkRateLimit();
-      const model = this.genAI.getGenerativeModel({ model: modelName });
+    const callWithModel = async (targetModel: string) => {
+      const execute = async () => {
+        await this.checkRateLimit();
+        const model = this.genAI.getGenerativeModel({ model: targetModel });
 
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: options?.temperature ?? 0.7,
-        },
-      });
+        const result = await model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: options?.temperature ?? 0.7,
+          },
+        });
 
-      return result.response.text();
+        return result.response.text();
+      };
+
+      return this.withBackoff(execute);
     };
 
-    return this.withBackoff(execute);
+    try {
+      return await callWithModel(modelName);
+    } catch (e: any) {
+      const is503 = e?.status === 503 || e?.message?.includes('503');
+      if (is503 && modelName !== 'gemini-3.5-flash-lite') {
+        this.logger.warn(
+          `Gemini model "${modelName}" hit 503 (high demand). Automatically falling back to "gemini-3.5-flash-lite"...`,
+        );
+        return await callWithModel('gemini-3.5-flash-lite');
+      }
+      throw e;
+    }
   }
 
   async embed(text: string): Promise<number[]> {

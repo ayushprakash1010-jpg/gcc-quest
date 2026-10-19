@@ -102,15 +102,93 @@ export class AiNewsHunterCron {
           continue;
         }
 
-        // Take top 15 results to give to Gemini
-        const topResults = feed.items.slice(0, 15).map((item) => ({
-          title: item.title,
-          url: item.link,
-          date: item.pubDate,
-          snippet: item.contentSnippet || item.content,
-        }));
+        // 3. Pre-fetch recent articles from DB (past 7 days) to filter out duplicates in memory
+        const recentDate = new Date();
+        recentDate.setDate(recentDate.getDate() - 7);
+        const recentArticles = await this.prisma.article.findMany({
+          where: { discoveredAt: { gte: recentDate } },
+          select: { externalUrl: true, title: true, contentHash: true },
+        });
 
-        // 3. Ask Gemini to filter and select the best ones
+        const existingUrls = new Set(
+          recentArticles.map((a) => a.externalUrl).filter(Boolean),
+        );
+        const existingHashes = new Set(
+          recentArticles.map((a) => a.contentHash).filter(Boolean),
+        );
+        const recentTitles = recentArticles.map((a) => a.title).filter(Boolean);
+
+        // Pre-filter feed items so Gemini only sees fresh, unseen articles!
+        const freshCandidates: Array<{
+          title: string;
+          url: string;
+          date?: string;
+          snippet?: string;
+        }> = [];
+
+        for (const item of feed.items) {
+          if (!item.title || !item.link) continue;
+
+          // Check direct URL duplicate
+          if (existingUrls.has(item.link)) {
+            this.logger.debug(
+              `Pre-filter skipping existing URL: ${item.title}`,
+            );
+            continue;
+          }
+
+          // Check content hash
+          const hash = this.deduplicationEngine.generateHash(
+            item.link,
+            item.title,
+          );
+          if (existingHashes.has(hash)) {
+            this.logger.debug(
+              `Pre-filter skipping duplicate hash: ${item.title}`,
+            );
+            continue;
+          }
+
+          // Check syntactic similarity against recent article titles
+          const isSyntacticDup = recentTitles.some((existingTitle) => {
+            const similarity = this.calculateSimilarity(
+              item.title!,
+              existingTitle,
+            );
+            return similarity >= 0.75;
+          });
+
+          if (isSyntacticDup) {
+            this.logger.debug(
+              `Pre-filter skipping syntactic duplicate: ${item.title}`,
+            );
+            continue;
+          }
+
+          freshCandidates.push({
+            title: item.title,
+            url: item.link,
+            date: item.pubDate,
+            snippet: item.contentSnippet || item.content,
+          });
+
+          if (freshCandidates.length >= 15) {
+            break;
+          }
+        }
+
+        if (freshCandidates.length === 0) {
+          this.logger.log(
+            `All ${feed.items.length} articles for topic "${topic}" were already ingested in recent runs.`,
+          );
+          continue;
+        }
+
+        this.logger.log(
+          `Found ${freshCandidates.length} fresh, unseen candidate articles for topic: ${topic}`,
+        );
+
+        // 4. Ask Gemini to filter and select the top 2-3 from fresh candidates
         const prompt = `
           You are an expert content analyst for GCC Quest — a platform exclusively covering
           Global Capability Centers (GCCs) in India.
@@ -121,9 +199,9 @@ export class AiNewsHunterCron {
           Examples: Walmart Global Tech India, Goldman Sachs Bengaluru, HSBC Tech India,
           Bosch Engineering India, JP Morgan India GCC.
 
-          I searched Google News for "${topic}" and found these recent articles:
+          I searched Google News for "${topic}" and found these FRESH, UNSEEN articles:
 
-          ${JSON.stringify(topResults, null, 2)}
+          ${JSON.stringify(freshCandidates, null, 2)}
 
           YOUR TASK — be a strict editorial filter:
 
@@ -144,8 +222,8 @@ export class AiNewsHunterCron {
           - General stock market, mutual fund, or retail investment news
           - Celebrity, sports, or lifestyle content
 
-          Select UP TO 2 articles total. If fewer than 2 articles meet the criteria,
-          return only the qualifying ones. Do NOT force-select off-topic articles.
+          Select 2 (up to 3 if multiple high-impact stories exist) articles total.
+          If fewer than 2 articles meet the criteria, return only the qualifying ones. Do NOT force-select off-topic articles.
           For each selected article, write a detailed 2 to 3 paragraph summary explaining the core announcement, specific numbers/metrics (headcount, location, investment), the strategic business rationale, and why it is significant to India's GCC ecosystem.
         `;
 
@@ -153,7 +231,7 @@ export class AiNewsHunterCron {
           prompt,
           hunterResultSchema,
           {
-            model: 'gemini-3.8-flash', // gemini-3.8-flash: latest free-tier model per Google API
+            model: 'gemini-3.8-flash', // gemini-3.8-flash with automatic gemini-3.5-flash-lite fallback on 503
             temperature: 0.2,
           },
         );
@@ -214,6 +292,11 @@ export class AiNewsHunterCron {
               `Successfully hunted and saved: ${savedArticle.title}`,
             );
 
+            // Keep in-memory deduplication cache up-to-date for subsequent topics
+            existingUrls.add(savedArticle.externalUrl);
+            existingHashes.add(hash);
+            recentTitles.push(savedArticle.title);
+
             // 5. Send to Analysis Queue so the rest of the pipeline processes it normally
             await this.analysisQueue.add('analyze-article', {
               articleId: savedArticle.id,
@@ -230,5 +313,30 @@ export class AiNewsHunterCron {
     }
 
     this.logger.log('AI News Hunter run complete!');
+  }
+
+  private calculateSimilarity(str1: string, str2: string): number {
+    const tokenize = (s: string) =>
+      s
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .split(/\s+/)
+        .filter((w) => w.length > 2);
+
+    const set1 = new Set(tokenize(str1));
+    const set2 = new Set(tokenize(str2));
+
+    if (set1.size === 0 && set2.size === 0) return 1.0;
+    if (set1.size === 0 || set2.size === 0) return 0.0;
+
+    let intersectionSize = 0;
+    for (const item of set1) {
+      if (set2.has(item)) {
+        intersectionSize++;
+      }
+    }
+
+    const unionSize = set1.size + set2.size - intersectionSize;
+    return intersectionSize / unionSize;
   }
 }
