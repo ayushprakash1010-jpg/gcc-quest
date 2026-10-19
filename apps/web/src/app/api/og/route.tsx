@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Determine background image (use passed bg, or generate free Flux visual via Pollinations)
+    // Determine background image (use passed bg, or generate free high-speed visual via Pollinations)
     let bgUrl = customBg;
     if (!bgUrl) {
       const cleanKeywords = title
@@ -46,7 +46,8 @@ export async function GET(req: NextRequest) {
       const prompt = encodeURIComponent(
         `cinematic modern corporate glass headquarters, tech park in India, ${cleanKeywords}, soft sunset lighting, architectural photography, photorealistic 8k`,
       );
-      bgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1080&height=1080&model=flux&nologo=true`;
+      // Use turbo for fast, reliable 2-3s rendering to prevent client/edge timeouts
+      bgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1080&height=1080&model=turbo&nologo=true`;
     }
 
     const isSquare = aspect !== "landscape";
@@ -206,6 +207,10 @@ export async function GET(req: NextRequest) {
       {
         width,
         height,
+        headers: {
+          "Cache-Control":
+            "public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400",
+        },
       },
     );
   } catch (e: unknown) {
