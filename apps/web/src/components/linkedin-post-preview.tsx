@@ -50,6 +50,70 @@ function FormattedContent({ text }: { text: string }) {
   );
 }
 
+function LinkedInPostImage({ imageUrl }: { imageUrl: string }) {
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const currentSrc =
+    retryCount > 0
+      ? `${imageUrl}${imageUrl.includes("?") ? "&" : "?"}_r=${retryCount}`
+      : imageUrl;
+
+  return (
+    <div className="w-full border-t border-[#e0dfdc] relative min-h-[320px] bg-zinc-950 flex items-center justify-center overflow-hidden">
+      {imageLoading && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 text-zinc-400 gap-2.5 p-4 text-center z-10">
+          <div className="w-7 h-7 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-medium text-zinc-300">
+            Rendering 1:1 photorealistic visual...
+          </span>
+          <span className="text-[11px] text-zinc-500">
+            Compositing official logo &amp; headline
+          </span>
+        </div>
+      )}
+      {imageError ? (
+        <div className="py-12 flex flex-col items-center justify-center text-zinc-400 gap-2 bg-zinc-950 w-full z-10">
+          <ImageOff className="w-6 h-6 text-zinc-500" />
+          <span className="text-xs text-zinc-400">
+            Visual took longer than expected to render
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setImageError(false);
+              setImageLoading(true);
+              setRetryCount((c) => c + 1);
+            }}
+            className="mt-1 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-white rounded-md border border-zinc-700 transition-colors shadow-sm"
+          >
+            Retry Loading
+          </button>
+        </div>
+      ) : (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          key={retryCount}
+          src={currentSrc}
+          alt="Post graphic"
+          className={`w-full object-cover max-h-[540px] transition-opacity duration-300 ${
+            imageLoading ? "opacity-0" : "opacity-100"
+          }`}
+          onLoad={() => {
+            setImageLoading(false);
+            setImageError(false);
+          }}
+          onError={() => {
+            setImageLoading(false);
+            setImageError(true);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 export function LinkedInPostPreview({
   authorName = "GCC Quest",
   authorTitle = "Technology, Information and Internet",
@@ -64,16 +128,6 @@ export function LinkedInPostPreview({
   const isTruncatable = content.length > CHAR_LIMIT;
   const displayContent =
     !expanded && isTruncatable ? content.slice(0, CHAR_LIMIT) : content;
-
-  const [imageLoading, setImageLoading] = useState(true);
-  const [imageError, setImageError] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-
-  // Reset loading state when imageUrl changes
-  React.useEffect(() => {
-    setImageLoading(true);
-    setImageError(false);
-  }, [imageUrl, retryCount]);
 
   return (
     // Wrapper simulates the LinkedIn feed background (light grey)
@@ -145,60 +199,7 @@ export function LinkedInPostPreview({
 
         {/* ── IMAGE SECTION ───────────────────────────────── */}
         {imageUrl ? (
-          <div className="w-full border-t border-[#e0dfdc] relative min-h-[320px] bg-zinc-950 flex items-center justify-center overflow-hidden">
-            {imageLoading && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 text-zinc-400 gap-2.5 p-4 text-center z-10">
-                <div className="w-7 h-7 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs font-medium text-zinc-300">
-                  Rendering 1:1 photorealistic visual...
-                </span>
-                <span className="text-[11px] text-zinc-500">
-                  Compositing official logo &amp; headline
-                </span>
-              </div>
-            )}
-            {imageError ? (
-              <div className="py-12 flex flex-col items-center justify-center text-zinc-400 gap-2 bg-zinc-950 w-full z-10">
-                <ImageOff className="w-6 h-6 text-zinc-500" />
-                <span className="text-xs text-zinc-400">
-                  Visual took longer than expected to render
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImageError(false);
-                    setImageLoading(true);
-                    setRetryCount((c) => c + 1);
-                  }}
-                  className="mt-1 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-white rounded-md border border-zinc-700 transition-colors shadow-sm"
-                >
-                  Retry Loading
-                </button>
-              </div>
-            ) : (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                key={retryCount}
-                src={
-                  retryCount > 0
-                    ? `${imageUrl}${imageUrl.includes("?") ? "&" : "?"}_r=${retryCount}`
-                    : imageUrl
-                }
-                alt="Post graphic"
-                className={`w-full object-cover max-h-[540px] transition-opacity duration-300 ${
-                  imageLoading ? "opacity-0" : "opacity-100"
-                }`}
-                onLoad={() => {
-                  setImageLoading(false);
-                  setImageError(false);
-                }}
-                onError={() => {
-                  setImageLoading(false);
-                  setImageError(true);
-                }}
-              />
-            )}
-          </div>
+          <LinkedInPostImage key={imageUrl} imageUrl={imageUrl} />
         ) : (
           // Subtle "no image" state
           <div className="mx-4 mb-3 border border-dashed border-[#c5c3be] rounded-md flex items-center justify-center py-5 gap-2 text-[#00000066] bg-[#f9f9f8]">
