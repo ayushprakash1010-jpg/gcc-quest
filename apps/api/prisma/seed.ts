@@ -60,8 +60,15 @@ async function main() {
     },
     {
       key: 'config.trend_score_threshold',
-      value: '15',
-      description: 'Weighted score to classify a trend',
+      value: '500',
+      description:
+        'Weighted score to classify a trend (high = fewer, higher-quality trends)',
+    },
+    {
+      key: 'config.trend_max_per_run',
+      value: '2',
+      description:
+        'Max number of new trend drafts to generate per detection run',
     },
     {
       key: 'config.max_article_tokens',
