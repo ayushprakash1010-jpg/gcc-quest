@@ -36,6 +36,7 @@ const hunterResultSchema = z.object({
 export class AiNewsHunterCron {
   private readonly logger = new Logger(AiNewsHunterCron.name);
   private readonly rssParser = new Parser();
+  private lastPollinationsTime = 0;
 
   // The topics we want Gemini to hunt for — 6 core topics × 2 articles = ~12 per daily run
   private readonly targetTopics = [
@@ -272,20 +273,29 @@ export class AiNewsHunterCron {
             }
 
             // 1. Safely extract real publisher/article image (e.g. CEO headshot or office photo)
-            const articleOgImage = await this.extractOgImage(
+            let backgroundImageUrl = await this.extractOgImage(
               extractedArticle.url,
             );
-            if (articleOgImage) {
+            if (backgroundImageUrl) {
               this.logger.log(
-                `Extracted real article photo for "${extractedArticle.title}": ${articleOgImage}`,
+                `Extracted real article photo for "${extractedArticle.title}": ${backgroundImageUrl}`,
+              );
+            } else {
+              // 2. If no real photo was found, generate a tailored 3D conceptual visual in the background ($0 cost)
+              this.logger.log(
+                `No real photo found for "${extractedArticle.title}". Generating tailored 3D visual in background...`,
+              );
+              backgroundImageUrl = await this.generate3dVisualUrl(
+                extractedArticle.title,
+                extractedArticle.summary,
               );
             }
 
-            // 2. Generate Branded OG Image URL (composited with real photo as bg if available)
+            // 3. Generate Branded OG Image URL (composited with real photo or 3D visual as bg)
             const baseUrl =
               process.env.FRONTEND_URL || 'https://gcc-quest-web.vercel.app';
-            const imageUrl = articleOgImage
-              ? `${baseUrl}/api/og?bg=${encodeURIComponent(articleOgImage)}&title=${encodeURIComponent(extractedArticle.title)}&source=${encodeURIComponent('GCC Quest AI')}`
+            const imageUrl = backgroundImageUrl
+              ? `${baseUrl}/api/og?bg=${encodeURIComponent(backgroundImageUrl)}&title=${encodeURIComponent(extractedArticle.title)}&source=${encodeURIComponent('GCC Quest AI')}`
               : `${baseUrl}/api/og?title=${encodeURIComponent(extractedArticle.title)}&source=${encodeURIComponent('GCC Quest AI')}`;
 
             // Save to DB
@@ -425,6 +435,166 @@ export class AiNewsHunterCron {
       return ogImage;
     } catch {
       // Gracefully swallow network/timeout errors — never fail article hunting
+      return null;
+    }
+  }
+
+  /**
+   * Generates a tailored 3D conceptual illustration prompt matching the article's topic,
+   * modeled after the executive LinkedIn post styles (German flags, growth arrows, tech icons).
+   */
+  private build3dPrompt(title: string, summary: string): string {
+    const combined = `${title} ${summary}`.toLowerCase();
+
+    // 1. Bilateral relations & cross-border GCCs (like Manager German/Indian flags style)
+    if (combined.includes('german') || combined.includes('germany')) {
+      return '3D render illustration of German flag and Indian flag standing outside futuristic corporate glass headquarters, modern enterprise campus, clean cinematic lighting, 8k';
+    }
+    if (combined.includes('japan') || combined.includes('japanese')) {
+      return '3D render illustration of Japanese flag and Indian flag standing outside modern corporate tech park, sleek glass architecture, 8k';
+    }
+    if (
+      combined.includes('united states') ||
+      combined.includes('american') ||
+      combined.includes(' u.s.') ||
+      combined.includes(' us ')
+    ) {
+      return '3D render illustration of American flag and Indian flag standing outside modern glass enterprise innovation hub, architectural 3D visualization, 8k';
+    }
+    if (
+      combined.includes('united kingdom') ||
+      combined.includes('british') ||
+      combined.includes(' uk ')
+    ) {
+      return '3D render illustration of British flag and Indian flag standing outside modern glass corporate campus, architectural photography, 8k';
+    }
+
+    // 2. City-specific trajectory & leasing (like Manager Hyderabad growth arrow style)
+    if (
+      combined.includes('hyderabad') ||
+      combined.includes('cyberabad') ||
+      combined.includes('hitec')
+    ) {
+      return '3D render illustration of Hyderabad city skyline with a bold glowing cyan 3D growth arrow arching upwards over corporate glass towers, modern enterprise campus, clean lighting, 8k';
+    }
+    if (combined.includes('bengaluru') || combined.includes('bangalore')) {
+      return '3D render illustration of futuristic Bengaluru cyber tech corridor, illuminated glass skyscrapers with glowing upward cyan trajectory line, dusk corporate atmosphere, 8k';
+    }
+    if (
+      combined.includes('pune') ||
+      combined.includes('chennai') ||
+      combined.includes('mumbai') ||
+      combined.includes('noida') ||
+      combined.includes('gurugram') ||
+      combined.includes('gurgaon')
+    ) {
+      return '3D render illustration of modern Indian financial cyber district with modern glass towers and glowing upward commercial growth arrow, architectural photography, 8k';
+    }
+
+    // 3. AI, Software & Engineering (like Manager IT worker with floating 3D icons style)
+    if (
+      combined.includes('ai') ||
+      combined.includes('genai') ||
+      combined.includes('artificial intelligence') ||
+      combined.includes('machine learning') ||
+      combined.includes('llm') ||
+      combined.includes('automation')
+    ) {
+      return '3D render illustration of modern tech professional working on laptop with floating glowing 3D holographic icons of AI brain, code brackets, gear analytics, glowing blue and cyan lighting, futuristic corporate tech office, 8k';
+    }
+
+    // 4. Jobs, Workforce, Talent & Reskilling
+    if (
+      combined.includes('workforce') ||
+      combined.includes('talent') ||
+      combined.includes('job') ||
+      combined.includes('hiring') ||
+      combined.includes('reskill') ||
+      combined.includes('headcount') ||
+      combined.includes('salary')
+    ) {
+      return '3D render illustration of modern tech workforce collaboration in glass innovation hub, diverse engineers, floating 3D growth data charts, contemporary architectural style, 8k';
+    }
+
+    // 5. Real Estate, Leasing & Office Campus
+    if (
+      combined.includes('leasing') ||
+      combined.includes('real estate') ||
+      combined.includes('office') ||
+      combined.includes('space') ||
+      combined.includes('sq ft') ||
+      combined.includes('square feet')
+    ) {
+      return '3D render illustration of grand modern glass corporate campus, landscaped commercial tech park in India, architectural 3D visualization, daylight, 8k';
+    }
+
+    // 6. Leadership & Executive CXO
+    if (
+      combined.includes('cxo') ||
+      combined.includes('leader') ||
+      combined.includes('ceo') ||
+      combined.includes('appoint') ||
+      combined.includes('director')
+    ) {
+      return '3D render illustration of executive high-floor corporate boardroom in glass skyscraper, conference table, panoramic window view of modern metropolis, sleek corporate atmosphere, 8k';
+    }
+
+    // 7. General Enterprise & Innovation Hub
+    return '3D render illustration of modern multinational enterprise innovation hub in India, sleek glass facade, landscaped corporate park, bright daylight, architectural 3D visualization, 8k';
+  }
+
+  /**
+   * Generates a unique 3D visual in the background for $0 and pre-caches it on CDN.
+   * Enforces a 45s safety delay between calls to respect free tier rate limits.
+   */
+  private async generate3dVisualUrl(
+    title: string,
+    summary: string,
+  ): Promise<string | null> {
+    try {
+      // Respect Pollinations free rate limit (45 seconds between requests)
+      const now = Date.now();
+      const elapsed = now - this.lastPollinationsTime;
+      if (elapsed < 46000 && this.lastPollinationsTime > 0) {
+        const waitMs = 46000 - elapsed;
+        this.logger.log(
+          `Waiting ${(waitMs / 1000).toFixed(1)}s to respect free 3D visual rate limit...`,
+        );
+        await new Promise((r) => setTimeout(r, waitMs));
+      }
+
+      const promptText = this.build3dPrompt(title, summary);
+      const seed =
+        Math.abs(
+          title
+            .split('')
+            .reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0),
+        ) % 1000000;
+
+      const encodedPrompt = encodeURIComponent(promptText);
+      const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1080&height=1080&model=turbo&seed=${seed}&nologo=true`;
+
+      // Pre-warm the cache on the CDN in the background
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 18000);
+
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+      this.lastPollinationsTime = Date.now();
+
+      if (res.ok) {
+        this.logger.log(
+          `Generated tailored 3D conceptual visual for "${title}"`,
+        );
+        return url;
+      }
+
+      this.logger.warn(
+        `3D generation returned status ${res.status} for "${title}".`,
+      );
+      return null;
+    } catch (err: any) {
+      this.logger.warn(`Failed to generate 3D visual: ${err.message}`);
       return null;
     }
   }
