@@ -7,6 +7,7 @@ import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { QUEUES } from '../../../infrastructure/queue/queue.constants';
 import * as Parser from 'rss-parser';
+import * as cheerio from 'cheerio';
 import { z } from 'zod';
 
 const hunterResultSchema = z.object({
@@ -270,10 +271,22 @@ export class AiNewsHunterCron {
               continue;
             }
 
-            // Generate OG Image Fallback
+            // 1. Safely extract real publisher/article image (e.g. CEO headshot or office photo)
+            const articleOgImage = await this.extractOgImage(
+              extractedArticle.url,
+            );
+            if (articleOgImage) {
+              this.logger.log(
+                `Extracted real article photo for "${extractedArticle.title}": ${articleOgImage}`,
+              );
+            }
+
+            // 2. Generate Branded OG Image URL (composited with real photo as bg if available)
             const baseUrl =
               process.env.FRONTEND_URL || 'https://gcc-quest-web.vercel.app';
-            const imageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(extractedArticle.title)}&source=${encodeURIComponent('GCC Quest AI')}`;
+            const imageUrl = articleOgImage
+              ? `${baseUrl}/api/og?bg=${encodeURIComponent(articleOgImage)}&title=${encodeURIComponent(extractedArticle.title)}&source=${encodeURIComponent('GCC Quest AI')}`
+              : `${baseUrl}/api/og?title=${encodeURIComponent(extractedArticle.title)}&source=${encodeURIComponent('GCC Quest AI')}`;
 
             // Save to DB
             const savedArticle = await this.prisma.article.create({
@@ -340,5 +353,79 @@ export class AiNewsHunterCron {
 
     const unionSize = set1.size + set2.size - intersectionSize;
     return intersectionSize / unionSize;
+  }
+
+  /**
+   * Safely attempts to extract the publisher's real article image (e.g. executive photo,
+   * corporate building, or official press visual) directly from the webpage OpenGraph tags.
+   * Fails fast (3.5s timeout) and gracefully returns null if unreachable or blocked.
+   */
+  private async extractOgImage(url: string): Promise<string | null> {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3500);
+
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('text/html')) {
+        return null;
+      }
+
+      const html = await response.text();
+      const $ = cheerio.load(html);
+
+      let ogImage =
+        $('meta[property="og:image"]').attr('content') ||
+        $('meta[name="twitter:image"]').attr('content') ||
+        $('meta[property="og:image:url"]').attr('content') ||
+        $('meta[name="twitter:image:src"]').attr('content');
+
+      if (!ogImage || typeof ogImage !== 'string') {
+        return null;
+      }
+
+      ogImage = ogImage.trim();
+
+      // Resolve relative URLs to absolute URLs
+      if (ogImage.startsWith('/') || !ogImage.startsWith('http')) {
+        try {
+          ogImage = new URL(ogImage, url).toString();
+        } catch {
+          return null;
+        }
+      }
+
+      // Filter out tracking pixels, icons, SVGs, or tiny spacer gifs
+      const lower = ogImage.toLowerCase();
+      if (
+        lower.endsWith('.svg') ||
+        lower.includes('favicon') ||
+        lower.includes('1x1') ||
+        lower.includes('pixel') ||
+        lower.includes('spacer') ||
+        lower.includes('logo-small')
+      ) {
+        return null;
+      }
+
+      return ogImage;
+    } catch {
+      // Gracefully swallow network/timeout errors — never fail article hunting
+      return null;
+    }
   }
 }

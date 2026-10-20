@@ -35,91 +35,120 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Determine background image (use passed bg, or generate free high-speed visual via Pollinations)
-    let bgUrl = customBg;
-    if (!bgUrl) {
-      const cleanKeywords = title
-        .replace(/[^\w\s]/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+    // Determine background image (use passed bg, or select a curated, free high-speed visual)
+    const lowerTitle = title.toLowerCase();
 
-      const lowerTitle = title.toLowerCase();
+    // Deterministic seed based on title hash so each article gets a consistent visual
+    const seed =
+      Math.abs(
+        title
+          .split("")
+          .reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0),
+      ) % 1000000;
 
-      // Deterministic seed based on title hash so each article gets a completely unique, distinct visual
-      const seed =
-        Math.abs(
-          title
-            .split("")
-            .reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0),
-        ) % 1000000;
+    // Curated high-resolution, instant-loading GCC & Corporate imagery (100% free, 0ms rate limit)
+    const topicVisuals = {
+      cxo: [
+        "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=1080&q=80", // Executive glass boardroom skyline
+        "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1080&q=80", // Sleek corporate boardroom
+        "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=1080&q=80", // Modern corporate executive suite
+      ],
+      realEstate: [
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1080&q=80", // Modern corporate glass towers
+        "https://images.unsplash.com/photo-1577495508048-b635879837f1?w=1080&q=80", // Futuristic corporate glass facade
+        "https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?w=1080&q=80", // Cyber district skyline
+      ],
+      tech: [
+        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1080&q=80", // Software innovation team
+        "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1080&q=80", // Modern tech hub collaboration
+        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1080&q=80", // Ambient illuminated tech workstation
+      ],
+      general: [
+        "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1080&q=80", // Grand entrance innovation hub
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1080&q=80", // Sleek glass facade corporate park
+      ],
+    };
 
-      let promptDesc = "";
-      if (
-        lowerTitle.includes("ai") ||
-        lowerTitle.includes("skill") ||
-        lowerTitle.includes("talent") ||
-        lowerTitle.includes("workforce") ||
-        lowerTitle.includes("hiring") ||
-        lowerTitle.includes("job") ||
-        lowerTitle.includes("reskill") ||
-        lowerTitle.includes("salary")
-      ) {
-        promptDesc =
-          "modern futuristic collaborative tech office interior, engineers collaborating on software innovation in Bangalore cyber hub, glass walls, ambient glowing blue and amber lighting, professional architectural photography, 8k";
-      } else if (
-        lowerTitle.includes("leasing") ||
-        lowerTitle.includes("real estate") ||
-        lowerTitle.includes("hyderabad") ||
-        lowerTitle.includes("bengaluru") ||
-        lowerTitle.includes("bangalore") ||
-        lowerTitle.includes("office") ||
-        lowerTitle.includes("space")
-      ) {
-        promptDesc =
-          "aerial cityscape view of modern financial cyber district in India, illuminated futuristic glass towers, bustling corporate corridor at dusk, architectural photography, dramatic sky, photorealistic 8k";
-      } else if (
-        lowerTitle.includes("cxo") ||
-        lowerTitle.includes("leader") ||
-        lowerTitle.includes("ceo") ||
-        lowerTitle.includes("appoint") ||
-        lowerTitle.includes("strategy") ||
-        lowerTitle.includes("revenue") ||
-        lowerTitle.includes("billion")
-      ) {
-        promptDesc =
-          "executive high-floor corporate boardroom in glass skyscraper, conference table, panoramic window view of modern city, sleek corporate atmosphere, architectural photography, photorealistic 8k";
-      } else {
-        promptDesc =
-          "modern grand entrance of multinational innovation hub, contemporary architecture in India, sleek glass facade, landscaped corporate park, bright daylight, architectural photography, photorealistic 8k";
-      }
-
-      const prompt = encodeURIComponent(
-        `${promptDesc}, ${cleanKeywords.slice(0, 60)}`,
-      );
-      // Use turbo with unique seed for fast 2-3s diverse rendering
-      bgUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1080&height=1080&model=turbo&seed=${seed}&nologo=true`;
+    let fallbackUrl = "";
+    if (
+      lowerTitle.includes("cxo") ||
+      lowerTitle.includes("leader") ||
+      lowerTitle.includes("ceo") ||
+      lowerTitle.includes("appoint") ||
+      lowerTitle.includes("strategy") ||
+      lowerTitle.includes("director") ||
+      lowerTitle.includes("managing")
+    ) {
+      fallbackUrl = topicVisuals.cxo[seed % topicVisuals.cxo.length];
+    } else if (
+      lowerTitle.includes("leasing") ||
+      lowerTitle.includes("real estate") ||
+      lowerTitle.includes("hyderabad") ||
+      lowerTitle.includes("bengaluru") ||
+      lowerTitle.includes("bangalore") ||
+      lowerTitle.includes("chennai") ||
+      lowerTitle.includes("pune") ||
+      lowerTitle.includes("office") ||
+      lowerTitle.includes("space") ||
+      lowerTitle.includes("square feet") ||
+      lowerTitle.includes("sq ft")
+    ) {
+      fallbackUrl =
+        topicVisuals.realEstate[seed % topicVisuals.realEstate.length];
+    } else if (
+      lowerTitle.includes("ai") ||
+      lowerTitle.includes("skill") ||
+      lowerTitle.includes("talent") ||
+      lowerTitle.includes("workforce") ||
+      lowerTitle.includes("hiring") ||
+      lowerTitle.includes("job") ||
+      lowerTitle.includes("reskill") ||
+      lowerTitle.includes("salary") ||
+      lowerTitle.includes("engineer") ||
+      lowerTitle.includes("tech")
+    ) {
+      fallbackUrl = topicVisuals.tech[seed % topicVisuals.tech.length];
+    } else {
+      fallbackUrl = topicVisuals.general[seed % topicVisuals.general.length];
     }
 
-    // Pre-fetch the background image into base64 with a 4.5s timeout.
-    // This guarantees Satori renders in 20ms in memory and NEVER times out or streams 0 bytes.
+    // Pre-fetch the background image into base64.
+    // We try the custom background first (e.g. real news photo), then fall back to the curated topic visual.
     let bgDataUri: string | null = null;
-    if (bgUrl) {
+    const fetchImageAsBase64 = async (url: string, timeoutMs: number) => {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 4500);
-        const imgRes = await fetch(bgUrl, { signal: controller.signal });
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        const imgRes = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            Accept: "image/*,*/*;q=0.8",
+          },
+        });
         clearTimeout(timeout);
         if (imgRes.ok) {
           const buffer = await imgRes.arrayBuffer();
-          if (buffer.byteLength > 2000) {
+          if (buffer.byteLength > 1000) {
             const base64 = Buffer.from(buffer).toString("base64");
             const mime = imgRes.headers.get("content-type") || "image/jpeg";
-            bgDataUri = `data:${mime};base64,${base64}`;
+            return `data:${mime};base64,${base64}`;
           }
         }
       } catch {
-        // Fallback gracefully to high-contrast corporate tech gradient
+        // Fetch failed or timed out
       }
+      return null;
+    };
+
+    if (customBg) {
+      bgDataUri = await fetchImageAsBase64(customBg, 4000);
+    }
+
+    // If no custom background was provided or if fetching it failed, use the reliable curated topic image
+    if (!bgDataUri && fallbackUrl) {
+      bgDataUri = await fetchImageAsBase64(fallbackUrl, 3000);
     }
 
     const isSquare = aspect !== "landscape";
@@ -175,9 +204,9 @@ export async function GET(req: NextRequest) {
             top: 0,
             left: 0,
             right: 0,
-            height: isSquare ? "460px" : "320px",
+            height: isSquare ? "480px" : "340px",
             background:
-              "linear-gradient(180deg, #000000 0%, rgba(0, 0, 0, 0.95) 50%, rgba(0, 0, 0, 0.5) 80%, rgba(0, 0, 0, 0) 100%)",
+              "linear-gradient(180deg, rgba(7, 11, 25, 0.96) 0%, rgba(7, 11, 25, 0.88) 50%, rgba(7, 11, 25, 0.45) 80%, rgba(7, 11, 25, 0) 100%)",
           }}
         />
 
