@@ -55,9 +55,9 @@ export class ContentGenerationProcessor {
         await this.settingsCache.get('config.analysis_threshold', '7'),
       );
 
-      // AI News Hunter articles are pre-filtered by Gemini for quality,
+      // GCC Quest AI articles are pre-filtered by Gemini for quality,
       // so we skip the impact score threshold to ensure they always get a draft.
-      const isAiHunted = (article as any).source?.name === 'AI News Hunter';
+      const isAiHunted = (article as any).source?.name === 'GCC Quest AI';
 
       if (!isAiHunted && article.analysis.impactScore < threshold) {
         this.logger.log(
