@@ -122,17 +122,61 @@ export class TrendDetectionService {
       ? parseFloat(thresholdSetting.value)
       : 500;
 
-    await this.processMap(techMap, 'TECHNOLOGY', threshold);
-    await this.processMap(locMap, 'LOCATION', threshold);
-    await this.processMap(catMap, 'CATEGORY', threshold);
+    // Hard cap: max new trend drafts per detection run (prevents spam)
+    const maxPerRunSetting = await this.prisma.systemSetting.findUnique({
+      where: { key: 'config.trend_max_per_run' },
+    });
+    const maxPerRun = maxPerRunSetting
+      ? parseInt(maxPerRunSetting.value, 10)
+      : 2;
+
+    let newTrendsEmitted = 0;
+    newTrendsEmitted = await this.processMap(
+      techMap,
+      'TECHNOLOGY',
+      threshold,
+      maxPerRun,
+      newTrendsEmitted,
+    );
+    if (newTrendsEmitted < maxPerRun) {
+      newTrendsEmitted = await this.processMap(
+        locMap,
+        'LOCATION',
+        threshold,
+        maxPerRun,
+        newTrendsEmitted,
+      );
+    }
+    if (newTrendsEmitted < maxPerRun) {
+      await this.processMap(
+        catMap,
+        'CATEGORY',
+        threshold,
+        maxPerRun,
+        newTrendsEmitted,
+      );
+    }
   }
 
   private async processMap(
     map: Map<string, { score: number; articles: any[] }>,
     type: 'TECHNOLOGY' | 'LOCATION' | 'CATEGORY',
     threshold: number,
-  ) {
-    for (const [name, data] of map.entries()) {
+    maxPerRun: number,
+    emittedSoFar: number,
+  ): Promise<number> {
+    let emitted = emittedSoFar;
+    // Sort entries by score descending so strongest trends get priority under the cap
+    const sortedEntries = [...map.entries()].sort(
+      (a, b) => b[1].score - a[1].score,
+    );
+    for (const [name, data] of sortedEntries) {
+      if (emitted >= maxPerRun) {
+        this.logger.log(
+          `Trend cap reached (${maxPerRun}). Skipping remaining ${type} trends.`,
+        );
+        break;
+      }
       // Sort articles by score descending and take top 10 to cap volume impact
       const topArticles = data.articles
         .sort((a, b) => b.trendScore - a.trendScore)
@@ -142,7 +186,8 @@ export class TrendDetectionService {
         0,
       );
 
-      if (cappedScore >= threshold && data.articles.length >= 5) {
+      // Raised minimum article count: 5 → 10 for higher signal quality
+      if (cappedScore >= threshold && data.articles.length >= 10) {
         // Trend detected!
         // Check if already exists in active/DETECTED state
         let trend = await this.prisma.trend.findFirst({
@@ -200,8 +245,10 @@ export class TrendDetectionService {
           this.eventEmitter.emit(DomainEvents.TREND_DETECTED, {
             trendId: trend.id,
           });
+          emitted++;
         }
       }
     }
+    return emitted;
   }
 }
