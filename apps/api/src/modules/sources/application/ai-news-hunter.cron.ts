@@ -67,17 +67,17 @@ export class AiNewsHunterCron {
   // Run every day at 8:00 AM IST
   @Cron('0 8 * * *', { timeZone: 'Asia/Kolkata' })
   async runNewsHunter(): Promise<void> {
-    this.logger.log('Starting AI News Hunter...');
+    this.logger.log('Starting GCC Quest AI News Hunter...');
 
-    // 1. Ensure we have an "AI News Hunter" source in the DB
+    // 1. Ensure we have a "GCC Quest AI" source in the DB
     let source = await this.prisma.source.findFirst({
-      where: { name: 'AI News Hunter' },
+      where: { name: 'GCC Quest AI' },
     });
 
     if (!source) {
       source = await this.prisma.source.create({
         data: {
-          name: 'AI News Hunter',
+          name: 'GCC Quest AI',
           type: 'RSS',
           url: 'https://news.google.com',
           status: 'ACTIVE',
@@ -273,7 +273,7 @@ export class AiNewsHunterCron {
             // Generate OG Image Fallback
             const baseUrl =
               process.env.FRONTEND_URL || 'https://gcc-quest-web.vercel.app';
-            const imageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(extractedArticle.title)}&source=${encodeURIComponent('AI Discovered')}`;
+            const imageUrl = `${baseUrl}/api/og?title=${encodeURIComponent(extractedArticle.title)}&source=${encodeURIComponent('GCC Quest AI')}`;
 
             // Save to DB
             const savedArticle = await this.prisma.article.create({
@@ -281,7 +281,7 @@ export class AiNewsHunterCron {
                 sourceId: source.id,
                 externalUrl: extractedArticle.url,
                 title: extractedArticle.title,
-                author: extractedArticle.author || 'AI News Hunter',
+                author: extractedArticle.author || 'GCC Quest AI',
                 publishedAt: new Date(),
                 rawText: extractedArticle.summary, // We use the AI's summary as the raw text since we didn't scrape the full body
                 contentHash: hash,
@@ -314,7 +314,7 @@ export class AiNewsHunterCron {
       }
     }
 
-    this.logger.log('AI News Hunter run complete!');
+    this.logger.log('GCC Quest AI News Hunter run complete!');
   }
 
   private calculateSimilarity(str1: string, str2: string): number {
