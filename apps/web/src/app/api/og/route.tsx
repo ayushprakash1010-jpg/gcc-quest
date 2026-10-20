@@ -46,9 +46,10 @@ export async function GET(req: NextRequest) {
           .reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0),
       ) % 1000000;
 
-    // Curated high-resolution, topic-accurate GCC Ecosystem imagery (100% verified, 0ms rate limit)
+    // Curated high-resolution imagery aligned strictly with the 6 core GCC Quest topics (100% verified, 0ms rate limit)
     const topicVisuals = {
-      gcc_setup: [
+      // 1. 🏢 GCC expansion & new setups
+      gcc_expansion: [
         "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1080&q=80", // Glass high-rise towers
         "https://images.unsplash.com/photo-1577495508048-b635879837f1?w=1080&q=80", // Futuristic corporate glass campus
         "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1080&q=80", // Modern commercial high-rise
@@ -57,7 +58,8 @@ export async function GET(req: NextRequest) {
         "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1080&q=80", // Architectural development project
         "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1080&q=80", // Corporate facility entrance
       ],
-      real_estate_hubs: [
+      // 2. 🏙️ Hyderabad/Bangalore leasing & real estate
+      real_estate_leasing: [
         "https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=1080&q=80", // Metropolitan commercial skyline
         "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1080&q=80", // Modern skyscrapers perspective
         "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=1080&q=80", // Urban commercial corridor
@@ -66,43 +68,8 @@ export async function GET(req: NextRequest) {
         "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1080&q=80", // Grand corporate park atrium
         "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1080&q=80", // Commercial business park
       ],
-      ai_tech_innovation: [
-        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1080&q=80", // Ambient illuminated tech workstation
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1080&q=80", // Software engineering team
-        "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1080&q=80", // Tech innovation hub collaboration
-        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1080&q=80", // Modern software dev pod
-        "https://images.unsplash.com/photo-1573164713988-8665fc963095?w=1080&q=80", // Enterprise cloud data center
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1080&q=80", // Tech training & workshop
-        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1080&q=80", // Cloud server architecture & network hub
-      ],
-      workforce_talent: [
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1080&q=80", // Diverse tech workforce collaborating
-        "https://images.unsplash.com/photo-1531497865144-0464ef8fb9a9?w=1080&q=80", // Modern tech discussion & sprint planning
-        "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1080&q=80", // Talent interview & hiring discussion
-        "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1080&q=80", // Strategy & talent planning session
-        "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1080&q=80", // University campus tech talent
-        "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1080&q=80", // Corporate conference & tech summit
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1080&q=80", // Enterprise tech professional
-      ],
-      bfsi_gcc: [
-        "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1080&q=80", // International financial district architecture
-        "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1080&q=80", // Institutional trading & market charts
-        "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1080&q=80", // Financial risk & analytics dashboard
-        "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1080&q=80", // Global banking analytics & wealth management
-        "https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=1080&q=80", // Digital banking & equity platforms
-        "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1080&q=80", // Institutional financial agreement
-        "https://images.unsplash.com/photo-1535320903710-d993d3d77d29?w=1080&q=80", // Global financial exchange operations
-      ],
-      engineering_rnd: [
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1080&q=80", // Advanced precision engineering laboratory
-        "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=1080&q=80", // Automotive robotics & automation R&D
-        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1080&q=80", // Modern assembly line & robotics testing
-        "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=1080&q=80", // High-tech engineering R&D center
-        "https://images.unsplash.com/photo-1516937941344-00b4e0337589?w=1080&q=80", // Industrial robotics & smart manufacturing
-        "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1080&q=80", // Hardware engineering & prototyping
-        "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=1080&q=80", // Electronic hardware testing & embedded systems
-      ],
-      cross_border_mnc: [
+      // 3. 🌍 European/German/US companies entering India
+      cross_border_entrants: [
         "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1080&q=80", // Global multinational glass towers
         "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1080&q=80", // International business commerce
         "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1080&q=80", // Global partnership & strategic alliance
@@ -111,7 +78,18 @@ export async function GET(req: NextRequest) {
         "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1080&q=80", // Global enterprise strategy negotiation
         "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=1080&q=80", // International metropolitan headquarters
       ],
-      data_reports: [
+      // 4. 👩‍💻 Workforce, reskilling & AI impact on GCC jobs
+      workforce_reskilling_ai: [
+        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1080&q=80", // Ambient illuminated tech workstation
+        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1080&q=80", // Software engineering team
+        "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1080&q=80", // Tech innovation hub collaboration
+        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1080&q=80", // Modern software dev pod
+        "https://images.unsplash.com/photo-1573164713988-8665fc963095?w=1080&q=80", // Enterprise cloud data center
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1080&q=80", // Diverse tech workforce collaborating
+        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1080&q=80", // Cloud server architecture & network hub
+      ],
+      // 5. 📊 NASSCOM/Zinnov research reports & data
+      nasscom_zinnov_reports: [
         "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1080&q=80", // Data analytics & research dashboard
         "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1080&q=80", // Comprehensive industry data visualizations
         "https://images.unsplash.com/photo-1543286386-713bdd548da4?w=1080&q=80", // Research metrics & market analytics
@@ -120,7 +98,8 @@ export async function GET(req: NextRequest) {
         "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1080&q=80", // Market research terminal
         "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1080&q=80", // GCC ecosystem growth metrics
       ],
-      cxo_leadership: [
+      // 6. 👔 CXO leadership & GCC strategy
+      cxo_leadership_strategy: [
         "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=1080&q=80", // Executive glass boardroom overlooking skyline
         "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=1080&q=80", // Corporate leadership in executive office
         "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1080&q=80", // Country head & enterprise executive
@@ -129,7 +108,8 @@ export async function GET(req: NextRequest) {
         "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1080&q=80", // GCC executive leadership summit
         "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1080&q=80", // Boardroom strategy & governance presentation
       ],
-      general: [
+      // General Fallback
+      general_gcc: [
         "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1080&q=80", // Modern architectural skyscraper
         "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1080&q=80", // Grand corporate glass atrium
         "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1080&q=80", // International business commerce
@@ -141,6 +121,7 @@ export async function GET(req: NextRequest) {
     };
 
     let fallbackUrl = "";
+    // Topic 5: 📊 NASSCOM/Zinnov research reports & data
     if (
       lowerTitle.includes("nasscom") ||
       lowerTitle.includes("zinnov") ||
@@ -153,61 +134,37 @@ export async function GET(req: NextRequest) {
       lowerTitle.includes("survey") ||
       lowerTitle.includes("study") ||
       lowerTitle.includes("forecast") ||
-      lowerTitle.includes("market size")
+      lowerTitle.includes("market size") ||
+      lowerTitle.includes("benchmark") ||
+      lowerTitle.includes("data")
     ) {
       fallbackUrl =
-        topicVisuals.data_reports[seed % topicVisuals.data_reports.length];
-    } else if (
-      lowerTitle.includes("bank") ||
-      lowerTitle.includes("banking") ||
-      lowerTitle.includes("bfsi") ||
-      lowerTitle.includes("jpmorgan") ||
-      lowerTitle.includes("jp morgan") ||
-      lowerTitle.includes("goldman") ||
-      lowerTitle.includes("wells fargo") ||
-      lowerTitle.includes("morgan stanley") ||
-      lowerTitle.includes("barclays") ||
-      lowerTitle.includes("hsbc") ||
-      lowerTitle.includes("citi") ||
-      lowerTitle.includes("deutsche bank") ||
-      lowerTitle.includes("standard chartered") ||
-      lowerTitle.includes("fintech")
-    ) {
-      fallbackUrl = topicVisuals.bfsi_gcc[seed % topicVisuals.bfsi_gcc.length];
-    } else if (
-      lowerTitle.includes("automotive") ||
-      lowerTitle.includes("aerospace") ||
-      lowerTitle.includes("boeing") ||
-      lowerTitle.includes("airbus") ||
-      lowerTitle.includes("mercedes") ||
-      lowerTitle.includes("bmw") ||
-      lowerTitle.includes("bosch") ||
-      lowerTitle.includes("continental") ||
-      lowerTitle.includes("ev ") ||
-      lowerTitle.includes("mobility") ||
-      lowerTitle.includes("robotics") ||
-      lowerTitle.includes("hardware")
-    ) {
-      fallbackUrl =
-        topicVisuals.engineering_rnd[
-          seed % topicVisuals.engineering_rnd.length
+        topicVisuals.nasscom_zinnov_reports[
+          seed % topicVisuals.nasscom_zinnov_reports.length
         ];
+      // Topic 3: 🌍 European/German/US companies entering India
     } else if (
       lowerTitle.includes("german") ||
       lowerTitle.includes("germany") ||
       lowerTitle.includes("american") ||
+      lowerTitle.includes("us company") ||
+      lowerTitle.includes(" u.s.") ||
       lowerTitle.includes("european") ||
       lowerTitle.includes("japanese") ||
       lowerTitle.includes("british") ||
+      lowerTitle.includes("uk company") ||
       lowerTitle.includes("nordic") ||
       lowerTitle.includes("multinational") ||
       lowerTitle.includes("mnc") ||
-      lowerTitle.includes("cross-border")
+      lowerTitle.includes("cross-border") ||
+      lowerTitle.includes("enters india") ||
+      lowerTitle.includes("entering india")
     ) {
       fallbackUrl =
-        topicVisuals.cross_border_mnc[
-          seed % topicVisuals.cross_border_mnc.length
+        topicVisuals.cross_border_entrants[
+          seed % topicVisuals.cross_border_entrants.length
         ];
+      // Topic 2: 🏙️ Hyderabad/Bangalore leasing & real estate
     } else if (
       lowerTitle.includes("hyderabad") ||
       lowerTitle.includes("bengaluru") ||
@@ -227,66 +184,68 @@ export async function GET(req: NextRequest) {
       lowerTitle.includes("sez") ||
       lowerTitle.includes("dlf") ||
       lowerTitle.includes("embassy") ||
-      lowerTitle.includes("mindspace")
+      lowerTitle.includes("mindspace") ||
+      lowerTitle.includes("real estate")
     ) {
       fallbackUrl =
-        topicVisuals.real_estate_hubs[
-          seed % topicVisuals.real_estate_hubs.length
+        topicVisuals.real_estate_leasing[
+          seed % topicVisuals.real_estate_leasing.length
         ];
+      // Topic 4: 👩‍💻 Workforce, reskilling & AI impact on GCC jobs
     } else if (
       lowerTitle.includes("ai") ||
       lowerTitle.includes("genai") ||
       lowerTitle.includes("generative ai") ||
       lowerTitle.includes("machine learning") ||
-      lowerTitle.includes("data center") ||
-      lowerTitle.includes("cloud") ||
-      lowerTitle.includes("software") ||
-      lowerTitle.includes("engineering") ||
-      lowerTitle.includes("r&d") ||
-      lowerTitle.includes("digital transformation") ||
-      lowerTitle.includes("cybersecurity")
-    ) {
-      fallbackUrl =
-        topicVisuals.ai_tech_innovation[
-          seed % topicVisuals.ai_tech_innovation.length
-        ];
-    } else if (
+      lowerTitle.includes("reskill") ||
+      lowerTitle.includes("upskill") ||
       lowerTitle.includes("workforce") ||
       lowerTitle.includes("talent") ||
       lowerTitle.includes("hiring") ||
       lowerTitle.includes("jobs") ||
-      lowerTitle.includes("reskill") ||
-      lowerTitle.includes("upskill") ||
       lowerTitle.includes("salary") ||
       lowerTitle.includes("salaries") ||
       lowerTitle.includes("attrition") ||
       lowerTitle.includes("freshers") ||
-      lowerTitle.includes("campus")
+      lowerTitle.includes("campus") ||
+      lowerTitle.includes("cloud") ||
+      lowerTitle.includes("software") ||
+      lowerTitle.includes("engineering") ||
+      lowerTitle.includes("developer")
     ) {
       fallbackUrl =
-        topicVisuals.workforce_talent[
-          seed % topicVisuals.workforce_talent.length
+        topicVisuals.workforce_reskilling_ai[
+          seed % topicVisuals.workforce_reskilling_ai.length
         ];
+      // Topic 6: 👔 CXO leadership & GCC strategy
     } else if (
       lowerTitle.includes("cxo") ||
       lowerTitle.includes("leader") ||
+      lowerTitle.includes("leadership") ||
       lowerTitle.includes("ceo") ||
       lowerTitle.includes("appoint") ||
+      lowerTitle.includes("appointed") ||
       lowerTitle.includes("md") ||
       lowerTitle.includes("director") ||
       lowerTitle.includes("managing") ||
       lowerTitle.includes("country head") ||
       lowerTitle.includes("center head") ||
+      lowerTitle.includes("strategy") ||
       lowerTitle.includes("steps down") ||
       lowerTitle.includes("resigns")
     ) {
       fallbackUrl =
-        topicVisuals.cxo_leadership[seed % topicVisuals.cxo_leadership.length];
+        topicVisuals.cxo_leadership_strategy[
+          seed % topicVisuals.cxo_leadership_strategy.length
+        ];
+      // Topic 1: 🏢 GCC expansion & new setups
     } else if (
       lowerTitle.includes("gcc") ||
+      lowerTitle.includes("global capability center") ||
       lowerTitle.includes("capability center") ||
       lowerTitle.includes("setup") ||
       lowerTitle.includes("opens") ||
+      lowerTitle.includes("open") ||
       lowerTitle.includes("launch") ||
       lowerTitle.includes("expansion") ||
       lowerTitle.includes("expand") ||
@@ -295,9 +254,10 @@ export async function GET(req: NextRequest) {
       lowerTitle.includes("coe")
     ) {
       fallbackUrl =
-        topicVisuals.gcc_setup[seed % topicVisuals.gcc_setup.length];
+        topicVisuals.gcc_expansion[seed % topicVisuals.gcc_expansion.length];
     } else {
-      fallbackUrl = topicVisuals.general[seed % topicVisuals.general.length];
+      fallbackUrl =
+        topicVisuals.general_gcc[seed % topicVisuals.general_gcc.length];
     }
 
     // Pre-fetch the background image into base64.

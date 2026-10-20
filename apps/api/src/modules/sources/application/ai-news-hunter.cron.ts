@@ -539,7 +539,20 @@ export class AiNewsHunterCron {
       return '3D render illustration of executive high-floor corporate boardroom in glass skyscraper, conference table, panoramic window view of modern metropolis, sleek corporate atmosphere, 8k';
     }
 
-    // 7. General Enterprise & Innovation Hub
+    // 7. Research, Data Reports & Ecosystem Studies (NASSCOM, Zinnov, CBRE, JLL)
+    if (
+      combined.includes('nasscom') ||
+      combined.includes('zinnov') ||
+      combined.includes('report') ||
+      combined.includes('survey') ||
+      combined.includes('study') ||
+      combined.includes('forecast') ||
+      combined.includes('market size')
+    ) {
+      return '3D render illustration of modern corporate data analytics and market research report, glowing holographic 3D bar charts, growth metrics, clean corporate glass background, 8k';
+    }
+
+    // 8. General Enterprise & Innovation Hub
     return '3D render illustration of modern multinational enterprise innovation hub in India, sleek glass facade, landscaped corporate park, bright daylight, architectural 3D visualization, 8k';
   }
 

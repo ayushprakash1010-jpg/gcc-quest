@@ -83,22 +83,32 @@ export class ContentGenerationProcessor {
         category.includes('expansion') ||
         category.includes('setup') ||
         category.includes('office') ||
-        category.includes('real estate')
+        category.includes('real estate') ||
+        category.includes('leasing')
       ) {
         promptKey = 'writer-expansion';
       } else if (
         category.includes('hiring') ||
         category.includes('talent') ||
-        category.includes('leadership') ||
-        category.includes('workforce')
+        category.includes('workforce') ||
+        category.includes('reskill') ||
+        category.includes('ai')
       ) {
         promptKey = 'writer-hiring';
       } else if (
         category.includes('research') ||
         category.includes('report') ||
-        category.includes('data')
+        category.includes('data') ||
+        category.includes('nasscom') ||
+        category.includes('zinnov')
       ) {
         promptKey = 'writer-research';
+      } else if (
+        category.includes('leadership') ||
+        category.includes('cxo') ||
+        category.includes('strategy')
+      ) {
+        promptKey = 'writer-thought-leadership';
       }
 
       const promptVersion = this.promptService.getActive(promptKey);
