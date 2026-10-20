@@ -212,7 +212,7 @@ export class AiNewsHunterCron {
           - Policy or government initiatives directly supporting GCCs
           - Research/data reports on India's GCC ecosystem (NASSCOM, Zinnov, JLL, CBRE)
 
-          PRIORITY 2 — MAY SELECT a maximum of 1 per run (secondary content):
+          PRIORITY 2 — MAY SELECT a maximum of 1 (counts against the 2-article budget, not in addition):
           - India deeptech or enterprise tech startup funding with clear GCC-sector relevance
           - Women leaders or founders in India's GCC or enterprise tech ecosystem
 
@@ -222,8 +222,8 @@ export class AiNewsHunterCron {
           - General stock market, mutual fund, or retail investment news
           - Celebrity, sports, or lifestyle content
 
-          Select 2 (up to 3 if multiple high-impact stories exist) articles total.
-          If fewer than 2 articles meet the criteria, return only the qualifying ones. Do NOT force-select off-topic articles.
+          Select EXACTLY 2 articles total — no more, no fewer.
+          If fewer than 2 articles meet the criteria, return only the qualifying ones. Do NOT force-select off-topic articles just to reach 2.
           For each selected article, write a detailed 2 to 3 paragraph summary explaining the core announcement, specific numbers/metrics (headcount, location, investment), the strategic business rationale, and why it is significant to India's GCC ecosystem.
         `;
 
@@ -246,7 +246,9 @@ export class AiNewsHunterCron {
         }
 
         // 4. Save the selected articles into the database
-        for (const extractedArticle of result.articles) {
+        // Hard cap: enforce max 2 per topic regardless of what Gemini returns
+        const selectedArticles = result.articles.slice(0, 2);
+        for (const extractedArticle of selectedArticles) {
           try {
             // Check deduplication
             const hash = this.deduplicationEngine.generateHash(
