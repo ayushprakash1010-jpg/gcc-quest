@@ -8,7 +8,6 @@ async function main() {
       key: 'config.trend_score_threshold',
       value: '500',
       description: 'Minimum score to detect a trend',
-      isPublic: false,
     },
   });
   console.log('Trend threshold updated to 500 in DB');
@@ -20,7 +19,6 @@ async function main() {
       key: 'config.analysis_threshold',
       value: '8',
       description: 'Min businessImpact to trigger generation',
-      isPublic: false,
     },
   });
   console.log('Analysis threshold updated to 8 in DB');

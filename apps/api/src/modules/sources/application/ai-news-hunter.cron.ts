@@ -74,12 +74,16 @@ export class AiNewsHunterCron {
 
     // 1. Ensure we have a "GCC Quest AI" source in the DB
     let source = await this.prisma.source.findFirst({
-      where: { name: 'GCC Quest AI' },
+      where: {
+        OR: [{ name: 'GCC Quest AI' }, { url: 'https://news.google.com' }],
+      },
     });
 
     if (!source) {
-      source = await this.prisma.source.create({
-        data: {
+      source = await this.prisma.source.upsert({
+        where: { url: 'https://news.google.com' },
+        update: { name: 'GCC Quest AI', status: 'ACTIVE' },
+        create: {
           name: 'GCC Quest AI',
           type: 'RSS',
           url: 'https://news.google.com',

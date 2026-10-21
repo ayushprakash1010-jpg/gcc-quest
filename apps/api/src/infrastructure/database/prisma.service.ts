@@ -25,6 +25,21 @@ export class PrismaService
           `Auto-migration for publishing_channel: ${err.message}`,
         );
       });
+
+      // Self-healing config: Ensure analysis_threshold is set to 8 in DB (no manual shell needed)
+      await this.systemSetting
+        .upsert({
+          where: { key: 'config.analysis_threshold' },
+          update: { value: '8' },
+          create: {
+            key: 'config.analysis_threshold',
+            value: '8',
+            description: 'Min businessImpact to trigger generation',
+          },
+        })
+        .catch((err) => {
+          this.logger.warn(`Auto-sync for analysis_threshold: ${err.message}`);
+        });
     } catch (error) {
       this.logger.error('Failed to connect to database', error);
       throw error;
