@@ -45,7 +45,7 @@ async function main() {
     },
     {
       key: 'config.analysis_threshold',
-      value: '7',
+      value: '8',
       description: 'Min businessImpact to trigger generation',
     },
     {

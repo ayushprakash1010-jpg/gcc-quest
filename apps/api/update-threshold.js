@@ -1,4 +1,4 @@
-﻿const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 async function main() {
   await prisma.systemSetting.upsert({
@@ -11,7 +11,19 @@ async function main() {
       isPublic: false,
     },
   });
-  console.log('Threshold updated to 500 in DB');
+  console.log('Trend threshold updated to 500 in DB');
+
+  await prisma.systemSetting.upsert({
+    where: { key: 'config.analysis_threshold' },
+    update: { value: '8' },
+    create: {
+      key: 'config.analysis_threshold',
+      value: '8',
+      description: 'Min businessImpact to trigger generation',
+      isPublic: false,
+    },
+  });
+  console.log('Analysis threshold updated to 8 in DB');
 }
 main()
   .catch(console.error)
