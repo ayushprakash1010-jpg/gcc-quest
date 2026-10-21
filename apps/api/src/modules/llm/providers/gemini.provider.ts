@@ -67,11 +67,18 @@ function buildMockFromSchema(schema: z.ZodTypeAny): unknown {
   } else if (schema instanceof z.ZodString) {
     return 'mock';
   } else if (schema instanceof z.ZodNumber) {
-    // For impactScore (min:1 max:10) default to 5 to satisfy refinements
-    const minCheck = (schema._def as any).checks?.find(
-      (c: any) => c.kind === 'min',
+    // For impactScore (min:1 max:10) default to min or 5 to satisfy refinements
+    const checks = (schema._def as any).checks || [];
+    const minCheck = checks.find(
+      (c: any) =>
+        c.kind === 'min' ||
+        c._zod?.def?.check === 'greater_than' ||
+        c.def?.check === 'greater_than',
     );
-    return minCheck ? minCheck.value : 0;
+    const minVal = minCheck
+      ? (minCheck.value ?? minCheck._zod?.def?.value ?? minCheck.def?.value)
+      : undefined;
+    return minVal !== undefined ? minVal : 5;
   } else if (schema instanceof z.ZodBoolean) {
     return false;
   } else if (schema instanceof z.ZodOptional) {
@@ -107,35 +114,34 @@ export class GeminiProvider {
 
     const callWithModel = async (targetModel: string) => {
       const execute = async () => {
-        try {
-          await this.checkRateLimit();
-          const model = this.genAI.getGenerativeModel({ model: targetModel });
+        await this.checkRateLimit();
+        const model = this.genAI.getGenerativeModel({ model: targetModel });
 
-          const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: options?.temperature ?? 0.2,
-              responseMimeType: 'application/json',
-              responseSchema: schema,
-            },
-          });
+        const result = await model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: options?.temperature ?? 0.2,
+            responseMimeType: 'application/json',
+            responseSchema: schema,
+          },
+        });
 
-          const text = result.response.text();
-          return zodSchema.parse(JSON.parse(text));
-        } catch (e: any) {
-          if (e?.message?.includes('429')) {
-            this.logger.warn(
-              'Gemini quota exhausted (429) — returning schema-valid mock stub. ' +
-                'This data is NOT persisted to the database; the processor will retry on next cycle.',
-            );
-            const mockData = buildMockFromSchema(zodSchema);
-            return zodSchema.parse(mockData) as T;
-          }
-          throw e;
-        }
+        const text = result.response.text();
+        return zodSchema.parse(JSON.parse(text));
       };
 
-      return this.withBackoff(execute);
+      try {
+        return await this.withBackoff(execute);
+      } catch (e: any) {
+        if (e?.message?.includes('429') || e?.status === 429) {
+          this.logger.warn(
+            'Gemini quota exhausted (429) after retries — returning schema-valid mock stub.',
+          );
+          const mockData = buildMockFromSchema(zodSchema);
+          return zodSchema.parse(mockData) as T;
+        }
+        throw e;
+      }
     };
 
     try {
