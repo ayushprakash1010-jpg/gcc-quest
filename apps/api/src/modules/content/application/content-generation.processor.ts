@@ -52,7 +52,7 @@ export class ContentGenerationProcessor {
 
       // 1. Rule Check: threshold (HIGH-06: cached, avoids DB hit on every article)
       const threshold = parseFloat(
-        await this.settingsCache.get('config.analysis_threshold', '7'),
+        await this.settingsCache.get('config.analysis_threshold', '8'),
       );
 
       // GCC Quest AI articles are pre-filtered by Gemini for quality,
