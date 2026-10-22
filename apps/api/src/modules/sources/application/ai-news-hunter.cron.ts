@@ -66,8 +66,8 @@ export class AiNewsHunterCron {
     @InjectQueue(QUEUES.ANALYSIS) private readonly analysisQueue: Queue,
   ) {}
 
-  // Run every day at 9:45 AM IST — 15 mins after 9:30 AM crawler run to avoid Gemini RPM collision
-  @Cron('45 9 * * *', { timeZone: 'Asia/Kolkata' })
+  // Run every day at 8:45 AM IST — 15 mins after 8:30 AM crawler run to avoid Gemini RPM collision
+  @Cron('45 8 * * *', { timeZone: 'Asia/Kolkata' })
   async runNewsHunter(): Promise<void> {
     this.logger.log('Starting GCC Quest AI News Hunter...');
 
