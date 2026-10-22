@@ -15,7 +15,14 @@ export class CrawlSchedulerService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     this.logger.log('Initializing crawl scheduler...');
-    await this.syncAllSchedules();
+    try {
+      await this.syncAllSchedules();
+    } catch (err: any) {
+      this.logger.error(
+        `Failed to sync crawl schedules on bootstrap: ${err.message}`,
+        err.stack,
+      );
+    }
   }
 
   async syncAllSchedules() {
