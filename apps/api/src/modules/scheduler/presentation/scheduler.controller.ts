@@ -11,12 +11,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { CalendarIntelligenceService } from '../../calendar-intelligence/application/calendar-intelligence.service';
+import { PublisherCron } from '../application/publisher.cron';
 
 @Controller('schedule')
 export class SchedulerController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly calendarService: CalendarIntelligenceService,
+    private readonly publisherCron: PublisherCron,
   ) {}
 
   @Get()
@@ -83,10 +85,43 @@ export class SchedulerController {
     @Param('id') id: string,
     @Body() dto: { scheduledFor: string },
   ) {
-    return this.prisma.scheduledPost.update({
+    if (!dto.scheduledFor) {
+      throw new BadRequestException('scheduledFor datetime is required');
+    }
+
+    const scheduled = await this.prisma.scheduledPost.findUnique({
       where: { id },
-      data: { scheduledFor: new Date(dto.scheduledFor) },
     });
+    if (!scheduled) throw new NotFoundException('Scheduled post not found');
+
+    const newDate = new Date(dto.scheduledFor);
+
+    // Reset status to QUEUED so it will be published at the new time
+    const updated = await this.prisma.scheduledPost.update({
+      where: { id },
+      data: {
+        scheduledFor: newDate,
+        status: 'QUEUED',
+        errorMessage: null,
+      },
+    });
+
+    // Update draft to SCHEDULED
+    await this.prisma.contentDraft.update({
+      where: { id: scheduled.draftId },
+      data: { status: 'SCHEDULED' },
+    });
+
+    return updated;
+  }
+
+  @Post(':id/republish')
+  async republishPost(@Param('id') id: string) {
+    try {
+      return await this.publisherCron.publishSinglePost(id);
+    } catch (err: any) {
+      throw new BadRequestException(err.message || 'Failed to republish post');
+    }
   }
 
   @Delete(':id')
@@ -115,7 +150,7 @@ export class SchedulerController {
   @Get('calendar')
   async getCalendarView() {
     const posts = await this.prisma.scheduledPost.findMany({
-      where: { status: { in: ['QUEUED', 'PUBLISHED'] } },
+      where: { status: { in: ['QUEUED', 'PUBLISHED', 'FAILED'] } },
       include: {
         draft: {
           include: {

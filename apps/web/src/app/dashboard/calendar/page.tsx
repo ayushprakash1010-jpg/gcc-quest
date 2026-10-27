@@ -1,23 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   CalendarIcon,
   Clock,
-  Link as LinkIcon,
   Trash,
   Pencil,
   Check,
   X,
+  RotateCw,
+  ExternalLink,
+  AlertCircle,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -28,6 +24,7 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [reschedulingId, setReschedulingId] = useState<string | null>(null);
   const [newTime, setNewTime] = useState<string>("");
+  const [republishingId, setRepublishingId] = useState<string | null>(null);
 
   const fetchCalendar = async () => {
     setLoading(true);
@@ -75,12 +72,34 @@ export default function CalendarPage() {
       await apiClient.put(`/schedule/${id}`, {
         scheduledFor: new Date(newTime).toISOString(),
       });
-      toast.success("Post rescheduled successfully!");
+      toast.success("Post rescheduled and queued successfully!");
       setReschedulingId(null);
       setNewTime("");
       fetchCalendar();
-    } catch {
-      toast.error("Failed to reschedule post.");
+    } catch (_err: any) {
+      const msg =
+        _err.response?.data?.message ||
+        _err.message ||
+        "Failed to reschedule post.";
+      toast.error(msg);
+    }
+  };
+
+  const handleRepublish = async (id: string) => {
+    setRepublishingId(id);
+    try {
+      await apiClient.post(`/schedule/${id}/republish`);
+      toast.success("Post published successfully!");
+      fetchCalendar();
+    } catch (_err: any) {
+      const msg =
+        _err.response?.data?.message ||
+        _err.message ||
+        "Failed to publish post.";
+      toast.error("Publishing failed", { description: msg });
+      fetchCalendar();
+    } finally {
+      setRepublishingId(null);
     }
   };
 
@@ -101,7 +120,7 @@ export default function CalendarPage() {
       </div>
 
       {loading ? (
-        <div className="py-8">Loading calendar...</div>
+        <div className="py-8 text-muted-foreground">Loading calendar...</div>
       ) : dates.length === 0 ? (
         <div className="text-muted-foreground py-8 border-2 border-dashed rounded-lg p-8 text-center flex flex-col items-center justify-center">
           <CalendarIcon className="h-10 w-10 mb-4 text-muted-foreground/50" />
@@ -126,48 +145,84 @@ export default function CalendarPage() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {calendar[date].map((post: any) => (
-                  <Card key={post.id}>
+                  <Card key={post.id} className="flex flex-col justify-between">
                     <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <Badge
-                          variant={
-                            post.status === "PUBLISHED"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {post.status}
-                        </Badge>
-                        <div className="flex items-center gap-1">
+                      <div className="flex justify-between items-start mb-2 gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge
+                            variant={
+                              post.status === "PUBLISHED"
+                                ? "default"
+                                : post.status === "FAILED"
+                                  ? "destructive"
+                                  : "secondary"
+                            }
+                            className={
+                              post.status === "PUBLISHED"
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                                : post.status === "FAILED"
+                                  ? "bg-rose-500/10 text-rose-400 border border-rose-500/30"
+                                  : "bg-blue-500/10 text-blue-400 border border-blue-500/30"
+                            }
+                          >
+                            {post.status}
+                          </Badge>
                           <Badge variant="outline">
                             {post.draft?.targetPlatform}
                           </Badge>
-                          {post.status === "QUEUED" && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-7 h-7 text-muted-foreground hover:text-blue-500"
-                                onClick={() => startReschedule(post)}
-                                title="Reschedule"
-                              >
-                                <Pencil className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-7 h-7 text-muted-foreground hover:text-red-500"
-                                onClick={() => handleCancel(post.id)}
-                                title="Cancel Schedule"
-                              >
-                                <Trash className="w-3.5 h-3.5" />
-                              </Button>
-                            </>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {/* Quick Republish / Publish Now Icon Button */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-7 h-7 text-muted-foreground hover:text-emerald-400"
+                            disabled={republishingId === post.id}
+                            onClick={() => handleRepublish(post.id)}
+                            title={
+                              post.status === "PUBLISHED"
+                                ? "Republish Now"
+                                : post.status === "FAILED"
+                                  ? "Retry Publishing"
+                                  : "Publish Now"
+                            }
+                          >
+                            <RotateCw
+                              className={`w-3.5 h-3.5 ${
+                                republishingId === post.id
+                                  ? "animate-spin text-emerald-400"
+                                  : ""
+                              }`}
+                            />
+                          </Button>
+
+                          {/* Quick Change Timing / Reschedule Icon Button */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-7 h-7 text-muted-foreground hover:text-blue-400"
+                            onClick={() => startReschedule(post)}
+                            title="Change Timing / Reschedule"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+
+                          {/* Cancel Button */}
+                          {post.status !== "PUBLISHED" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="w-7 h-7 text-muted-foreground hover:text-rose-400"
+                              onClick={() => handleCancel(post.id)}
+                              title="Cancel Schedule"
+                            >
+                              <Trash className="w-3.5 h-3.5" />
+                            </Button>
                           )}
                         </div>
                       </div>
-                      <CardTitle className="text-base leading-tight line-clamp-2">
-                        {post.draft?.versions?.[0]?.content?.substring(0, 100)}
+                      <CardTitle className="text-base leading-tight line-clamp-3">
+                        {post.draft?.versions?.[0]?.content?.substring(0, 120)}
                         ...
                       </CardTitle>
                     </CardHeader>
@@ -180,66 +235,124 @@ export default function CalendarPage() {
                         })}
                       </div>
 
-                      {/* Inline Reschedule UI */}
-                      {post.status === "QUEUED" &&
-                        reschedulingId === post.id && (
-                          <div className="space-y-2.5 p-3.5 bg-zinc-50 rounded-lg border border-zinc-200">
-                            <p className="text-xs font-semibold text-zinc-900">
-                              Select new date &amp; time:
+                      {/* Inline Reschedule UI (available for both QUEUED and PUBLISHED) */}
+                      {reschedulingId === post.id && (
+                        <div className="space-y-2.5 p-3.5 bg-zinc-900/90 rounded-lg border border-blue-500/40 shadow-sm">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-semibold text-zinc-200">
+                              Change Date &amp; Time:
                             </p>
-                            <input
-                              type="datetime-local"
-                              value={newTime}
-                              onChange={(e) => setNewTime(e.target.value)}
-                              className="w-full text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-                            />
-                            <div className="flex gap-2 pt-1">
-                              <Button
-                                size="sm"
-                                onClick={() => handleReschedule(post.id)}
-                                className="flex-1 gap-1 bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                              >
-                                <Check className="w-3.5 h-3.5" /> Confirm
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setReschedulingId(null)}
-                                className="flex-1 gap-1 border-zinc-300 text-zinc-700 hover:bg-zinc-100"
-                              >
-                                <X className="w-3.5 h-3.5" /> Cancel
-                              </Button>
-                            </div>
+                            {post.status === "PUBLISHED" && (
+                              <span className="text-[10px] text-amber-400 font-medium">
+                                Re-queues post
+                              </span>
+                            )}
                           </div>
-                        )}
+                          <input
+                            type="datetime-local"
+                            value={newTime}
+                            onChange={(e) => setNewTime(e.target.value)}
+                            className="w-full text-sm rounded-md border border-zinc-700 bg-zinc-950 text-zinc-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                          />
+                          <div className="flex gap-2 pt-1">
+                            <Button
+                              size="sm"
+                              onClick={() => handleReschedule(post.id)}
+                              className="flex-1 gap-1 bg-blue-600 hover:bg-blue-700 text-white font-medium h-8"
+                            >
+                              <Check className="w-3.5 h-3.5" /> Confirm
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setReschedulingId(null)}
+                              className="flex-1 gap-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800 h-8"
+                            >
+                              <X className="w-3.5 h-3.5" /> Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Failure reason if post failed */}
+                      {post.status === "FAILED" && post.errorMessage && (
+                        <div className="bg-rose-950/40 border border-rose-800/50 p-3 rounded-lg text-xs text-rose-300 leading-relaxed flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold text-rose-200 block mb-0.5">
+                              Publishing Error
+                            </span>
+                            {post.errorMessage}
+                          </div>
+                        </div>
+                      )}
 
                       {post.scheduleRationale && (
-                        <div className="bg-blue-50/70 border border-blue-100 p-3 rounded-lg text-xs text-blue-900 leading-relaxed">
-                          <span className="font-bold text-blue-950 block mb-1">
+                        <div className="bg-blue-950/30 border border-blue-800/40 p-3 rounded-lg text-xs text-blue-200 leading-relaxed">
+                          <span className="font-bold text-blue-100 block mb-1">
                             AI Recommendation
                           </span>
                           {post.scheduleRationale}
                         </div>
                       )}
 
-                      {post.status === "PUBLISHED" && post.publishedUrl && (
-                        <a
-                          href={post.publishedUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center text-sm text-blue-500 hover:underline"
-                        >
-                          <LinkIcon className="w-4 h-4 mr-2" /> View Post
-                        </a>
-                      )}
-                      {post.status === "QUEUED" && post.draftId && (
-                        <a
-                          href={`/dashboard/content/${post.draftId}`}
-                          className="flex items-center text-sm text-blue-500 hover:underline"
-                        >
-                          <LinkIcon className="w-4 h-4 mr-2" /> Review Draft
-                        </a>
-                      )}
+                      {/* Actions Footer */}
+                      <div className="pt-2 border-t border-zinc-800/70 flex flex-wrap items-center justify-between gap-2">
+                        {post.status === "PUBLISHED" && post.publishedUrl ? (
+                          <a
+                            href={post.publishedUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center text-xs text-blue-400 hover:underline gap-1.5"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" /> View Post
+                          </a>
+                        ) : post.draftId ? (
+                          <a
+                            href={`/dashboard/content/${post.draftId}`}
+                            className="flex items-center text-xs text-blue-400 hover:underline gap-1.5"
+                          >
+                            <FileText className="w-3.5 h-3.5" /> Review Draft
+                          </a>
+                        ) : (
+                          <div />
+                        )}
+
+                        <div className="flex items-center gap-1.5 ml-auto">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 gap-1 px-2.5"
+                            onClick={() => startReschedule(post)}
+                            title="Change Scheduled Timing"
+                          >
+                            <Clock className="w-3 h-3 text-blue-400" />
+                            Change Time
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1 px-2.5"
+                            disabled={republishingId === post.id}
+                            onClick={() => handleRepublish(post.id)}
+                            title={
+                              post.status === "PUBLISHED"
+                                ? "Republish post to LinkedIn"
+                                : "Publish post immediately"
+                            }
+                          >
+                            <RotateCw
+                              className={`w-3 h-3 ${
+                                republishingId === post.id ? "animate-spin" : ""
+                              }`}
+                            />
+                            {republishingId === post.id
+                              ? "Publishing..."
+                              : post.status === "PUBLISHED"
+                                ? "Republish"
+                                : "Publish Now"}
+                          </Button>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
