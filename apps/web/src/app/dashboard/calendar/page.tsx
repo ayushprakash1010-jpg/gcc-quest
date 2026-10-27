@@ -76,10 +76,14 @@ export default function CalendarPage() {
       setReschedulingId(null);
       setNewTime("");
       fetchCalendar();
-    } catch (_err: any) {
+    } catch (_err: unknown) {
+      const error = _err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
       const msg =
-        _err.response?.data?.message ||
-        _err.message ||
+        error.response?.data?.message ||
+        error.message ||
         "Failed to reschedule post.";
       toast.error(msg);
     }
@@ -91,10 +95,14 @@ export default function CalendarPage() {
       await apiClient.post(`/schedule/${id}/republish`);
       toast.success("Post published successfully!");
       fetchCalendar();
-    } catch (_err: any) {
+    } catch (_err: unknown) {
+      const error = _err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
       const msg =
-        _err.response?.data?.message ||
-        _err.message ||
+        error.response?.data?.message ||
+        error.message ||
         "Failed to publish post.";
       toast.error("Publishing failed", { description: msg });
       fetchCalendar();
