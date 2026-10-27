@@ -436,6 +436,11 @@ export class AiNewsHunterCron {
         return null;
       }
 
+      // Strip Google's -rw parameter so it delivers PNG/JPEG instead of WebP
+      if (ogImage.includes('googleusercontent.com')) {
+        ogImage = ogImage.replace(/-rw$/, '');
+      }
+
       return ogImage;
     } catch {
       // Gracefully swallow network/timeout errors — never fail article hunting

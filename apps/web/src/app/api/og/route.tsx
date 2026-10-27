@@ -277,10 +277,14 @@ export async function GET(req: NextRequest) {
         });
         clearTimeout(timeout);
         if (imgRes.ok) {
+          const mime = imgRes.headers.get("content-type") || "image/jpeg";
+          // Satori (@vercel/og) does NOT support WebP. Reject WebP so we cleanly fall back to high-res JPEG/PNG.
+          if (mime.toLowerCase().includes("webp")) {
+            return null;
+          }
           const buffer = await imgRes.arrayBuffer();
           if (buffer.byteLength > 1000) {
             const base64 = Buffer.from(buffer).toString("base64");
-            const mime = imgRes.headers.get("content-type") || "image/jpeg";
             return `data:${mime};base64,${base64}`;
           }
         }
@@ -291,7 +295,12 @@ export async function GET(req: NextRequest) {
     };
 
     if (customBg) {
-      bgDataUri = await fetchImageAsBase64(customBg, 4000);
+      let cleanBg = customBg;
+      // Google News thumbnails end in -rw (forces WebP). Strip -rw to force PNG/JPEG delivery
+      if (cleanBg.includes("googleusercontent.com")) {
+        cleanBg = cleanBg.replace(/-rw$/, "");
+      }
+      bgDataUri = await fetchImageAsBase64(cleanBg, 4000);
     }
 
     // If no custom background was provided or if fetching it failed, use the reliable curated topic image

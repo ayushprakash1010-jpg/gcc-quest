@@ -34,12 +34,25 @@ export class BufferPublisherService {
       `Publishing to LinkedIn Company Page via webhook (${webhookUrl.slice(0, 50)}...)`,
     );
 
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') ||
+      'https://gcc-quest-web.vercel.app';
+    let cleanImageUrl =
+      imageUrl && imageUrl.trim().length > 0
+        ? imageUrl.trim()
+        : `${frontendUrl}/api/og?title=GCC+Quest+Insights&source=GCC+Quest`;
+
+    // Ensure no Google WebP -rw parameters reach the webhook
+    if (cleanImageUrl.includes('-rw')) {
+      cleanImageUrl = cleanImageUrl.replace(/-rw/g, '');
+    }
+
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         content,
-        imageUrl: imageUrl || null,
+        imageUrl: cleanImageUrl,
         source: 'gcc-quest',
         timestamp: new Date().toISOString(),
       }),
