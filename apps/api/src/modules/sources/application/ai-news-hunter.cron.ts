@@ -376,6 +376,11 @@ export class AiNewsHunterCron {
    */
   private async extractOgImage(url: string): Promise<string | null> {
     try {
+      // Google News redirect URLs serve Google's wrapper page with Google News logo, not article photos.
+      if (url.includes('news.google.com')) {
+        return null;
+      }
+
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 3500);
 
@@ -423,7 +428,7 @@ export class AiNewsHunterCron {
         }
       }
 
-      // Filter out tracking pixels, icons, SVGs, or tiny spacer gifs
+      // Filter out tracking pixels, icons, SVGs, Google News logos, or tiny spacer gifs
       const lower = ogImage.toLowerCase();
       if (
         lower.endsWith('.svg') ||
@@ -431,14 +436,12 @@ export class AiNewsHunterCron {
         lower.includes('1x1') ||
         lower.includes('pixel') ||
         lower.includes('spacer') ||
-        lower.includes('logo-small')
+        lower.includes('logo-small') ||
+        lower.includes('googleusercontent.com') ||
+        lower.includes('google_news') ||
+        lower.includes('gstatic.com')
       ) {
         return null;
-      }
-
-      // Strip Google's -rw parameter so it delivers PNG/JPEG instead of WebP
-      if (ogImage.includes('googleusercontent.com')) {
-        ogImage = ogImage.replace(/-rw$/, '');
       }
 
       return ogImage;

@@ -296,11 +296,20 @@ export async function GET(req: NextRequest) {
 
     if (customBg) {
       let cleanBg = customBg;
-      // Google News thumbnails end in -rw (forces WebP). Strip -rw to force PNG/JPEG delivery
-      if (cleanBg.includes("googleusercontent.com")) {
-        cleanBg = cleanBg.replace(/-rw$/, "");
+      // Filter out generic Google News icons, Google usercontent logos, and tracking placeholders
+      const lowerBg = cleanBg.toLowerCase();
+      if (
+        lowerBg.includes("googleusercontent.com") ||
+        lowerBg.includes("news.google.com") ||
+        lowerBg.includes("gstatic.com") ||
+        lowerBg.includes("favicon") ||
+        lowerBg.includes("logo-small")
+      ) {
+        cleanBg = "";
       }
-      bgDataUri = await fetchImageAsBase64(cleanBg, 4000);
+      if (cleanBg) {
+        bgDataUri = await fetchImageAsBase64(cleanBg, 4000);
+      }
     }
 
     // If no custom background was provided or if fetching it failed, use the reliable curated topic image
