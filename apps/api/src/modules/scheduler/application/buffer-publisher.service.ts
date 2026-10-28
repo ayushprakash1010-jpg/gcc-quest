@@ -47,6 +47,21 @@ export class BufferPublisherService {
       cleanImageUrl = cleanImageUrl.replace(/-rw/g, '');
     }
 
+    // Fix double-encoded mojibake from curly quotes / non-ASCII filenames
+    // %C2%80%99 is the mojibake representation of UTF-8 right curly quote (%E2%80%99)
+    if (cleanImageUrl.includes('%C2%80%99')) {
+      cleanImageUrl = cleanImageUrl.replace(/%C2%80%99/g, '%E2%80%99');
+    }
+    if (cleanImageUrl.includes('%C2%80%98')) {
+      cleanImageUrl = cleanImageUrl.replace(/%C2%80%98/g, '%E2%80%98');
+    }
+    if (cleanImageUrl.includes('%C2%80%9C')) {
+      cleanImageUrl = cleanImageUrl.replace(/%C2%80%9C/g, '%E2%80%9C');
+    }
+    if (cleanImageUrl.includes('%C2%80%9D')) {
+      cleanImageUrl = cleanImageUrl.replace(/%C2%80%9D/g, '%E2%80%9D');
+    }
+
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
