@@ -229,6 +229,7 @@ model ContentDraft {
   currentVersion Int               @default(1) @map("current_version")
   targetPlatform String            @default("LINKEDIN") @map("target_platform") @db.VarChar(50)
   brandVoiceId   String?           @map("brand_voice_id") @db.Uuid
+  customImageUrl String?           @map("custom_image_url")
   createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   clusterId      String?           @map("cluster_id") @db.Uuid

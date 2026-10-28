@@ -58,6 +58,15 @@ export class ContentController {
     return this.repository.addVersion(id, body.content, 'USER');
   }
 
+  @Put('drafts/:id/image')
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  async updateImage(
+    @Param('id') id: string,
+    @Body() body: { customImageUrl: string | null },
+  ) {
+    return this.repository.updateCustomImage(id, body.customImageUrl ?? null);
+  }
+
   @Put('drafts/:id/status')
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
   async updateStatus(@Param('id') id: string, @Body() body: { status: any }) {

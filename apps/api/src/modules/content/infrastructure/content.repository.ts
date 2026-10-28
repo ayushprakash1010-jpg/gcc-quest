@@ -102,6 +102,20 @@ export class ContentRepository {
     });
   }
 
+  async updateCustomImage(draftId: string, customImageUrl: string | null) {
+    const draft = await this.findById(draftId);
+    if (!draft) throw new NotFoundException(`Draft ${draftId} not found`);
+
+    return this.prisma.contentDraft.update({
+      where: { id: draftId },
+      data: { customImageUrl },
+      include: {
+        versions: { orderBy: { versionNumber: 'desc' } },
+        article: { include: { analysis: true } },
+      },
+    });
+  }
+
   async addVersion(draftId: string, content: string, generatedBy = 'USER') {
     const draft = await this.findById(draftId);
     const nextVersion = (draft.versions[0]?.versionNumber || 0) + 1;

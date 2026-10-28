@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,11 @@ import {
   Zap,
   CheckCircle2,
   ImageIcon,
+  Upload,
+  Link2,
+  RotateCcw,
+  X,
+  Loader2,
 } from "lucide-react";
 
 // LOW-05: Strict TypeScript interfaces
@@ -68,6 +73,7 @@ interface Draft {
   targetPlatform: string;
   status: string;
   versions: Version[];
+  customImageUrl?: string;
 }
 
 // Maps entity category keys to display labels and icons
@@ -211,6 +217,13 @@ export default function DraftReviewPage({
   >("personal");
   const [isBufferConfigured, setIsBufferConfigured] = useState(false);
 
+  // Image replacement state
+  const [customImageUrl, setCustomImageUrl] = useState<string>("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlInputValue, setUrlInputValue] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     async function fetchDraft() {
       try {
@@ -220,6 +233,10 @@ export default function DraftReviewPage({
         // Load the latest version into the editor
         if (data.versions && data.versions.length > 0) {
           setEditedText(data.versions[0].content);
+        }
+        // Load custom image if previously set
+        if (data.customImageUrl) {
+          setCustomImageUrl(data.customImageUrl);
         }
       } catch (err) {
         console.error(err);
@@ -236,6 +253,91 @@ export default function DraftReviewPage({
     fetchDraft();
     fetchSettings();
   }, [id]);
+
+  // Resolve image: custom override > article OG > auto-generated
+  const resolvedImageUrl = customImageUrl || draft?.article?.imageUrl || null;
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const uploadData = await uploadRes.json();
+
+      if (!uploadRes.ok) {
+        throw new Error(uploadData.error || "Upload failed");
+      }
+
+      setCustomImageUrl(uploadData.url);
+      await apiClient.put(`/content/drafts/${id}/image`, {
+        customImageUrl: uploadData.url,
+      });
+      toast.success("Image uploaded and saved!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploadingImage(false);
+      // Reset the file input so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handlePasteUrl = async () => {
+    const url = urlInputValue.trim();
+    if (!url) {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+    try {
+      new URL(url); // Validate URL format
+    } catch {
+      toast.error("Invalid URL format");
+      return;
+    }
+
+    try {
+      setCustomImageUrl(url);
+      await apiClient.put(`/content/drafts/${id}/image`, {
+        customImageUrl: url,
+      });
+      toast.success("Image URL saved!");
+      setShowUrlInput(false);
+      setUrlInputValue("");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save image URL");
+    }
+  };
+
+  const handleResetImage = async () => {
+    try {
+      setCustomImageUrl("");
+      await apiClient.put(`/content/drafts/${id}/image`, {
+        customImageUrl: null,
+      });
+      toast.info("Reverted to auto-generated image");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to reset image");
+    }
+  };
 
   const handleApprove = async () => {
     if (!draft) return;
@@ -462,28 +564,140 @@ export default function DraftReviewPage({
             )}
           </Card>
 
-          {/* Featured Image (if available) */}
-          {draft.article?.imageUrl && (
-            <Card className="bg-white text-zinc-900 border border-zinc-200/80 shadow-sm rounded-xl overflow-hidden">
-              <div className="relative h-56 w-full bg-zinc-100 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={draft.article.imageUrl}
-                  alt="Article featured preview"
-                  className="w-full h-full object-cover"
-                />
+          {/* ── POST IMAGE MANAGER ─────────────────────────── */}
+          <Card className="bg-white text-zinc-900 border border-zinc-200/80 shadow-sm rounded-xl overflow-hidden">
+            <CardHeader className="pb-3 border-b border-zinc-100">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold flex items-center gap-2 text-zinc-900">
+                  <ImageIcon className="w-4 h-4 text-blue-600" />
+                  Post Image
+                </CardTitle>
+                {customImageUrl && (
+                  <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[11px]">
+                    Custom Image
+                  </Badge>
+                )}
               </div>
-              <CardContent className="p-3 bg-zinc-50 border-t border-zinc-100 text-xs text-zinc-600 flex items-center justify-between">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
-                  Featured Article Image
-                </span>
-                <span className="text-[11px] text-zinc-400">
-                  Included in LinkedIn post
-                </span>
-              </CardContent>
-            </Card>
-          )}
+            </CardHeader>
+            <CardContent className="p-0">
+              {/* Image Preview */}
+              {resolvedImageUrl ? (
+                <div className="relative group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={resolvedImageUrl}
+                    alt="Post image preview"
+                    className="w-full h-56 object-cover"
+                  />
+                  {customImageUrl && (
+                    <button
+                      onClick={handleResetImage}
+                      className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Remove custom image"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="h-40 flex items-center justify-center bg-zinc-50 text-zinc-400">
+                  <div className="text-center">
+                    <ImageIcon className="w-8 h-8 mx-auto mb-2 text-zinc-300" />
+                    <p className="text-sm">Auto-generated image will be used</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="p-3 border-t border-zinc-100 space-y-3">
+                <div className="flex items-center gap-2">
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingImage}
+                    className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 flex-1"
+                  >
+                    {isUploadingImage ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="w-3.5 h-3.5" />
+                    )}
+                    {isUploadingImage ? "Uploading..." : "Upload from Device"}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowUrlInput(!showUrlInput)}
+                    className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 flex-1"
+                  >
+                    <Link2 className="w-3.5 h-3.5" />
+                    Paste URL
+                  </Button>
+
+                  {customImageUrl && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResetImage}
+                      className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Reset
+                    </Button>
+                  )}
+                </div>
+
+                {/* URL Input */}
+                {showUrlInput && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://example.com/image.png"
+                      value={urlInputValue}
+                      onChange={(e) => setUrlInputValue(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handlePasteUrl()}
+                      className="flex-1 h-8 px-3 text-xs border border-zinc-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handlePasteUrl}
+                      className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowUrlInput(false);
+                        setUrlInputValue("");
+                      }}
+                      className="h-8 text-xs text-zinc-500"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  {customImageUrl
+                    ? "✓ Your custom image will be used when publishing to LinkedIn."
+                    : "Upload your own image or paste a URL to replace the auto-generated visual."}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Article Summary Card */}
           <Card className="bg-white text-zinc-900 border border-zinc-200/80 shadow-sm rounded-xl">
@@ -727,7 +941,7 @@ export default function DraftReviewPage({
             <CardContent className="p-6 bg-[#f3f2ef] flex items-center justify-center">
               <LinkedInPostPreview
                 content={editedText}
-                imageUrl={draft?.article?.imageUrl}
+                imageUrl={resolvedImageUrl || undefined}
               />
             </CardContent>
           </Card>
