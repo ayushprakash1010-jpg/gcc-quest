@@ -62,12 +62,22 @@ export class BufferPublisherService {
       cleanImageUrl = cleanImageUrl.replace(/%C2%80%9D/g, '%E2%80%9D');
     }
 
+    // Wrap external/blob URLs with our frontend proxy route so Make.com & LinkedIn
+    // always receive a clean, standard endpoint that streams binary image data directly.
+    let finalWebhookImageUrl = cleanImageUrl;
+    if (
+      !cleanImageUrl.startsWith(`${frontendUrl}/api/og`) &&
+      !cleanImageUrl.startsWith(`${frontendUrl}/api/proxy-image`)
+    ) {
+      finalWebhookImageUrl = `${frontendUrl}/api/proxy-image?url=${encodeURIComponent(cleanImageUrl)}`;
+    }
+
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         content,
-        imageUrl: cleanImageUrl,
+        imageUrl: finalWebhookImageUrl,
         source: 'gcc-quest',
         timestamp: new Date().toISOString(),
       }),
