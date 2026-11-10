@@ -227,6 +227,7 @@ export default function DraftReviewPage({
   const [isShufflingImage, setIsShufflingImage] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInputValue, setUrlInputValue] = useState("");
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -487,6 +488,63 @@ export default function DraftReviewPage({
     } catch (err) {
       console.error(err);
       toast.error("Failed to reset image");
+    }
+  };
+
+  const handleCopyChatGptPrompt = async () => {
+    if (!draft) return;
+
+    const title =
+      draft.article?.title || draft.cluster?.theme || "GCC Quest Insights";
+    const bodyText =
+      draft.versions?.[0]?.content || draft.article?.analysis?.summary || "";
+
+    // Extract key metrics or numbers
+    const metrics =
+      `${title} ${bodyText}`.match(
+        /(?:\$|₹|€)?\b\d+(?:,\d+)*(?:\.\d+)?(?:%|B|M|K|\+)?\b/g,
+      ) || [];
+    const topMetrics = [
+      ...new Set(
+        metrics.filter(
+          (m) => !["2023", "2024", "2025", "2026", "2027", "2030"].includes(m),
+        ),
+      ),
+    ]
+      .slice(0, 3)
+      .join(", ");
+
+    const promptText = `Create a viral, photorealistic 16:9 widescreen B2B LinkedIn Infographic Slide for GCC Quest based on this article:
+
+ARTICLE TITLE: ${title}
+KEY METRICS / STATS: ${topMetrics || "Strategic Growth & Enterprise Scale"}
+ARTICLE CONTEXT:
+${bodyText.slice(0, 800)}
+
+DESIGN & AESTHETIC REQUIREMENTS:
+- Format: 16:9 Landscape Executive Slide (1200x675).
+- Background: Ultra-premium dark navy/black gradient (#060913) with ambient cyan and electric blue glows.
+- Right Half: A photorealistic window of illuminated modern glass corporate towers and tech park city skyline at twilight.
+- Left Half: Clean executive data architecture with:
+  1. Category pill tag in uppercase cyan at the top (e.g., "INDIA'S GCC BOOM").
+  2. Large, bold high-impact headline in pure white and vibrant gold.
+  3. A 2-sentence executive summary subtitle.
+  4. 2 highlighted big stat metric callout boxes with numbers in glowing neon gold and cyan.
+  5. 4 capability badges with circular glowing icons (e.g., AI, Cloud, Digital Ops).
+  6. A yellow discussion call-to-action bar at the bottom right.
+- Typography: Extremely crisp, modern sans-serif, perfectly legible, high contrast.
+- Style: McKinsey / Gartner / Bain executive intelligence deck meets futuristic Bloomberg terminal.`;
+
+    try {
+      await navigator.clipboard.writeText(promptText);
+      setCopiedPrompt(true);
+      toast.success("ChatGPT Infographic Prompt copied to clipboard!", {
+        description:
+          "Paste into ChatGPT Plus / DALL-E to generate a custom slide.",
+      });
+      setTimeout(() => setCopiedPrompt(false), 3000);
+    } catch {
+      toast.error("Failed to copy prompt to clipboard.");
     }
   };
 
@@ -829,6 +887,24 @@ export default function DraftReviewPage({
                       : "🔄 Shuffle Stock Visual"}
                   </Button>
                 </div>
+
+                {/* 1-Click Copy ChatGPT Prompt Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyChatGptPrompt}
+                  className="w-full h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+                  title="Copy a structured prompt ready to paste into ChatGPT Plus / DALL-E to create custom infographic slides"
+                >
+                  {copiedPrompt ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5 text-zinc-500" />
+                  )}
+                  {copiedPrompt
+                    ? "ChatGPT Prompt Copied to Clipboard!"
+                    : "📋 Copy ChatGPT Infographic Prompt"}
+                </Button>
 
                 {/* Secondary Upload & Paste Controls */}
                 <div className="flex items-center gap-2">
