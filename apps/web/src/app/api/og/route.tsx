@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 import { GCC_QUEST_LOGO_DATA_URI } from "@/lib/logo-data-uri";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   try {
