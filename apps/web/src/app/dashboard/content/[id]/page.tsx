@@ -33,6 +33,7 @@ import {
   X,
   Loader2,
   Shuffle,
+  BarChart3,
 } from "lucide-react";
 
 // LOW-05: Strict TypeScript interfaces
@@ -222,6 +223,7 @@ export default function DraftReviewPage({
   const [customImageUrl, setCustomImageUrl] = useState<string>("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [isGeneratingInfographic, setIsGeneratingInfographic] = useState(false);
   const [isShufflingImage, setIsShufflingImage] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInputValue, setUrlInputValue] = useState("");
@@ -422,6 +424,54 @@ export default function DraftReviewPage({
       toast.error("Failed to shuffle image");
     } finally {
       setIsShufflingImage(false);
+    }
+  };
+
+  const handleGenerateInfographic = async () => {
+    if (!draft) return;
+    setIsGeneratingInfographic(true);
+    const toastId = toast.loading(
+      "Crafting B2B Executive Infographic Slide with Gemini...",
+    );
+    try {
+      const res = await fetch("/api/generate-infographic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title:
+            draft.article?.title ||
+            draft.cluster?.theme ||
+            "GCC Quest Insights",
+          summary:
+            draft.article?.analysis?.summary ||
+            draft.cluster?.synthesisText ||
+            "",
+          source: draft.targetPlatform || "GCC Quest Intelligence",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Infographic generation failed");
+      }
+
+      setCustomImageUrl(data.url);
+      await apiClient.put(`/content/drafts/${id}/image`, {
+        customImageUrl: data.url,
+      });
+
+      toast.success("Executive Infographic Slide created and saved!", {
+        id: toastId,
+      });
+    } catch (err: unknown) {
+      console.error(err);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Failed to generate infographic slide";
+      toast.error(msg, { id: toastId });
+    } finally {
+      setIsGeneratingInfographic(false);
     }
   };
 
@@ -709,24 +759,50 @@ export default function DraftReviewPage({
 
               {/* Action Buttons */}
               <div className="p-3 border-t border-zinc-100 space-y-2.5">
-                {/* Primary AI & Shuffle Controls */}
+                {/* Executive Infographic Generator (Gold/Blue gradient) */}
+                <Button
+                  size="sm"
+                  onClick={handleGenerateInfographic}
+                  disabled={
+                    isGeneratingInfographic ||
+                    isGeneratingAi ||
+                    isUploadingImage ||
+                    isShufflingImage
+                  }
+                  className="w-full h-8 gap-1.5 text-xs bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-semibold shadow-sm transition-all"
+                >
+                  {isGeneratingInfographic ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <BarChart3 className="w-3.5 h-3.5 text-amber-300" />
+                  )}
+                  {isGeneratingInfographic
+                    ? "Extracting Metrics & Rendering Slide..."
+                    : "📊 Generate Executive Infographic Slide"}
+                </Button>
+
+                {/* Secondary AI & Shuffle Controls */}
                 <div className="grid grid-cols-2 gap-2">
                   <Button
+                    variant="outline"
                     size="sm"
                     onClick={handleGenerateAi}
                     disabled={
-                      isGeneratingAi || isUploadingImage || isShufflingImage
+                      isGeneratingAi ||
+                      isGeneratingInfographic ||
+                      isUploadingImage ||
+                      isShufflingImage
                     }
-                    className="h-8 gap-1.5 text-xs bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white font-medium shadow-sm transition-all"
+                    className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
                   >
                     {isGeneratingAi ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
                     )}
                     {isGeneratingAi
-                      ? "Generating 3D AI..."
-                      : "Generate with AI"}
+                      ? "Generating 3D..."
+                      : "✨ 3D Concept Visual"}
                   </Button>
 
                   <Button
@@ -734,7 +810,10 @@ export default function DraftReviewPage({
                     size="sm"
                     onClick={handleShuffleImage}
                     disabled={
-                      isShufflingImage || isGeneratingAi || isUploadingImage
+                      isShufflingImage ||
+                      isGeneratingAi ||
+                      isGeneratingInfographic ||
+                      isUploadingImage
                     }
                     className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
                   >
@@ -743,7 +822,9 @@ export default function DraftReviewPage({
                     ) : (
                       <Shuffle className="w-3.5 h-3.5 text-blue-500" />
                     )}
-                    {isShufflingImage ? "Shuffling..." : "Shuffle Stock Visual"}
+                    {isShufflingImage
+                      ? "Shuffling..."
+                      : "🔄 Shuffle Stock Visual"}
                   </Button>
                 </div>
 
@@ -763,7 +844,10 @@ export default function DraftReviewPage({
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={
-                      isUploadingImage || isGeneratingAi || isShufflingImage
+                      isUploadingImage ||
+                      isGeneratingAi ||
+                      isGeneratingInfographic ||
+                      isShufflingImage
                     }
                     className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 flex-1"
                   >
@@ -779,7 +863,11 @@ export default function DraftReviewPage({
                     variant="outline"
                     size="sm"
                     onClick={() => setShowUrlInput(!showUrlInput)}
-                    disabled={isGeneratingAi || isShufflingImage}
+                    disabled={
+                      isGeneratingAi ||
+                      isGeneratingInfographic ||
+                      isShufflingImage
+                    }
                     className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 flex-1"
                   >
                     <Link2 className="w-3.5 h-3.5 text-zinc-500" />
@@ -791,7 +879,11 @@ export default function DraftReviewPage({
                       variant="outline"
                       size="sm"
                       onClick={handleResetImage}
-                      disabled={isGeneratingAi || isShufflingImage}
+                      disabled={
+                        isGeneratingAi ||
+                        isGeneratingInfographic ||
+                        isShufflingImage
+                      }
                       className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100"
                       title="Reset to default auto-generated image"
                     >
