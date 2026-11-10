@@ -1,13 +1,83 @@
 import { put } from "@vercel/blob";
 import { NextRequest, NextResponse } from "next/server";
 
+async function generateSmartPromptWithGemini(
+  title: string,
+  summary: string = "",
+): Promise<{ prompt: string; unsplashQuery: string } | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000); // 4s fast timeout
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text:
+                  "You are a visual director for B2B LinkedIn editorial covers. Analyze this article and return valid JSON with two fields:\n" +
+                  '1. "prompt": a 25-word high-impact 3D conceptual illustration prompt capturing the industry and tech innovation (e.g. aviation software hub with digital flight trajectories, retail automation, fintech towers, semiconductor robotics). Must specify "3D corporate render, sleek glass architecture, ambient cyan and blue lighting, 8k". Never include flags, human faces, text, words, or letters.\n' +
+                  '2. "unsplashQuery": 3-4 precise keywords for corporate photography.\n\n' +
+                  `Article Title: ${title}\n` +
+                  `Article Summary: ${summary.slice(0, 300)}`,
+              },
+            ],
+          },
+        ],
+        generationConfig: { responseMimeType: "application/json" },
+      }),
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (parsed.prompt && parsed.unsplashQuery) {
+      return {
+        prompt: parsed.prompt,
+        unsplashQuery: parsed.unsplashQuery,
+      };
+    }
+  } catch (err) {
+    console.warn("Gemini smart prompt generation skipped or failed:", err);
+  }
+  return null;
+}
+
 function buildTopicPrompt(
   title: string,
   summary: string = "",
 ): { prompt: string; unsplashQuery: string } {
   const combined = `${title} ${summary}`.toLowerCase();
 
-  // 1. Retail tech & eCommerce (e.g. Walmart Global Tech, Target, Amazon GCCs)
+  // 1. Aviation & Aerospace
+  if (
+    combined.includes("airline") ||
+    combined.includes("aviation") ||
+    combined.includes("flight") ||
+    combined.includes("southwest") ||
+    combined.includes("boeing") ||
+    combined.includes("airbus")
+  ) {
+    return {
+      prompt:
+        "3D render illustration of modern airline technology innovation center in India, sleek glass aviation architecture, corporate tech park, glowing cyan flight route trajectories, 8k",
+      unsplashQuery: "aviation technology modern corporate office",
+    };
+  }
+
+  // 2. Retail tech & eCommerce (e.g. Walmart Global Tech, Target, Amazon GCCs)
   if (
     combined.includes("retail") ||
     combined.includes("walmart") ||
@@ -22,42 +92,22 @@ function buildTopicPrompt(
     };
   }
 
-  // 2. Bilateral relations & cross-border GCCs (German, US, UK, Japan)
-  if (combined.includes("german") || combined.includes("germany")) {
-    return {
-      prompt:
-        "3D render illustration of German flag and Indian flag standing outside futuristic corporate glass headquarters, modern enterprise campus, clean cinematic lighting, 8k",
-      unsplashQuery: "germany india corporate business partnership",
-    };
-  }
-  if (combined.includes("japan") || combined.includes("japanese")) {
-    return {
-      prompt:
-        "3D render illustration of Japanese flag and Indian flag outside modern corporate tech park, sleek glass architecture, 8k",
-      unsplashQuery: "japan corporate modern architecture business",
-    };
-  }
+  // 3. Bilateral relations & cross-border GCCs (German, US, UK, Japan)
   if (
+    combined.includes("german") ||
+    combined.includes("germany") ||
+    combined.includes("japan") ||
+    combined.includes("japanese") ||
     combined.includes("united states") ||
     combined.includes("american") ||
-    combined.includes(" u.s.") ||
-    combined.includes(" us ")
-  ) {
-    return {
-      prompt:
-        "3D render illustration of American flag and Indian flag outside modern glass enterprise innovation hub, architectural 3D visualization, 8k",
-      unsplashQuery: "international corporate headquarters glass office",
-    };
-  }
-  if (
-    combined.includes("united kingdom") ||
     combined.includes("british") ||
-    combined.includes(" uk ")
+    combined.includes("uk") ||
+    combined.includes("cross-border")
   ) {
     return {
       prompt:
-        "3D render illustration of British flag and Indian flag outside modern glass corporate campus, architectural photography, 8k",
-      unsplashQuery: "modern corporate enterprise campus london global",
+        "3D render illustration of futuristic multinational corporate glass headquarters in India, modern enterprise campus, clean cinematic lighting, architectural 3D visualization, 8k",
+      unsplashQuery: "multinational corporate headquarters glass office",
     };
   }
 
@@ -186,9 +236,8 @@ function buildTopicPrompt(
 
 async function fetchUnsplashFallback(query: string): Promise<Buffer | null> {
   try {
-    const key =
-      process.env.UNSPLASH_ACCESS_KEY ||
-      "2EhrtGI_tlU2O_slhqx7O7E-99fSygkruI2ldJePmu8";
+    const key = process.env.UNSPLASH_ACCESS_KEY;
+    if (!key) return null;
     const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&orientation=landscape&per_page=5`;
     const res = await fetch(url, {
       headers: { Authorization: `Client-ID ${key}` },
@@ -217,10 +266,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
 
-    const { prompt: promptText, unsplashQuery } = buildTopicPrompt(
+    // 1. Generate an intelligent prompt with Gemini analyzing the exact company and industry
+    let promptText = "";
+    let unsplashQuery = "";
+
+    const smartPrompt = await generateSmartPromptWithGemini(
       title,
       summary || "",
     );
+    if (smartPrompt) {
+      promptText = smartPrompt.prompt;
+      unsplashQuery = smartPrompt.unsplashQuery;
+      console.log(`Gemini smart visual prompt: "${promptText}"`);
+    } else {
+      const fallback = buildTopicPrompt(title, summary || "");
+      promptText = fallback.prompt;
+      unsplashQuery = fallback.unsplashQuery;
+    }
+
     const seed = Math.floor(Math.random() * 1000000);
     const encodedPrompt = encodeURIComponent(promptText);
 
