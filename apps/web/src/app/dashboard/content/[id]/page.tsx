@@ -32,6 +32,7 @@ import {
   RotateCcw,
   X,
   Loader2,
+  Shuffle,
 } from "lucide-react";
 
 // LOW-05: Strict TypeScript interfaces
@@ -220,6 +221,8 @@ export default function DraftReviewPage({
   // Image replacement state
   const [customImageUrl, setCustomImageUrl] = useState<string>("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [isShufflingImage, setIsShufflingImage] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInputValue, setUrlInputValue] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -323,6 +326,96 @@ export default function DraftReviewPage({
     } catch (err) {
       console.error(err);
       toast.error("Failed to save image URL");
+    }
+  };
+
+  const handleGenerateAi = async () => {
+    if (!draft) return;
+    setIsGeneratingAi(true);
+    const toastId = toast.loading(
+      "Generating tailored 3D graphic with AI (takes ~8-12s)...",
+    );
+    try {
+      let h1 = "";
+      let h2 = "";
+      if (
+        draft.article?.imageUrl &&
+        draft.article.imageUrl.includes("/api/og")
+      ) {
+        try {
+          const u = new URL(draft.article.imageUrl);
+          h1 = u.searchParams.get("h1") || "";
+          h2 = u.searchParams.get("h2") || "";
+        } catch {}
+      }
+
+      const res = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title:
+            draft.article?.title ||
+            draft.cluster?.theme ||
+            "GCC Quest Insights",
+          summary:
+            draft.article?.analysis?.summary ||
+            draft.cluster?.synthesisText ||
+            "",
+          source: draft.targetPlatform || "GCC Quest AI",
+          h1,
+          h2,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Generation failed");
+      }
+
+      setCustomImageUrl(data.url);
+      await apiClient.put(`/content/drafts/${id}/image`, {
+        customImageUrl: data.url,
+      });
+
+      toast.success("AI 3D visual generated and saved!", { id: toastId });
+    } catch (err: unknown) {
+      console.error(err);
+      const msg =
+        err instanceof Error ? err.message : "Failed to generate AI visual";
+      toast.error(msg, { id: toastId });
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
+  const handleShuffleImage = async () => {
+    if (!draft) return;
+    setIsShufflingImage(true);
+    try {
+      const newSeed = Math.floor(Math.random() * 1000000);
+      const baseOg = draft.article?.imageUrl || "";
+      let newUrl = "";
+      if (baseOg && baseOg.includes("/api/og")) {
+        const u = new URL(baseOg);
+        u.searchParams.set("seed", newSeed.toString());
+        u.searchParams.delete("bg");
+        newUrl = u.toString();
+      } else {
+        const title =
+          draft.article?.title || draft.cluster?.theme || "GCC Quest";
+        newUrl = `/api/og?title=${encodeURIComponent(title)}&seed=${newSeed}`;
+      }
+
+      setCustomImageUrl(newUrl);
+      await apiClient.put(`/content/drafts/${id}/image`, {
+        customImageUrl: newUrl,
+      });
+      toast.success("Switched to another curated topic visual!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to shuffle image");
+    } finally {
+      setIsShufflingImage(false);
     }
   };
 
@@ -609,7 +702,46 @@ export default function DraftReviewPage({
               )}
 
               {/* Action Buttons */}
-              <div className="p-3 border-t border-zinc-100 space-y-3">
+              <div className="p-3 border-t border-zinc-100 space-y-2.5">
+                {/* Primary AI & Shuffle Controls */}
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleGenerateAi}
+                    disabled={
+                      isGeneratingAi || isUploadingImage || isShufflingImage
+                    }
+                    className="h-8 gap-1.5 text-xs bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white font-medium shadow-sm transition-all"
+                  >
+                    {isGeneratingAi ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    )}
+                    {isGeneratingAi
+                      ? "Generating 3D AI..."
+                      : "Generate with AI"}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShuffleImage}
+                    disabled={
+                      isShufflingImage || isGeneratingAi || isUploadingImage
+                    }
+                    className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+                  >
+                    {isShufflingImage ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+                    ) : (
+                      <Shuffle className="w-3.5 h-3.5 text-blue-500" />
+                    )}
+                    {isShufflingImage ? "Shuffling..." : "Shuffle Stock Visual"}
+                  </Button>
+                </div>
+
+                {/* Secondary Upload & Paste Controls */}
                 <div className="flex items-center gap-2">
                   {/* Hidden file input */}
                   <input
@@ -624,13 +756,15 @@ export default function DraftReviewPage({
                     variant="outline"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploadingImage}
+                    disabled={
+                      isUploadingImage || isGeneratingAi || isShufflingImage
+                    }
                     className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 flex-1"
                   >
                     {isUploadingImage ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                      <Upload className="w-3.5 h-3.5" />
+                      <Upload className="w-3.5 h-3.5 text-zinc-500" />
                     )}
                     {isUploadingImage ? "Uploading..." : "Upload from Device"}
                   </Button>
@@ -639,9 +773,10 @@ export default function DraftReviewPage({
                     variant="outline"
                     size="sm"
                     onClick={() => setShowUrlInput(!showUrlInput)}
+                    disabled={isGeneratingAi || isShufflingImage}
                     className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 flex-1"
                   >
-                    <Link2 className="w-3.5 h-3.5" />
+                    <Link2 className="w-3.5 h-3.5 text-zinc-500" />
                     Paste URL
                   </Button>
 
@@ -650,7 +785,9 @@ export default function DraftReviewPage({
                       variant="outline"
                       size="sm"
                       onClick={handleResetImage}
+                      disabled={isGeneratingAi || isShufflingImage}
                       className="h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100"
+                      title="Reset to default auto-generated image"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                       Reset
@@ -693,7 +830,7 @@ export default function DraftReviewPage({
                 <p className="text-[11px] text-zinc-400 leading-relaxed">
                   {customImageUrl
                     ? "✓ Your custom image will be used when publishing to LinkedIn."
-                    : "Upload your own image or paste a URL to replace the auto-generated visual."}
+                    : "Generate an on-demand 3D conceptual visual with AI, shuffle curated topic photos, or upload your own."}
                 </p>
               </div>
             </CardContent>

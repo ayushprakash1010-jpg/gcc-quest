@@ -38,13 +38,16 @@ export async function GET(req: NextRequest) {
     // Determine background image (use passed bg, or select a curated, free high-speed visual)
     const lowerTitle = title.toLowerCase();
 
-    // Deterministic seed based on title hash so each article gets a consistent visual
-    const seed =
-      Math.abs(
-        title
-          .split("")
-          .reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0),
-      ) % 1000000;
+    // Deterministic seed based on title hash so each article gets a consistent visual,
+    // or an explicitly passed seed (e.g. from the Shuffle button) to cycle through curated photos
+    const customSeed = searchParams.get("seed");
+    const seed = customSeed
+      ? Math.abs(parseInt(customSeed, 10))
+      : Math.abs(
+          title
+            .split("")
+            .reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0),
+        ) % 1000000;
 
     // Curated high-resolution imagery aligned strictly with the 6 core GCC Quest topics (100% verified, 0ms rate limit)
     const topicVisuals = {
