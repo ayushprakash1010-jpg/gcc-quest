@@ -377,7 +377,13 @@ export default function DraftReviewPage({
         customImageUrl: data.url,
       });
 
-      toast.success("AI 3D visual generated and saved!", { id: toastId });
+      if (data.engine === "curated-stock") {
+        toast.success("Curated high-res topic visual created and saved!", {
+          id: toastId,
+        });
+      } else {
+        toast.success("AI 3D visual generated and saved!", { id: toastId });
+      }
     } catch (err: unknown) {
       console.error(err);
       const msg =
