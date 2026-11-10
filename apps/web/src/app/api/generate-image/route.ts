@@ -234,6 +234,30 @@ function buildTopicPrompt(
   };
 }
 
+const CURATED_SAFETY_IMAGES = [
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1080&q=80",
+  "https://images.unsplash.com/photo-1577495508048-b635879837f1?w=1080&q=80",
+  "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1080&q=80",
+  "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1080&q=80",
+  "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1080&q=80",
+  "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1080&q=80",
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1080&q=80",
+  "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1080&q=80",
+];
+
+async function fetchCuratedSafetyBuffer(seed: number): Promise<Buffer | null> {
+  try {
+    const chosenUrl =
+      CURATED_SAFETY_IMAGES[seed % CURATED_SAFETY_IMAGES.length];
+    const res = await fetch(chosenUrl);
+    if (!res.ok) return null;
+    const arrayBuffer = await res.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch {
+    return null;
+  }
+}
+
 async function fetchUnsplashFallback(query: string): Promise<Buffer | null> {
   try {
     const key = process.env.UNSPLASH_ACCESS_KEY;
@@ -290,12 +314,12 @@ export async function POST(req: NextRequest) {
     let imageBuffer: Buffer | null = null;
     let engine = "pollinations-ai";
 
-    // Tier 1: Try Pollinations AI (without model=turbo to prevent 503)
+    // Tier 1: Try Pollinations AI (give 20s for generation)
     try {
       const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1080&height=1080&seed=${seed}&nologo=true`;
 
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12000); // 12s fast timeout
+      const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout
 
       const aiRes = await fetch(pollinationsUrl, { signal: controller.signal });
       clearTimeout(timeout);
@@ -314,16 +338,21 @@ export async function POST(req: NextRequest) {
       console.warn("Pollinations AI attempt timed out or failed:", aiErr);
     }
 
-    // Tier 2: If AI generation was busy/offline, gracefully fall back to Unsplash high-res search
-    if (!imageBuffer) {
-      engine = "curated-stock";
+    // Tier 2: If AI generation was busy/offline, try Unsplash Search API
+    if (!imageBuffer && process.env.UNSPLASH_ACCESS_KEY) {
+      engine = "unsplash-search";
       console.log(
         `Using high-res curated fallback for query: "${unsplashQuery}"`,
       );
       imageBuffer = await fetchUnsplashFallback(unsplashQuery);
     }
 
-    // Tier 3: Safety net fallback if external fetch failed
+    // Tier 3: Guaranteed safety net buffer from verified curated corporate library (requires 0 API keys)
+    if (!imageBuffer) {
+      engine = "curated-library";
+      imageBuffer = await fetchCuratedSafetyBuffer(seed);
+    }
+
     if (!imageBuffer) {
       throw new Error(
         "Could not generate visual at this moment. Please try again or use the Shuffle button.",
