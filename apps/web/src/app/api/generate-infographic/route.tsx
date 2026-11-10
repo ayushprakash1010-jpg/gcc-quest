@@ -53,105 +53,257 @@ async function extractInfographicDataWithGemini(
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
 
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 7000);
-
-    const prompt = `You are an elite B2B research analyst (like McKinsey, Gartner, Bain) creating a viral LinkedIn Infographic Slide for GCC Quest.
+  const prompt = `You are an elite B2B research analyst (like McKinsey, Gartner, Bain) creating a viral LinkedIn Infographic Slide for GCC Quest.
 Analyze the article and extract structured data.
 Return JSON ONLY matching these exact fields:
-- categoryTag: (e.g. "INDIA'S GCC BOOM" or "EXECUTIVE LEADERSHIP MANDATE" or "WORKFORCE AI EVOLUTION", uppercase, 2-4 words)
-- headlinePart1: (First half of main title, in pure white, punchy, e.g. "From Support Centers")
-- headlinePart2: (Second half of main title, highlighted in vibrant gold, e.g. "to Global Innovation Engines")
+- categoryTag: (e.g. "INDIA'S GCC BOOM" or "EXECUTIVE LEADERSHIP MANDATE" or "WORKFORCE AI EVOLUTION" or "GLOBAL EXPANSION", uppercase, 2-4 words)
+- headlinePart1: (First half of main title, in pure white, punchy, e.g. "From Coffee to Code" or "From Support Centers")
+- headlinePart2: (Second half of main title, highlighted in vibrant gold, e.g. "Starbucks Enters India's GCC Ecosystem" or "to Global Innovation Engines")
 - subtitle: (2-sentence clear executive summary explaining the strategic milestone, max 26 words)
-- stat1: { "label": "TOTAL GCCS IN INDIA", "value": "2,117", "note": "(and growing)" } (Extract a primary metric or key number from the text)
-- stat2: { "label": "INDUSTRY REVENUE BY FY26", "value": "$98.4B", "note": "(on track)" } (Extract a financial or percentage metric)
-- shiftTitle: (Section header, e.g. "THE SHIFT: FROM COST ARBITRAGE TO HIGH-VALUE INNOVATION")
+- stat1: { "label": "KEY METRIC LABEL", "value": "800", "note": "(specialized roles)" } (Extract a primary metric, headcount, or key number from the text)
+- stat2: { "label": "SECONDARY METRIC", "value": "1st", "note": "(strategic hub)" } (Extract a financial, location, or milestone metric)
+- shiftTitle: (Section header, e.g. "THE SHIFT: DRIVING DIGITAL CAPABILITIES AND ENTERPRISE SOLUTIONS")
 - pillars: (Array of exactly 4 capabilities with title and short subtitle: [
-    { "title": "Product Engineering", "subtitle": "Core R&D" },
-    { "title": "Advanced R&D", "subtitle": "AI & DeepTech" },
-    { "title": "Cloud Integration", "subtitle": "Enterprise Scale" },
-    { "title": "AI Strategies", "subtitle": "Global Leadership" }
+    { "title": "Pillar 1", "subtitle": "Core Focus" },
+    { "title": "Pillar 2", "subtitle": "Strategic Goal" },
+    { "title": "Pillar 3", "subtitle": "Operational Impact" },
+    { "title": "Pillar 4", "subtitle": "Global Scale" }
   ])
-- quoteTakeaway: (1 crisp strategic takeaway quote, max 14 words, e.g. "Enterprises are leveraging Indian GCCs as vital innovation engines, not cost centers.")
+- quoteTakeaway: (1 crisp strategic takeaway quote, max 15 words, e.g. "Global brands are leveraging Indian GCCs as vital digital and engineering innovation hubs.")
 - impactItems: (Array of exactly 3 objects with "title" (uppercase 1-2 words) and "desc" (under 9 words), e.g. [
-    { "title": "TALENT ACQUISITION", "desc": "Greater demand for skilled tech leaders and AI specialists." },
-    { "title": "INFRASTRUCTURE", "desc": "Aggressive expansion across Tier-1 and Tier-2 tech hubs." },
-    { "title": "LEADERSHIP", "desc": "Direct C-suite ownership of mission-critical global software." }
+    { "title": "TALENT IMPACT", "desc": "Expanding high-value engineering capabilities through local talent." },
+    { "title": "HUB EXPANSION", "desc": "Deepening operational footprint across strategic tech corridors." },
+    { "title": "GLOBAL IMPACT", "desc": "Driving mission-critical operations from strategic Indian centers." }
   ])
-- ctaTitle: (e.g. "THE $100 BILLION MILESTONE IS WITHIN SIGHT.")
-- ctaQuestion: (A thoughtful question prompting executive discussion, max 18 words, e.g. "How is your leadership team restructuring its captive operating model to capture higher-value engineering?")
+- ctaTitle: (e.g. "THE NEXT WAVE OF ENTERPRISE GCCS IS HERE.")
+- ctaQuestion: (A thoughtful question prompting executive discussion, max 18 words, e.g. "How is your organization leveraging Indian tech hubs to accelerate digital transformation and scale engineering capabilities?")
 
 Article Title: ${title}
-Article Summary: ${summary.slice(0, 500)}`;
+Article Summary / Context: ${summary.slice(0, 1500)}`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" },
-      }),
-    });
-    clearTimeout(timeout);
+  // Try calling Gemini with 1 retry for maximum reliability
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10s generous timeout
 
-    if (!res.ok) return null;
-    const json = await res.json();
-    const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawText) return null;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            temperature: 0.2,
+          },
+        }),
+      });
+      clearTimeout(timeout);
 
-    return JSON.parse(rawText) as InfographicData;
-  } catch (err) {
-    console.warn("Gemini infographic extraction error:", err);
-    return null;
+      if (res.ok) {
+        const json = await res.json();
+        const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawText) {
+          const parsed = JSON.parse(rawText) as InfographicData;
+          if (
+            parsed.headlinePart1 &&
+            parsed.stat1 &&
+            parsed.pillars?.length === 4
+          ) {
+            return parsed;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`Gemini infographic attempt ${attempt} failed:`, err);
+    }
+
+    if (attempt < 2) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
   }
+
+  return null;
 }
 
-function buildFallbackData(title: string): InfographicData {
+function buildFallbackData(
+  title: string,
+  summary: string = "",
+): InfographicData {
+  // Strip news source suffixes like "- YourStory.com", "- CRN Asia", etc.
+  const cleanTitle = title
+    .replace(/\s*[-–|]\s*[A-Za-z0-9.]+(?:\.com|\.in|\.org|\.net)?$/i, "")
+    .trim();
+
+  // Smart headline split
+  const words = cleanTitle.split(/\s+/);
+  let headlinePart1 = "";
+  let headlinePart2 = "";
+
+  if (words.length <= 4) {
+    headlinePart1 = cleanTitle;
+    headlinePart2 = "Strategic GCC Expansion";
+  } else {
+    // Look for natural split words like "to", "in", "with", "as", "for"
+    const splitIndex = words.findIndex(
+      (w, idx) =>
+        idx >= 3 &&
+        ["to", "in", "with", "as", "for", "touch", "reaches"].includes(
+          w.toLowerCase(),
+        ),
+    );
+    if (splitIndex !== -1 && splitIndex < words.length - 1) {
+      headlinePart1 = words.slice(0, splitIndex).join(" ");
+      headlinePart2 = words.slice(splitIndex).join(" ");
+    } else {
+      const mid = Math.ceil(words.length / 2);
+      headlinePart1 = words.slice(0, mid).join(" ");
+      headlinePart2 = words.slice(mid).join(" ");
+    }
+  }
+
+  const combined = `${cleanTitle} ${summary}`.toLowerCase();
+
+  // Category Tag based on content
+  let categoryTag = "STRATEGIC GCC INTELLIGENCE";
+  if (
+    combined.includes("appoint") ||
+    combined.includes("leader") ||
+    combined.includes("evp") ||
+    combined.includes("head")
+  ) {
+    categoryTag = "EXECUTIVE LEADERSHIP MANDATE";
+  } else if (
+    combined.includes("upskill") ||
+    combined.includes("talent") ||
+    combined.includes("workforce")
+  ) {
+    categoryTag = "WORKFORCE & AI EVOLUTION";
+  } else if (
+    combined.includes("chennai") ||
+    combined.includes("bengaluru") ||
+    combined.includes("hyderabad") ||
+    combined.includes("pune")
+  ) {
+    categoryTag = "GLOBAL EXPANSION CORRIDOR";
+  } else if (
+    combined.includes("ai") ||
+    combined.includes("generative ai") ||
+    combined.includes("tech")
+  ) {
+    categoryTag = "ENTERPRISE TECH TRANSFORMATION";
+  }
+
+  // Extract key metrics from text (numbers with %, $, B, M, K, or raw numbers > 10)
+  const metricMatches =
+    `${cleanTitle} ${summary}`.match(
+      /(?:\$|₹|€)?\b\d+(?:,\d+)*(?:\.\d+)?(?:%|B|M|K|\+)?\b/g,
+    ) || [];
+  const validMetrics = metricMatches.filter(
+    (m) => !["2023", "2024", "2025", "2026", "2027", "2030"].includes(m),
+  );
+
+  let stat1Value = validMetrics[0] || "100%";
+  let stat1Label = validMetrics[0]?.includes("%")
+    ? "WORKFORCE BENCHMARK"
+    : validMetrics[0]?.match(/[\$€₹BMK]/i)
+      ? "INVESTMENT / VALUE"
+      : validMetrics[0]
+        ? "KEY IMPACT METRIC"
+        : "STRATEGIC EXPANSION";
+  let stat1Note = "(strategic milestone)";
+
+  // Location or second metric
+  let stat2Value = validMetrics[1] || "TIER-1";
+  let stat2Label = validMetrics[1]
+    ? "INDUSTRY BENCHMARK"
+    : "TECH HUB DESTINATION";
+  let stat2Note = "(accelerated growth)";
+
+  if (combined.includes("chennai")) {
+    stat2Value = "CHENNAI";
+    stat2Label = "STRATEGIC LOCATION";
+    stat2Note = "(emerging tech hub)";
+  } else if (combined.includes("bengaluru") || combined.includes("bangalore")) {
+    stat2Value = "BENGALURU";
+    stat2Label = "STRATEGIC LOCATION";
+    stat2Note = "(silicon valley of india)";
+  } else if (combined.includes("hyderabad")) {
+    stat2Value = "HYDERABAD";
+    stat2Label = "STRATEGIC LOCATION";
+    stat2Note = "(premier delivery hub)";
+  }
+
+  // Generate dynamic pillars based on context
+  let pillars = [
+    { title: "Digital Capabilities", subtitle: "Core Software" },
+    { title: "Enterprise Solutions", subtitle: "Global Scale" },
+    { title: "Tech Hub Expansion", subtitle: "Strategic Delivery" },
+    { title: "Talent Acquisition", subtitle: "Specialized Roles" },
+  ];
+
+  if (categoryTag === "EXECUTIVE LEADERSHIP MANDATE") {
+    pillars = [
+      { title: "Strategic Roadmap", subtitle: "Executive Direction" },
+      { title: "Technical Delivery", subtitle: "Core Engineering" },
+      { title: "Operational Scale", subtitle: "High-Value Mandates" },
+      { title: "Global Alignment", subtitle: "Cross-Border Integration" },
+    ];
+  } else if (categoryTag === "WORKFORCE & AI EVOLUTION") {
+    pillars = [
+      { title: "Workforce Upskilling", subtitle: "Internal Fluency" },
+      { title: "AI-Native Delivery", subtitle: "Applied Intelligence" },
+      { title: "Talent Governance", subtitle: "Academic Tie-ups" },
+      { title: "Strategic R&D", subtitle: "Higher Value Capture" },
+    ];
+  }
+
+  // Crisp executive subtitle
+  const cleanSummary = summary.replace(/\r?\n/g, " ").trim();
+  const summarySentences = cleanSummary.split(/(?<=[.!?])\s+/);
+  const subtitle =
+    summarySentences[0] && summarySentences[0].length > 20
+      ? summarySentences[0].slice(0, 180)
+      : `${cleanTitle} marks a pivotal milestone as global enterprises expand mission-critical innovation centers across India.`;
+
   return {
-    categoryTag: "INDIA'S GCC BOOM",
-    headlinePart1: "From Support Centers",
-    headlinePart2: "to Global Innovation Engines",
-    subtitle:
-      "India has officially crossed a monumental milestone, with Global Capability Centers surging in scale and accelerating toward a historic $100B revenue trajectory.",
+    categoryTag,
+    headlinePart1,
+    headlinePart2,
+    subtitle,
     stat1: {
-      label: "TOTAL GCCS IN INDIA",
-      value: "2,117",
-      note: "(and growing)",
+      label: stat1Label,
+      value: stat1Value,
+      note: stat1Note,
     },
     stat2: {
-      label: "INDUSTRY REVENUE BY FY26",
-      value: "$98.4B",
-      note: "(on track)",
+      label: stat2Label,
+      value: stat2Value,
+      note: stat2Note,
     },
-    shiftTitle: "THE SHIFT: FROM COST ARBITRAGE TO HIGH-VALUE INNOVATION",
-    pillars: [
-      { title: "Product Engineering", subtitle: "Core Software" },
-      { title: "Advanced R&D", subtitle: "AI & Innovation" },
-      { title: "Cloud Integration", subtitle: "Enterprise Scale" },
-      { title: "Global Leadership", subtitle: "C-Suite Direction" },
-    ],
+    shiftTitle: `THE SHIFT: FROM TRADITIONAL SUPPORT TO HIGH-VALUE INNOVATION`,
+    pillars,
     quoteTakeaway:
-      "Enterprises are leveraging Indian GCCs as vital innovation engines, not just cost centers.",
+      "Global leaders are leveraging Indian GCCs as vital innovation engines, not just cost centers.",
     impactItems: [
       {
-        title: "TALENT ACQUISITION",
-        desc: "Greater demand for skilled engineers and AI researchers.",
+        title: "TALENT GROWTH",
+        desc: "Aggressive hiring of specialized technical and domain talent.",
       },
       {
-        title: "INFRASTRUCTURE",
-        desc: "Rapid expansion of prime commercial office tech hubs.",
+        title: "HUB EXPANSION",
+        desc: "Expanding modern infrastructure across strategic tech corridors.",
       },
       {
-        title: "LEADERSHIP",
-        desc: "Building next-gen global leaders for international delivery.",
+        title: "ENTERPRISE SCALE",
+        desc: "Direct delivery of mission-critical global software and ops.",
       },
     ],
-    ctaTitle: "THE $100 BILLION MILESTONE IS WITHIN SIGHT.",
+    ctaTitle: "THE NEXT EVOLUTION OF GLOBAL GCCS IS HERE.",
     ctaQuestion:
-      "How is your leadership team restructuring its captive operating model to capture higher-value engineering mandates?",
+      "How is your leadership team aligning captive operations to drive enterprise transformation?",
   };
 }
 
@@ -176,7 +328,7 @@ export async function POST(req: NextRequest) {
     // 1. Extract structured B2B intelligence with Gemini
     let data = await extractInfographicDataWithGemini(title, summary || "");
     if (!data) {
-      data = buildFallbackData(title);
+      data = buildFallbackData(title, summary || "");
     }
 
     // 2. Fetch curated city background image for right-hand visual window

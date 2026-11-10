@@ -362,6 +362,7 @@ export default function DraftReviewPage({
           summary:
             draft.article?.analysis?.summary ||
             draft.cluster?.synthesisText ||
+            draft.versions?.[0]?.content ||
             "",
           source: draft.targetPlatform || "GCC Quest AI",
           h1,
@@ -445,6 +446,7 @@ export default function DraftReviewPage({
           summary:
             draft.article?.analysis?.summary ||
             draft.cluster?.synthesisText ||
+            draft.versions?.[0]?.content ||
             "",
           source: draft.targetPlatform || "GCC Quest Intelligence",
         }),
