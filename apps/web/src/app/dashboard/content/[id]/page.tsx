@@ -491,7 +491,7 @@ export default function DraftReviewPage({
     }
   };
 
-  const handleCopyChatGptPrompt = async () => {
+  const handleOpenChatGptWithPrompt = async () => {
     if (!draft) return;
 
     const title =
@@ -535,17 +535,20 @@ DESIGN & AESTHETIC REQUIREMENTS:
 - Typography: Extremely crisp, modern sans-serif, perfectly legible, high contrast.
 - Style: McKinsey / Gartner / Bain executive intelligence deck meets futuristic Bloomberg terminal.`;
 
+    // 1. Copy to clipboard as backup
     try {
       await navigator.clipboard.writeText(promptText);
       setCopiedPrompt(true);
-      toast.success("ChatGPT Infographic Prompt copied to clipboard!", {
-        description:
-          "Paste into ChatGPT Plus / DALL-E to generate a custom slide.",
-      });
       setTimeout(() => setCopiedPrompt(false), 3000);
-    } catch {
-      toast.error("Failed to copy prompt to clipboard.");
-    }
+    } catch {}
+
+    // 2. Open ChatGPT with prompt prefilled in URL
+    const chatGptUrl = `https://chatgpt.com/?q=${encodeURIComponent(promptText)}`;
+    window.open(chatGptUrl, "_blank");
+
+    toast.success("Opening ChatGPT with auto-filled prompt!", {
+      description: "Prompt is also copied to your clipboard as a backup.",
+    });
   };
 
   const handleApprove = async () => {
@@ -888,22 +891,16 @@ DESIGN & AESTHETIC REQUIREMENTS:
                   </Button>
                 </div>
 
-                {/* 1-Click Copy ChatGPT Prompt Button */}
+                {/* 1-Click Open in ChatGPT (Auto-Filled Prompt) Button */}
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleCopyChatGptPrompt}
-                  className="w-full h-8 gap-1.5 text-xs border-zinc-200 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
-                  title="Copy a structured prompt ready to paste into ChatGPT Plus / DALL-E to create custom infographic slides"
+                  onClick={handleOpenChatGptWithPrompt}
+                  className="w-full h-8 gap-1.5 text-xs border-indigo-200/90 bg-indigo-50/60 text-indigo-700 hover:text-indigo-900 hover:bg-indigo-100 transition-colors font-medium cursor-pointer"
+                  title="Opens ChatGPT in a new tab with the structured prompt already typed into the chat box"
                 >
-                  {copiedPrompt ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5 text-zinc-500" />
-                  )}
-                  {copiedPrompt
-                    ? "ChatGPT Prompt Copied to Clipboard!"
-                    : "📋 Copy ChatGPT Infographic Prompt"}
+                  <ExternalLink className="w-3.5 h-3.5 text-indigo-600" />
+                  🤖 Open in ChatGPT (Auto-Filled Prompt)
                 </Button>
 
                 {/* Secondary Upload & Paste Controls */}
