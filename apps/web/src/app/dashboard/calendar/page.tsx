@@ -14,6 +14,7 @@ import {
   ExternalLink,
   AlertCircle,
   FileText,
+  ArrowUpDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -111,11 +112,37 @@ export default function CalendarPage() {
     }
   };
 
-  const dates = Object.keys(calendar).sort();
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "QUEUED" | "PUBLISHED" | "FAILED"
+  >("ALL");
+
+  // Flatten posts to compute counts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allPosts = Object.values(calendar).flat() as any[];
+  const queuedCount = allPosts.filter((p) => p.status === "QUEUED").length;
+  const publishedCount = allPosts.filter(
+    (p) => p.status === "PUBLISHED",
+  ).length;
+  const failedCount = allPosts.filter((p) => p.status === "FAILED").length;
+
+  // Sort dates: default DESCENDING (newest upcoming dates like Nov 16 on top)
+  const allDates = Object.keys(calendar).sort((a, b) => {
+    const timeA = new Date(a).getTime();
+    const timeB = new Date(b).getTime();
+    return sortOrder === "desc" ? timeB - timeA : timeA - timeB;
+  });
+
+  const filteredDates = allDates.filter((date) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const posts = (calendar[date] as any[]) || [];
+    if (statusFilter === "ALL") return posts.length > 0;
+    return posts.some((p) => p.status === statusFilter);
+  });
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">
             Content Calendar
@@ -125,11 +152,72 @@ export default function CalendarPage() {
             posts to optimize reach.
           </p>
         </div>
+
+        {/* Filter & Sort Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Status Filter Tabs */}
+          <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
+            <button
+              onClick={() => setStatusFilter("ALL")}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                statusFilter === "ALL"
+                  ? "bg-zinc-800 text-white shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              All ({allPosts.length})
+            </button>
+            <button
+              onClick={() => setStatusFilter("QUEUED")}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                statusFilter === "QUEUED"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              Queued ({queuedCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter("PUBLISHED")}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                statusFilter === "PUBLISHED"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              Published ({publishedCount})
+            </button>
+            {failedCount > 0 && (
+              <button
+                onClick={() => setStatusFilter("FAILED")}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                  statusFilter === "FAILED"
+                    ? "bg-rose-600 text-white shadow-sm"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                Failed ({failedCount})
+              </button>
+            )}
+          </div>
+
+          {/* Sort Order Toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+            className="gap-1.5 text-xs border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 hover:text-white cursor-pointer h-8"
+            title="Toggle chronological sorting"
+          >
+            <ArrowUpDown className="w-3.5 h-3.5 text-blue-400" />
+            {sortOrder === "desc" ? "Newest First" : "Oldest First"}
+          </Button>
+        </div>
       </div>
 
       {loading ? (
         <div className="py-8 text-muted-foreground">Loading calendar...</div>
-      ) : dates.length === 0 ? (
+      ) : allDates.length === 0 ? (
         <div className="text-muted-foreground py-8 border-2 border-dashed rounded-lg p-8 text-center flex flex-col items-center justify-center">
           <CalendarIcon className="h-10 w-10 mb-4 text-muted-foreground/50" />
           <p>No posts scheduled yet.</p>
@@ -137,242 +225,280 @@ export default function CalendarPage() {
             Approve and schedule drafts from the Content section.
           </p>
         </div>
+      ) : filteredDates.length === 0 ? (
+        <div className="text-muted-foreground py-8 border-2 border-dashed border-zinc-800 rounded-lg p-8 text-center flex flex-col items-center justify-center">
+          <CalendarIcon className="h-10 w-10 mb-4 text-muted-foreground/50" />
+          <p>No {statusFilter.toLowerCase()} posts in the calendar.</p>
+          <Button
+            variant="link"
+            size="sm"
+            onClick={() => setStatusFilter("ALL")}
+            className="text-xs text-blue-400 mt-2 cursor-pointer"
+          >
+            Show All Posts
+          </Button>
+        </div>
       ) : (
         <div className="space-y-8 mt-6">
-          {dates.map((date) => (
-            <div key={date}>
-              <h3 className="text-xl font-semibold mb-4 border-b pb-2 flex items-center">
-                <CalendarIcon className="w-5 h-5 mr-2 text-muted-foreground" />
-                {new Date(date).toLocaleDateString(undefined, {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </h3>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {calendar[date].map((post: any) => (
-                  <Card
-                    key={post.id}
-                    className="flex flex-col justify-between bg-zinc-900 border-zinc-800 text-zinc-100 shadow-lg hover:border-zinc-700/80 transition-all"
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start mb-2 gap-2">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <Badge
-                            variant="outline"
-                            className={
-                              post.status === "PUBLISHED"
-                                ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 font-medium"
-                                : post.status === "FAILED"
-                                  ? "bg-rose-500/15 text-rose-400 border-rose-500/30 font-medium"
-                                  : "bg-blue-500/15 text-blue-400 border-blue-500/30 font-medium"
-                            }
-                          >
-                            {post.status}
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className="border-zinc-700 bg-zinc-800/60 text-zinc-300 font-medium"
-                          >
-                            {post.draft?.targetPlatform}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {/* Quick Republish / Publish Now Icon Button */}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-7 h-7 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-                            disabled={republishingId === post.id}
-                            onClick={() => handleRepublish(post.id)}
-                            title={
-                              post.status === "PUBLISHED"
-                                ? "Republish Now"
-                                : post.status === "FAILED"
-                                  ? "Retry Publishing"
-                                  : "Publish Now"
-                            }
-                          >
-                            <RotateCw
-                              className={`w-3.5 h-3.5 ${
-                                republishingId === post.id
-                                  ? "animate-spin text-emerald-400"
-                                  : ""
-                              }`}
-                            />
-                          </Button>
+          {filteredDates.map((date) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const posts = ((calendar[date] as any[]) || [])
+              .filter((p) =>
+                statusFilter === "ALL" ? true : p.status === statusFilter,
+              )
+              .sort((a, b) => {
+                const timeA = new Date(a.scheduledFor).getTime();
+                const timeB = new Date(b.scheduledFor).getTime();
+                return sortOrder === "desc" ? timeB - timeA : timeA - timeB;
+              });
 
-                          {/* Quick Change Timing / Reschedule Icon Button */}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="w-7 h-7 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 cursor-pointer"
-                            onClick={() => startReschedule(post)}
-                            title="Change Timing / Reschedule"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </Button>
+            if (posts.length === 0) return null;
 
-                          {/* Cancel Button */}
-                          {post.status !== "PUBLISHED" && (
+            return (
+              <div key={date}>
+                <h3 className="text-xl font-semibold mb-4 border-b border-zinc-800 pb-2 flex items-center justify-between">
+                  <span className="flex items-center">
+                    <CalendarIcon className="w-5 h-5 mr-2 text-muted-foreground" />
+                    {new Date(date).toLocaleDateString(undefined, {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
+                  <span className="text-xs font-normal text-zinc-500">
+                    {posts.length} {posts.length === 1 ? "post" : "posts"}
+                  </span>
+                </h3>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {posts.map((post: any) => (
+                    <Card
+                      key={post.id}
+                      className="flex flex-col justify-between bg-zinc-900 border-zinc-800 text-zinc-100 shadow-lg hover:border-zinc-700/80 transition-all"
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start mb-2 gap-2">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Badge
+                              variant="outline"
+                              className={
+                                post.status === "PUBLISHED"
+                                  ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 font-medium"
+                                  : post.status === "FAILED"
+                                    ? "bg-rose-500/15 text-rose-400 border-rose-500/30 font-medium"
+                                    : "bg-blue-500/15 text-blue-400 border-blue-500/30 font-medium"
+                              }
+                            >
+                              {post.status}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className="border-zinc-700 bg-zinc-800/60 text-zinc-300 font-medium"
+                            >
+                              {post.draft?.targetPlatform}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {/* Quick Republish / Publish Now Icon Button */}
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="w-7 h-7 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer"
-                              onClick={() => handleCancel(post.id)}
-                              title="Cancel Schedule"
+                              className="w-7 h-7 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                              disabled={republishingId === post.id}
+                              onClick={() => handleRepublish(post.id)}
+                              title={
+                                post.status === "PUBLISHED"
+                                  ? "Republish Now"
+                                  : post.status === "FAILED"
+                                    ? "Retry Publishing"
+                                    : "Publish Now"
+                              }
                             >
-                              <Trash className="w-3.5 h-3.5" />
+                              <RotateCw
+                                className={`w-3.5 h-3.5 ${
+                                  republishingId === post.id
+                                    ? "animate-spin text-emerald-400"
+                                    : ""
+                                }`}
+                              />
                             </Button>
-                          )}
-                        </div>
-                      </div>
-                      <CardTitle className="text-sm font-medium leading-relaxed text-zinc-100 line-clamp-3">
-                        {post.draft?.versions?.[0]?.content?.substring(0, 120)}
-                        ...
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center text-xs font-medium text-zinc-400">
-                        <Clock className="w-3.5 h-3.5 mr-1.5 text-zinc-400" />
-                        {new Date(post.scheduledFor).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </div>
 
-                      {/* Inline Reschedule UI */}
-                      {reschedulingId === post.id && (
-                        <div className="space-y-3 p-3.5 bg-zinc-950 rounded-lg border border-blue-500/40 shadow-inner">
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-blue-400" />
-                              Change Scheduled Date &amp; Time:
-                            </p>
-                            {post.status === "PUBLISHED" && (
-                              <span className="text-[10px] text-amber-400 font-medium bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                                Will re-queue
-                              </span>
+                            {/* Quick Change Timing / Reschedule Icon Button */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="w-7 h-7 text-zinc-400 hover:text-blue-400 hover:bg-blue-500/10 cursor-pointer"
+                              onClick={() => startReschedule(post)}
+                              title="Change Timing / Reschedule"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+
+                            {/* Cancel Button */}
+                            {post.status !== "PUBLISHED" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-7 h-7 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+                                onClick={() => handleCancel(post.id)}
+                                title="Cancel Schedule"
+                              >
+                                <Trash className="w-3.5 h-3.5" />
+                              </Button>
                             )}
                           </div>
-                          <input
-                            type="datetime-local"
-                            value={newTime}
-                            onChange={(e) => setNewTime(e.target.value)}
-                            className="w-full text-xs rounded-md border border-zinc-700 bg-zinc-900 text-zinc-100 px-3 py-2 [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-                          />
-                          <div className="flex gap-2 pt-1">
-                            <Button
-                              size="sm"
-                              onClick={() => handleReschedule(post.id)}
-                              className="flex-1 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-medium h-8 text-xs cursor-pointer"
+                        </div>
+                        <CardTitle className="text-sm font-medium leading-relaxed text-zinc-100 line-clamp-3">
+                          {post.draft?.versions?.[0]?.content?.substring(
+                            0,
+                            120,
+                          )}
+                          ...
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center text-xs font-medium text-zinc-400">
+                          <Clock className="w-3.5 h-3.5 mr-1.5 text-zinc-400" />
+                          {new Date(post.scheduledFor).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+
+                        {/* Inline Reschedule UI */}
+                        {reschedulingId === post.id && (
+                          <div className="space-y-3 p-3.5 bg-zinc-950 rounded-lg border border-blue-500/40 shadow-inner">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-blue-400" />
+                                Change Scheduled Date &amp; Time:
+                              </p>
+                              {post.status === "PUBLISHED" && (
+                                <span className="text-[10px] text-amber-400 font-medium bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                                  Will re-queue
+                                </span>
+                              )}
+                            </div>
+                            <input
+                              type="datetime-local"
+                              value={newTime}
+                              onChange={(e) => setNewTime(e.target.value)}
+                              className="w-full text-xs rounded-md border border-zinc-700 bg-zinc-900 text-zinc-100 px-3 py-2 [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                            />
+                            <div className="flex gap-2 pt-1">
+                              <Button
+                                size="sm"
+                                onClick={() => handleReschedule(post.id)}
+                                className="flex-1 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-medium h-8 text-xs cursor-pointer"
+                              >
+                                <Check className="w-3.5 h-3.5" /> Confirm
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setReschedulingId(null)}
+                                className="flex-1 gap-1.5 border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white h-8 text-xs cursor-pointer font-medium"
+                              >
+                                <X className="w-3.5 h-3.5" /> Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Failure reason if post failed */}
+                        {post.status === "FAILED" && post.errorMessage && (
+                          <div className="bg-rose-950/50 border border-rose-800/70 p-3 rounded-lg text-xs leading-relaxed flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                            <div>
+                              <span className="font-semibold text-rose-300 block mb-0.5">
+                                Publishing Error
+                              </span>
+                              <span className="text-rose-200/90">
+                                {post.errorMessage}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {post.scheduleRationale && (
+                          <div className="bg-blue-950/40 border border-blue-800/60 p-3 rounded-lg text-xs leading-relaxed">
+                            <span className="font-semibold text-blue-400 flex items-center gap-1.5 mb-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />
+                              AI Recommendation
+                            </span>
+                            <span className="text-zinc-300">
+                              {post.scheduleRationale}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Actions Footer */}
+                        <div className="pt-3 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-2 mt-auto">
+                          {post.status === "PUBLISHED" && post.publishedUrl ? (
+                            <a
+                              href={post.publishedUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center text-xs text-blue-400 hover:text-blue-300 hover:underline gap-1.5 font-medium transition-colors"
                             >
-                              <Check className="w-3.5 h-3.5" /> Confirm
-                            </Button>
+                              <ExternalLink className="w-3.5 h-3.5" /> View Post
+                            </a>
+                          ) : post.draftId ? (
+                            <a
+                              href={`/dashboard/content/${post.draftId}`}
+                              className="flex items-center text-xs text-blue-400 hover:text-blue-300 hover:underline gap-1.5 font-medium transition-colors"
+                            >
+                              <FileText className="w-3.5 h-3.5" /> Review Draft
+                            </a>
+                          ) : (
+                            <div />
+                          )}
+
+                          <div className="flex items-center gap-2 ml-auto">
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => setReschedulingId(null)}
-                              className="flex-1 gap-1.5 border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white h-8 text-xs cursor-pointer font-medium"
+                              className="h-8 text-xs border-zinc-700 bg-zinc-800/90 text-zinc-200 hover:text-white hover:bg-zinc-700 hover:border-zinc-600 gap-1.5 px-3 font-medium cursor-pointer transition-all"
+                              onClick={() => startReschedule(post)}
+                              title="Change Scheduled Timing"
                             >
-                              <X className="w-3.5 h-3.5" /> Cancel
+                              <Clock className="w-3.5 h-3.5 text-blue-400" />
+                              Change Time
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium gap-1.5 px-3 cursor-pointer shadow-sm transition-all"
+                              disabled={republishingId === post.id}
+                              onClick={() => handleRepublish(post.id)}
+                              title={
+                                post.status === "PUBLISHED"
+                                  ? "Republish post to LinkedIn"
+                                  : "Publish post immediately"
+                              }
+                            >
+                              <RotateCw
+                                className={`w-3.5 h-3.5 ${
+                                  republishingId === post.id
+                                    ? "animate-spin"
+                                    : ""
+                                }`}
+                              />
+                              {republishingId === post.id
+                                ? "Publishing..."
+                                : post.status === "PUBLISHED"
+                                  ? "Republish"
+                                  : "Publish Now"}
                             </Button>
                           </div>
                         </div>
-                      )}
-
-                      {/* Failure reason if post failed */}
-                      {post.status === "FAILED" && post.errorMessage && (
-                        <div className="bg-rose-950/50 border border-rose-800/70 p-3 rounded-lg text-xs leading-relaxed flex items-start gap-2">
-                          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                          <div>
-                            <span className="font-semibold text-rose-300 block mb-0.5">
-                              Publishing Error
-                            </span>
-                            <span className="text-rose-200/90">
-                              {post.errorMessage}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {post.scheduleRationale && (
-                        <div className="bg-blue-950/40 border border-blue-800/60 p-3 rounded-lg text-xs leading-relaxed">
-                          <span className="font-semibold text-blue-400 flex items-center gap-1.5 mb-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />
-                            AI Recommendation
-                          </span>
-                          <span className="text-zinc-300">
-                            {post.scheduleRationale}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Actions Footer */}
-                      <div className="pt-3 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-2 mt-auto">
-                        {post.status === "PUBLISHED" && post.publishedUrl ? (
-                          <a
-                            href={post.publishedUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center text-xs text-blue-400 hover:text-blue-300 hover:underline gap-1.5 font-medium transition-colors"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" /> View Post
-                          </a>
-                        ) : post.draftId ? (
-                          <a
-                            href={`/dashboard/content/${post.draftId}`}
-                            className="flex items-center text-xs text-blue-400 hover:text-blue-300 hover:underline gap-1.5 font-medium transition-colors"
-                          >
-                            <FileText className="w-3.5 h-3.5" /> Review Draft
-                          </a>
-                        ) : (
-                          <div />
-                        )}
-
-                        <div className="flex items-center gap-2 ml-auto">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs border-zinc-700 bg-zinc-800/90 text-zinc-200 hover:text-white hover:bg-zinc-700 hover:border-zinc-600 gap-1.5 px-3 font-medium cursor-pointer transition-all"
-                            onClick={() => startReschedule(post)}
-                            title="Change Scheduled Timing"
-                          >
-                            <Clock className="w-3.5 h-3.5 text-blue-400" />
-                            Change Time
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium gap-1.5 px-3 cursor-pointer shadow-sm transition-all"
-                            disabled={republishingId === post.id}
-                            onClick={() => handleRepublish(post.id)}
-                            title={
-                              post.status === "PUBLISHED"
-                                ? "Republish post to LinkedIn"
-                                : "Publish post immediately"
-                            }
-                          >
-                            <RotateCw
-                              className={`w-3.5 h-3.5 ${
-                                republishingId === post.id ? "animate-spin" : ""
-                              }`}
-                            />
-                            {republishingId === post.id
-                              ? "Publishing..."
-                              : post.status === "PUBLISHED"
-                                ? "Republish"
-                                : "Publish Now"}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
