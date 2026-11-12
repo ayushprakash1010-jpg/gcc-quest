@@ -900,7 +900,9 @@ DESIGN & AESTHETIC REQUIREMENTS:
                   title="Opens ChatGPT in a new tab with the structured prompt already typed into the chat box"
                 >
                   <ExternalLink className="w-3.5 h-3.5 text-indigo-600" />
-                  🤖 Open in ChatGPT (Auto-Filled Prompt)
+                  {copiedPrompt
+                    ? "✓ Copied to Clipboard & Opening..."
+                    : "🤖 Open in ChatGPT (Auto-Filled Prompt)"}
                 </Button>
 
                 {/* Secondary Upload & Paste Controls */}

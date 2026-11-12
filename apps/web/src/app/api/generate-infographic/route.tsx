@@ -205,15 +205,15 @@ function buildFallbackData(
     (m) => !["2023", "2024", "2025", "2026", "2027", "2030"].includes(m),
   );
 
-  let stat1Value = validMetrics[0] || "100%";
-  let stat1Label = validMetrics[0]?.includes("%")
+  const stat1Value = validMetrics[0] || "100%";
+  const stat1Label = validMetrics[0]?.includes("%")
     ? "WORKFORCE BENCHMARK"
     : validMetrics[0]?.match(/[\$€₹BMK]/i)
       ? "INVESTMENT / VALUE"
       : validMetrics[0]
         ? "KEY IMPACT METRIC"
         : "STRATEGIC EXPANSION";
-  let stat1Note = "(strategic milestone)";
+  const stat1Note = "(strategic milestone)";
 
   // Location or second metric
   let stat2Value = validMetrics[1] || "TIER-1";
